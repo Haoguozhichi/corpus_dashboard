@@ -1,0 +1,134 @@
+import React, { useMemo } from 'react';
+import { Layout, Breadcrumb, Button } from 'antd';
+import { HomeOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useData } from '../context/DataContext';
+
+const { Header: AntHeader, Content } = Layout;
+
+const AppLayout: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const {
+    selectedCategory, selectedExperiment, selectedGroup,
+    compareLeft, compareRight, goHome,
+    selectCategory, selectExperiment,
+  } = useData();
+
+  const pathname = location.pathname;
+  const isHome = pathname === '/';
+  const isCategory = pathname.startsWith('/category/');
+  const isExperiment = pathname.startsWith('/experiment/') && !pathname.includes('/group/') && !pathname.includes('/compare');
+  const isDetail = pathname.includes('/group/');
+  const isCompare = pathname.includes('/compare');
+
+  // 可点击的面包屑上级节点（不含当前页面）
+  // 当前页面作为最后一级黑色不可点击
+  const isDeeperThanCategory = isExperiment || isDetail || isCompare;
+  const isDeeperThanExperiment = isDetail || isCompare;
+
+  const breadcrumbItems = useMemo(() => {
+    const items: { title: React.ReactNode; onClick?: () => void }[] = [
+      {
+        title: <span><HomeOutlined style={{ marginRight: 4 }} />首页</span>,
+        onClick: () => { goHome(); navigate('/'); },
+      },
+    ];
+    // 类别：只在比类别更深时才显示为可点击上级
+    if (selectedCategory && isDeeperThanCategory) {
+      items.push({
+        title: selectedCategory.name,
+        onClick: () => { selectCategory(selectedCategory.id); navigate(`/category/${selectedCategory.id}`); },
+      });
+    }
+    // 实验：只在比实验更深时才显示为可点击上级
+    if (selectedExperiment && isDeeperThanExperiment) {
+      items.push({
+        title: selectedExperiment.name,
+        onClick: () => { selectExperiment(selectedExperiment.id); navigate(`/experiment/${selectedExperiment.id}`); },
+      });
+    }
+    return items;
+  }, [selectedCategory, selectedExperiment, isDeeperThanCategory, isDeeperThanExperiment, goHome, navigate, selectCategory, selectExperiment]);
+
+  // 面包屑最后一级（当前页面，不可点击，黑色加粗）
+  const currentLabel = useMemo(() => {
+    if (isCompare && compareLeft && compareRight) return `对比: ${compareLeft.name} vs ${compareRight.name}`;
+    if (isDetail && selectedGroup) return selectedGroup.name;
+    if (isExperiment && selectedExperiment) return selectedExperiment.name;
+    if (isCategory && selectedCategory) return selectedCategory.name;
+    return null;
+  }, [isCompare, isDetail, isExperiment, isCategory, compareLeft, compareRight, selectedGroup, selectedExperiment, selectedCategory]);
+
+  // 返回按钮
+  const backBtn = useMemo(() => {
+    if (isCompare && selectedExperiment) return { label: '返回仪表盘', path: `/experiment/${selectedExperiment.id}` };
+    if (isDetail && selectedExperiment) return { label: '返回仪表盘', path: `/experiment/${selectedExperiment.id}` };
+    if (isExperiment && selectedCategory) return { label: '返回实验列表', path: `/category/${selectedCategory.id}` };
+    if (isCategory) return { label: '返回首页', path: '/' };
+    return null;
+  }, [isCompare, isDetail, isExperiment, isCategory, selectedExperiment, selectedCategory]);
+
+  const allBreadcrumbItems = [
+    ...breadcrumbItems.map((item) => ({
+      title: item.onClick ? <a onClick={item.onClick}>{item.title}</a> : item.title,
+    })),
+    ...(currentLabel ? [{ title: <span style={{ color: '#1f1f1f', fontWeight: 600 }}>{currentLabel}</span> }] : []),
+  ];
+
+  return (
+    <Layout style={{ minHeight: '100vh', background: '#f0f2f5' }}>
+      {/* 顶部导航 */}
+      <AntHeader
+        style={{
+          background: 'linear-gradient(135deg, #1677ff 0%, #0958d9 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 32px',
+          height: 52,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          zIndex: 10,
+        }}
+      >
+        <span
+          onClick={() => { goHome(); navigate('/'); }}
+          style={{ color: '#fff', fontSize: 18, fontWeight: 600, cursor: 'pointer', userSelect: 'none' }}
+        >
+          📊 实验数据平台
+        </span>
+      </AntHeader>
+
+      {/* 面包屑 + 返回按钮 */}
+      {!isHome && (
+        <div
+          style={{
+            background: '#fff',
+            borderBottom: '1px solid #f0f0f0',
+            padding: '8px 32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+          }}
+        >
+          <Breadcrumb items={allBreadcrumbItems} />
+          {backBtn && (
+            <Button
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate(backBtn.path)}
+            >
+              {backBtn.label}
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* 内容区 */}
+      <Content style={{ padding: isHome ? '32px 32px' : '24px 32px', flex: 1 }}>
+        <Outlet />
+      </Content>
+    </Layout>
+  );
+};
+
+export default AppLayout;

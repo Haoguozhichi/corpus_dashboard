@@ -1,0 +1,135 @@
+/* ====== 全局样式 ====== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', 'PingFang SC', 'Microsoft YaHei',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #f0f2f5;
+  color: #1f1f1f;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* ====== 面包屑 ====== */
+.ant-breadcrumb a {
+  color: #1677ff;
+  transition: color 0.2s;
+}
+.ant-breadcrumb a:hover {
+  color: #0958d9;
+}
+
+/* ====== 卡片 ====== */
+.ant-card {
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.ant-card-hoverable:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.10);
+  transform: translateY(-2px);
+}
+
+/* ====== 表格 ====== */
+.ant-table-wrapper {
+  border-radius: 8px;
+  overflow: hidden;
+}
+.ant-table-thead > tr > th {
+  background: #fafafa !important;
+  font-weight: 600;
+  font-size: 13px;
+  color: #555;
+  border-bottom: 2px solid #f0f0f0 !important;
+}
+.ant-table-tbody > tr:hover > td {
+  background: #e6f4ff !important;
+  cursor: pointer;
+}
+.ant-table-tbody > tr.ant-table-row-selected > td {
+  background: #e6f4ff !important;
+}
+
+/* ====== 参数差异行高亮 ====== */
+.param-diff-row {
+  background-color: #fffbe6 !important;
+}
+.param-diff-row td {
+  border-bottom: 1px solid #ffe58f !important;
+}
+
+/* ====== 统计卡片 ====== */
+.ant-statistic-title {
+  font-size: 13px;
+  color: #888;
+  font-weight: 500;
+}
+.ant-statistic-content {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* ====== 标签 ====== */
+.ant-tag {
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* ====== 按钮 ====== */
+.ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+/* ====== 模态框 ====== */
+.ant-modal-content {
+  border-radius: 10px;
+  overflow: hidden;
+}
+.ant-modal-header {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 24px;
+}
+.ant-modal-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* ====== 输入框 ====== */
+.ant-input,
+.ant-input-number {
+  border-radius: 6px;
+}
+
+/* ====== 空状态 ====== */
+.ant-empty-description {
+  color: #999;
+}
+
+/* ====== Popconfirm ====== */
+.ant-popconfirm .ant-btn-sm {
+  border-radius: 4px;
+}
+
+/* ====== 响应式 ====== */
+@media (max-width: 768px) {
+  .ant-card {
+    border-radius: 6px;
+  }
+}
