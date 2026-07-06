@@ -24,6 +24,8 @@ interface ManualEntry {
   model_response: string;
   is_correct: boolean;
   reason: string;
+  annotation: string;
+  think: string;
   trajectory: string;
   custom_scores: string;
 }
@@ -77,7 +79,7 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
   };
 
   const addRow = () => {
-    setEntries((prev) => [...prev, { key: `new-${++entryCounter}`, question: '', expected_answer: '', model_response: '', is_correct: false, reason: '', trajectory: '', custom_scores: '' }]);
+    setEntries((prev) => [...prev, { key: `new-${++entryCounter}`, question: '', expected_answer: '', model_response: '', is_correct: false, reason: '', annotation: '', think: '', trajectory: '', custom_scores: '' }]);
   };
 
   const removeRow = (key: string) => {

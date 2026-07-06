@@ -76,7 +76,7 @@ const DashboardPage: React.FC = () => {
   }, [groups]);
 
   // 只在首次加载时显示 spinner，刷新时保持已有内容
-  if (!experimentDetail && experimentLoading) return <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />;
+  if (!experimentDetail) return <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />;
   if (!experiment) return <Empty description="未找到该实验" style={{ marginTop: 80 }} />;
 
   // 最优组

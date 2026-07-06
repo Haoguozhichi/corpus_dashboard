@@ -54,6 +54,8 @@ export interface EvaluationResult {
   runtime_ms: number;
   token_count: number;
   reason?: string;                         // 正确性判断原因
+  annotation?: string;                     // 人工标注
+  think?: string;                          // 模型思考过程
   // 新增 Agent 评测字段
   trajectory?: TrajectoryStep[];           // Agent 执行轨迹
   custom_scores?: Record<string, number>;  // 多维自定义评分

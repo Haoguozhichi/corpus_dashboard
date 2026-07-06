@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input, Spin } from 'antd';
-import { SearchOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, ThunderboltOutlined, UploadOutlined } from '@ant-design/icons';
+import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input, Space, Popover } from 'antd';
+import { SearchOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, ThunderboltOutlined, UploadOutlined, EditOutlined, BulbOutlined } from '@ant-design/icons';
+import type { ColumnsType } from 'antd/es/table';
 import type { ExperimentGroup, TestCase, EvaluationResult } from '../types';
-import { fetchResults } from '../api/endpoints';
+import { fetchResults, updateResult } from '../api/endpoints';
 import ResultsUploader from './ResultsUploader';
 
 const { Title } = Typography;
@@ -20,8 +21,11 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   const [filterText, setFilterText] = useState('');
   const [allResults, setAllResults] = useState<EvaluationResult[]>([]);
   const [resultsLoading, setResultsLoading] = useState(false);
+  const [thinkModal, setThinkModal] = useState<string | null>(null);
+  const [editingAnno, setEditingAnno] = useState<string | null>(null);
+  const [annoText, setAnnoText] = useState('');
+  const [savingAnno, setSavingAnno] = useState(false);
 
-  // 独立加载全量结果（不受experiment detail的100条限制）
   const loadResults = async () => {
     setResultsLoading(true);
     try { const data = await fetchResults(group.id); setAllResults(data.results || []); }
@@ -32,43 +36,97 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
 
   const results = allResults.length > 0 ? allResults : (group.results || []);
   const filtered = filterText.trim()
-    ? results.filter((r) =>
-        (r.question || '').includes(filterText) ||
-        (r.expected_answer || '').includes(filterText) ||
-        (r.model_response || '').includes(filterText))
+    ? results.filter((r) => ['question', 'expected_answer', 'model_response', 'reason'].some((k) => (r as Record<string, unknown>)[k] as string || '').includes(filterText))
     : results;
   const correctCount = group.correctCount || results.filter((r) => r.is_correct).length;
   const totalCount = group.resultCount || results.length;
   const accuracy = totalCount > 0 ? correctCount / totalCount : 0;
 
-  const columns = [
+  const handleSaveAnnotation = async (id: string) => {
+    setSavingAnno(true);
+    try { await updateResult(id, { annotation: annoText }); loadResults(); setEditingAnno(null); }
+    finally { setSavingAnno(false); }
+  };
+
+  const startEditAnno = (record: EvaluationResult) => {
+    setEditingAnno(record.id);
+    setAnnoText(record.annotation || '');
+  };
+
+  // 为筛选收集唯一值
+  const questionFilters = [...new Set(results.map((r) => r.question || '').filter(Boolean))].slice(0, 200).map((q) => ({ text: q.length > 40 ? q.slice(0, 40) + '...' : q, value: q }));
+  const resultFilters = [
+    { text: '✅ 正确', value: 'correct' },
+    { text: '❌ 错误', value: 'incorrect' },
+  ];
+
+  const columns: ColumnsType<EvaluationResult> = [
     {
       title: '题目', dataIndex: 'question', key: 'question', width: 200, ellipsis: true,
-      render: (text: string) => <span style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{text}</span>,
+      sorter: (a, b) => (a.question || '').localeCompare(b.question || ''),
+      filters: questionFilters, onFilter: (value, record) => record.question === value,
+      filterSearch: true,
+      render: (t: string) => <span style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{t}</span>,
     },
     {
-      title: '标准答案', dataIndex: 'expected_answer', key: 'expected_answer', width: 180, ellipsis: true,
-      render: (text: string) => <span style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{text}</span>,
+      title: '标准答案', dataIndex: 'expected_answer', key: 'expected_answer', width: 160, ellipsis: true,
+      sorter: (a, b) => (a.expected_answer || '').localeCompare(b.expected_answer || ''),
+      render: (t: string) => <span style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{t}</span>,
     },
     {
-      title: '模型回答', dataIndex: 'model_response', key: 'model_response', width: 280,
-      render: (text: string) => (
-        <div style={{ whiteSpace: 'pre-wrap', maxHeight: 150, overflow: 'auto', background: '#fafafa', padding: 6, borderRadius: 4, fontSize: 12 }}>
-          {text || <span style={{ color: '#ccc' }}>无回答</span>}
+      title: '模型回答', dataIndex: 'model_response', key: 'model_response', width: 240,
+      sorter: (a, b) => (a.model_response || '').localeCompare(b.model_response || ''),
+      render: (t: string) => (
+        <div style={{ whiteSpace: 'pre-wrap', maxHeight: 120, overflow: 'auto', background: '#fafafa', padding: 6, borderRadius: 4, fontSize: 12 }}>
+          {t || <span style={{ color: '#ccc' }}>无回答</span>}
         </div>
       ),
     },
     {
       title: '结果', dataIndex: 'is_correct', key: 'is_correct', width: 70,
+      sorter: (a, b) => a.is_correct - b.is_correct,
+      filters: resultFilters,
+      onFilter: (value, record) => value === 'correct' ? record.is_correct === 1 : record.is_correct === 0,
       render: (v: number) =>
         v ? <Tag icon={<CheckCircleOutlined />} color="success">正确</Tag> : <Tag icon={<CloseCircleOutlined />} color="error">错误</Tag>,
     },
-    { title: '得分', dataIndex: 'score', key: 'score', width: 60, render: (v: number) => v?.toFixed(2) ?? '-' },
-    { title: '耗时', dataIndex: 'runtime_ms', key: 'runtime', width: 80, render: (v: number) => v ? `${v}ms` : '-' },
-    { title: 'Token', dataIndex: 'token_count', key: 'token', width: 70, render: (v: number) => v > 0 ? v.toLocaleString() : '-' },
-    { title: '原因', dataIndex: 'reason', key: 'reason', width: 120, ellipsis: true, render: (t: string) => t || '-' },
-    { title: '标签', dataIndex: 'category_tag', key: 'category_tag', width: 80 },
+    { title: '原因', dataIndex: 'reason', key: 'reason', width: 130, ellipsis: true, sorter: (a, b) => (a.reason || '').localeCompare(b.reason || ''), render: (t: string) => t || '-' },
+    { title: '得分', dataIndex: 'score', key: 'score', width: 60, sorter: (a, b) => (a.score || 0) - (b.score || 0), render: (v: number) => v?.toFixed(2) ?? '-' },
+    { title: '耗时', dataIndex: 'runtime_ms', key: 'runtime', width: 80, sorter: (a, b) => (a.runtime_ms || 0) - (b.runtime_ms || 0), render: (v: number) => v ? `${v}ms` : '-' },
+    { title: 'Token', dataIndex: 'token_count', key: 'token', width: 70, sorter: (a, b) => (a.token_count || 0) - (b.token_count || 0), render: (v: number) => v > 0 ? v.toLocaleString() : '-' },
+    { title: '标签', dataIndex: 'category_tag', key: 'category_tag', width: 80, sorter: (a, b) => (a.category_tag || '').localeCompare(b.category_tag || '') },
+    {
+      title: '标注', key: 'annotation', width: 150,
+      render: (_: unknown, record: EvaluationResult) =>
+        editingAnno === record.id ? (
+          <Space direction="vertical" size={4} style={{ width: '100%' }}>
+            <Input.TextArea size="small" rows={2} value={annoText} onChange={(e) => setAnnoText(e.target.value)} />
+            <Space size={0}>
+              <Button size="small" type="link" loading={savingAnno} onClick={() => handleSaveAnnotation(record.id)}>保存</Button>
+              <Button size="small" type="link" onClick={() => setEditingAnno(null)}>取消</Button>
+            </Space>
+          </Space>
+        ) : (
+          <div>
+            <span style={{ fontSize: 12, whiteSpace: 'pre-wrap' }}>{record.annotation || <span style={{ color: '#ccc' }}>—</span>}</span>
+            <Button type="link" size="small" icon={<EditOutlined />} onClick={() => startEditAnno(record)} style={{ marginLeft: 4 }} />
+          </div>
+        ),
+    },
+    {
+      title: 'Think', key: 'think', width: 60, align: 'center',
+      render: (_: unknown, record: EvaluationResult) => (
+        <Button
+          type="link" size="small" icon={<BulbOutlined />}
+          onClick={() => setThinkModal(record.id)}
+          disabled={!record.think}
+          title={record.think ? '查看思考过程' : '无Think数据'}
+        />
+      ),
+    },
   ];
+
+  const thinkRecord = thinkModal ? results.find((r) => r.id === thinkModal) : null;
 
   return (
     <div>
@@ -122,18 +180,28 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
       <Card title="📋 评测结果与答案对比" style={{ borderRadius: 8 }}
         extra={
           <span style={{ display: 'flex', gap: 8 }}>
-            <Input
-              size="small" placeholder="筛选..." prefix={<SearchOutlined />}
-              value={filterText} onChange={(e) => setFilterText(e.target.value)} allowClear style={{ width: 180 }}
-            />
+            <Input size="small" placeholder="搜索..." prefix={<SearchOutlined />}
+              value={filterText} onChange={(e) => setFilterText(e.target.value)} allowClear style={{ width: 180 }} />
             <Button type="primary" size="small" icon={<UploadOutlined />} onClick={() => setUploadOpen(true)}>管理评测结果</Button>
           </span>
         }
       >
         <Table columns={columns} dataSource={filtered} rowKey="id" pagination={{ pageSize: 20 }}
-          size="small" bordered scroll={{ x: 900 }}
+          size="small" bordered scroll={{ x: 1400 }}
+          loading={resultsLoading}
           rowClassName={(record) => (record.is_correct ? '' : 'param-diff-row')} />
       </Card>
+
+      {/* Think 弹窗 */}
+      <Modal title="思考过程 (Think)" open={!!thinkModal} onCancel={() => setThinkModal(null)} footer={null} width={700}>
+        {thinkRecord?.think ? (
+          <div style={{ whiteSpace: 'pre-wrap', maxHeight: 500, overflow: 'auto', background: '#fafafa', padding: 12, borderRadius: 4, fontSize: 13 }}>
+            {thinkRecord.think}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>该用例没有录入 Think 过程</div>
+        )}
+      </Modal>
 
       <Modal title={`管理评测结果 — ${group.name}`} open={uploadOpen} onCancel={() => setUploadOpen(false)}
         footer={null} width={900} destroyOnClose

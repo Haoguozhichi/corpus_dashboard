@@ -20,8 +20,8 @@ const DetailPage: React.FC = () => {
   const { experimentId, groupId } = useParams<{ experimentId: string; groupId: string }>();
   const { experimentDetail, experimentLoading, refreshExperiment } = useData();
 
-  // 只在首次加载时显示 spinner，刷新时保持已有内容
-  if (!experimentDetail && experimentLoading) return <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />;
+  // 数据未加载完时显示 spinner
+  if (!experimentDetail) return <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />;
 
   const experiment = experimentDetail;
   const group = experiment?.groups?.find((g) => g.id === groupId);

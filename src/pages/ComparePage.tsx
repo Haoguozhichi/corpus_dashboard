@@ -26,7 +26,7 @@ const ComparePage: React.FC = () => {
   }, [leftId, rightId, setCompareGroups]);
 
   // 只在首次加载时显示 spinner，刷新时保持已有内容
-  if (!experimentDetail && experimentLoading) return <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />;
+  if (!experimentDetail) return <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />;
 
   const experiment = experimentDetail;
   const leftGroup = experiment?.groups?.find((g) => g.id === leftId) ?? null;

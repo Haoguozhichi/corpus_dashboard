@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input, Spin } from 'antd';
+import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input, Space } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import {
   CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined,
-  ThunderboltOutlined, ToolOutlined, WarningOutlined, UploadOutlined, SearchOutlined,
+  ThunderboltOutlined, ToolOutlined, WarningOutlined, UploadOutlined, SearchOutlined, EditOutlined, BulbOutlined,
 } from '@ant-design/icons';
 import type { ExperimentGroup, TestCase, EvaluationResult, TrajectoryStep } from '../types';
-import { fetchResults } from '../api/endpoints';
+import { fetchResults, updateResult } from '../api/endpoints';
 import ResultsUploader from './ResultsUploader';
 import TrajectoryViewer from './TrajectoryViewer';
 import CustomScoresChart from './CustomScoresChart';
@@ -37,6 +38,10 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
   const [filterText, setFilterText] = useState('');
   const [allResults, setAllResults] = useState<EvaluationResult[]>([]);
   const [resultsLoading, setResultsLoading] = useState(false);
+  const [thinkModal, setThinkModal] = useState<string | null>(null);
+  const [editingAnno, setEditingAnno] = useState<string | null>(null);
+  const [annoText, setAnnoText] = useState('');
+  const [savingAnno, setSavingAnno] = useState(false);
 
   // 独立加载全量结果
   const loadResults = async () => {
@@ -76,56 +81,68 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
   const hasTrajectory = results.some((r) => r.trajectory && r.trajectory.length > 0);
   const hasCustomScores = results.some((r) => r.custom_scores && Object.keys(r.custom_scores).length > 0);
 
-  const columns = [
+  const handleSaveAnnotation = async (id: string) => {
+    setSavingAnno(true);
+    try { await updateResult(id, { annotation: annoText }); loadResults(); setEditingAnno(null); }
+    finally { setSavingAnno(false); }
+  };
+  const startEditAnno = (record: EvaluationResult) => { setEditingAnno(record.id); setAnnoText(record.annotation || ''); };
+
+  const questionFilters = [...new Set(results.map((r) => r.question || '').filter(Boolean))].slice(0, 200).map((q) => ({ text: q.length > 40 ? q.slice(0, 40) + '...' : q, value: q }));
+  const resultFilters = [{ text: '✅ 正确', value: 'correct' }, { text: '❌ 错误', value: 'incorrect' }];
+
+  const columns: ColumnsType<EvaluationResult> = [
     {
-      title: '题目', dataIndex: 'question', key: 'question', width: 250, ellipsis: true,
+      title: '题目', dataIndex: 'question', key: 'question', width: 220, ellipsis: true,
+      sorter: (a, b) => (a.question || '').localeCompare(b.question || ''),
+      filters: questionFilters, onFilter: (v, r) => r.question === v, filterSearch: true,
       render: (t: string) => <span style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{t}</span>,
     },
     {
-      title: '结果', key: 'result', width: 70,
+      title: '结果', key: 'result', width: 70, sorter: (a, b) => a.is_correct - b.is_correct,
+      filters: resultFilters, onFilter: (v, r) => v === 'correct' ? r.is_correct === 1 : r.is_correct === 0,
       render: (_: unknown, r: EvaluationResult) =>
         r.is_correct ? <Tag icon={<CheckCircleOutlined />} color="success">正确</Tag> : <Tag icon={<CloseCircleOutlined />} color="error">错误</Tag>,
     },
-    {
-      title: 'Token', key: 'token', width: 80,
-      render: (_: unknown, r: EvaluationResult) => (r.token_count || 0).toLocaleString(),
-    },
-    {
-      title: '耗时', key: 'runtime', width: 80,
-      render: (_: unknown, r: EvaluationResult) => `${r.runtime_ms || 0}ms`,
-    },
-    {
-      title: '原因', key: 'reason', width: 120, ellipsis: true,
-      render: (_: unknown, r: EvaluationResult) => r.reason || '-',
-    },
+    { title: '原因', key: 'reason', width: 120, ellipsis: true, sorter: (a, b) => (a.reason || '').localeCompare(b.reason || ''), render: (_: unknown, r: EvaluationResult) => r.reason || '-' },
+    { title: 'Token', key: 'token', width: 70, sorter: (a, b) => (a.token_count || 0) - (b.token_count || 0), render: (_: unknown, r: EvaluationResult) => (r.token_count || 0).toLocaleString() },
+    { title: '耗时', key: 'runtime', width: 70, sorter: (a, b) => (a.runtime_ms || 0) - (b.runtime_ms || 0), render: (_: unknown, r: EvaluationResult) => `${r.runtime_ms || 0}ms` },
     ...(hasTrajectory ? [
+      { title: '步骤', key: 'steps', width: 55, sorter: (a, b) => computeTrajectoryStats(a.trajectory).totalSteps - computeTrajectoryStats(b.trajectory).totalSteps, render: (_: unknown, r: EvaluationResult) => computeTrajectoryStats(r.trajectory).totalSteps || '-' },
       {
-        title: '步骤', key: 'steps', width: 60,
-        render: (_: unknown, r: EvaluationResult) => computeTrajectoryStats(r.trajectory).totalSteps || '-',
-      },
-      {
-        title: '工具调用', key: 'tools', width: 80,
+        title: '工具', key: 'tools', width: 65, sorter: (a, b) => computeTrajectoryStats(a.trajectory).toolCalls - computeTrajectoryStats(b.trajectory).toolCalls,
         render: (_: unknown, r: EvaluationResult) => {
           const { toolCalls, errorTools } = computeTrajectoryStats(r.trajectory);
           if (!toolCalls) return '-';
-          return (
-            <span>
-              {toolCalls}
-              {errorTools > 0 && <WarningOutlined style={{ color: '#ff4d4f', marginLeft: 4 }} title={`${errorTools} 次错误`} />}
-            </span>
-          );
+          return <span>{toolCalls}{errorTools > 0 && <WarningOutlined style={{ color: '#ff4d4f', marginLeft: 4 }} />}</span>;
         },
       },
-      {
-        title: '', key: 'expand', width: 60,
-        render: (_: unknown, r: EvaluationResult) =>
-          r.trajectory && r.trajectory.length > 0 ? (
-            <Button type="link" size="small" onClick={() => toggleRow(r.id)}>
-              {expandedRows.includes(r.id) ? '收起' : '展开'}
-            </Button>
-          ) : null,
-      },
+      { title: '', key: 'expand', width: 50, render: (_: unknown, r: EvaluationResult) => r.trajectory?.length ? <Button type="link" size="small" onClick={() => toggleRow(r.id)}>{expandedRows.includes(r.id) ? '收起' : '展开'}</Button> : null },
     ] : []),
+    {
+      title: '标注', key: 'annotation', width: 130,
+      render: (_: unknown, record: EvaluationResult) =>
+        editingAnno === record.id ? (
+          <Space direction="vertical" size={4} style={{ width: '100%' }}>
+            <Input.TextArea size="small" rows={2} value={annoText} onChange={(e) => setAnnoText(e.target.value)} />
+            <Space size={0}>
+              <Button size="small" type="link" loading={savingAnno} onClick={() => handleSaveAnnotation(record.id)}>保存</Button>
+              <Button size="small" type="link" onClick={() => setEditingAnno(null)}>取消</Button>
+            </Space>
+          </Space>
+        ) : (
+          <div>
+            <span style={{ fontSize: 12, whiteSpace: 'pre-wrap' }}>{record.annotation || <span style={{ color: '#ccc' }}>—</span>}</span>
+            <Button type="link" size="small" icon={<EditOutlined />} onClick={() => startEditAnno(record)} style={{ marginLeft: 4 }} />
+          </div>
+        ),
+    },
+    {
+      title: 'Think', key: 'think', width: 50, align: 'center',
+      render: (_: unknown, record: EvaluationResult) => (
+        <Button type="link" size="small" icon={<BulbOutlined />} onClick={() => setThinkModal(record.id)} disabled={!record.think} title={record.think ? '查看思考过程' : '无Think数据'} />
+      ),
+    },
   ];
 
   const toggleRow = (id: string) => {
@@ -219,6 +236,13 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
           } : undefined}
         />
       </Card>
+
+      {(() => { const tr = thinkModal ? results.find((r) => r.id === thinkModal) : null; return (
+        <Modal title="思考过程 (Think)" open={!!thinkModal} onCancel={() => setThinkModal(null)} footer={null} width={700}>
+          {tr?.think ? <div style={{ whiteSpace: 'pre-wrap', maxHeight: 500, overflow: 'auto', background: '#fafafa', padding: 12, borderRadius: 4, fontSize: 13 }}>{tr.think}</div>
+          : <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>该用例没有录入 Think 过程</div>}
+        </Modal>
+      ); })()}
 
       <Modal title={`管理评测结果 — ${group.name}`} open={uploadOpen} onCancel={() => setUploadOpen(false)}
         footer={null} width={900} destroyOnClose
