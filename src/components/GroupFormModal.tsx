@@ -61,17 +61,17 @@ const GroupFormModal: React.FC<Props> = ({ open, editing, onOk, onCancel }) => {
         <Form.Item name="model" label="模型">
           <Input placeholder="例如：gpt-4o-2024-05-13" />
         </Form.Item>
-        <Form.Item label="参数">
+        <Form.Item label="变量">
           {params.map((p, i) => (
             <Space key={i} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
               <Input
-                placeholder="参数名"
+                placeholder="变量名"
                 value={p.key}
                 onChange={(e) => updateParam(i, 'key', e.target.value)}
                 style={{ width: 160 }}
               />
               <Input
-                placeholder="参数值"
+                placeholder="变量值"
                 value={p.value}
                 onChange={(e) => updateParam(i, 'value', e.target.value)}
                 style={{ width: 200 }}
@@ -80,7 +80,7 @@ const GroupFormModal: React.FC<Props> = ({ open, editing, onOk, onCancel }) => {
             </Space>
           ))}
           <Button type="dashed" onClick={addParam} icon={<PlusOutlined />} block>
-            添加参数
+            添加变量
           </Button>
         </Form.Item>
       </Form>

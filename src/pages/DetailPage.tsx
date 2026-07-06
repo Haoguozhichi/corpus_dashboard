@@ -81,7 +81,7 @@ const DetailPage: React.FC = () => {
   }));
   const hasCurves = curveData.length > 0;
 
-  // 参数
+  // 变量
   const paramData = Object.entries(group.parameters || {}).map(([key, value]) => ({ key, value: String(value) }));
 
   return (

@@ -51,7 +51,7 @@ const ComparePage: React.FC = () => {
       { metric: '召回率', [L.name]: +(lm.recall * 100).toFixed(2), [R.name]: +(rm.recall * 100).toFixed(2) },
     ];
 
-    // 参数差异
+    // 变量差异
     const allKeys = [...new Set([...Object.keys(L.parameters || {}), ...Object.keys(R.parameters || {})])];
     const paramDiffData = allKeys.map((k) => ({
       key: k, parameter: k,
@@ -100,9 +100,9 @@ const ComparePage: React.FC = () => {
           </ResponsiveContainer>
         </Card>
 
-        <Card title="🔧 参数差异" style={{ borderRadius: 8, marginBottom: 24 }}>
+        <Card title="🔧 变量差异" style={{ borderRadius: 8, marginBottom: 24 }}>
           <Table columns={[
-            { title: '参数', dataIndex: 'parameter', width: 180 },
+            { title: '变量', dataIndex: 'parameter', width: 180 },
             { title: L.name, dataIndex: L.name, render: (v: string, r: { same: boolean }) => <span style={{ color: r.same ? undefined : '#1677ff', fontWeight: r.same ? undefined : 600 }}>{v}</span> },
             { title: R.name, dataIndex: R.name, render: (v: string, r: { same: boolean }) => <span style={{ color: r.same ? undefined : '#ff4d4f', fontWeight: r.same ? undefined : 600 }}>{v}</span> },
           ]} dataSource={paramDiffData} pagination={false} size="middle" bordered
@@ -224,9 +224,9 @@ const ComparePage: React.FC = () => {
         return null;
       })()}
 
-      <Card title="🔧 参数差异" style={{ borderRadius: 8, marginBottom: 24 }}>
+      <Card title="🔧 变量差异" style={{ borderRadius: 8, marginBottom: 24 }}>
         <Table columns={[
-          { title: '参数', dataIndex: 'parameter', width: 180 },
+          { title: '变量', dataIndex: 'parameter', width: 180 },
           { title: L.name, dataIndex: L.name, render: (v: string, r: { same: boolean }) => <span style={{ color: r.same ? undefined : '#1677ff', fontWeight: r.same ? undefined : 600 }}>{v}</span> },
           { title: R.name, dataIndex: R.name, render: (v: string, r: { same: boolean }) => <span style={{ color: r.same ? undefined : '#ff4d4f', fontWeight: r.same ? undefined : 600 }}>{v}</span> },
         ]} dataSource={(() => {

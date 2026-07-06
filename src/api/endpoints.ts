@@ -18,6 +18,8 @@ export const createExperiment = (data: { categoryId: string; name: string; descr
 export const updateExperiment = (id: string, data: { name?: string; description?: string; type?: string; date?: string }) =>
   put<Experiment>(`/experiments/${id}`, data);
 export const deleteExperiment = (id: string) => del<{ success: boolean }>(`/experiments/${id}`);
+export const importExperimentCsv = (experimentId: string, file: File) =>
+  uploadFile<{ groupsCreated: number; resultsCreated: number; testCasesCreated: number }>(`/experiments/${experimentId}/import`, file);
 
 // ====== 实验组 ======
 export const fetchGroups = (experimentId: string) => get<ExperimentGroup[]>(`/experiments/${experimentId}/groups`);

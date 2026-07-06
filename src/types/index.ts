@@ -3,7 +3,7 @@
 /** 实验类型 */
 export type ExperimentType = 'training' | 'evaluation' | 'agent_evaluation' | 'other';
 
-/** 实验参数（键值对） */
+/** 实验变量（键值对） */
 export interface ExperimentParameters {
   [key: string]: number | string;
 }

@@ -65,7 +65,7 @@ body {
   background: #e6f4ff !important;
 }
 
-/* ====== 参数差异行高亮 ====== */
+/* ====== 变量差异行高亮 ====== */
 .param-diff-row {
   background-color: #fffbe6 !important;
 }

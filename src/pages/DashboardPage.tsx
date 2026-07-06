@@ -15,6 +15,7 @@ import GroupFormModal from '../components/GroupFormModal';
 import TrainingMetricsManager from '../components/TrainingMetricsManager';
 import TestCaseTable from '../components/TestCaseTable';
 import CsvUploader from '../components/CsvUploader';
+import BulkImport from '../components/BulkImport';
 import type { ExperimentGroup } from '../types';
 
 const { Title, Paragraph } = Typography;
@@ -33,6 +34,7 @@ const DashboardPage: React.FC = () => {
   const [editingGroup, setEditingGroup] = useState<ExperimentGroup | null>(null);
   const [metricsModalOpen, setMetricsModalOpen] = useState(false);
   const [testCasesTab, setTestCasesTab] = useState(false);
+  const [importTab, setImportTab] = useState(false);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -43,7 +45,8 @@ const DashboardPage: React.FC = () => {
 
   const groups = experiment?.groups || [];
   const isTraining = experiment?.type === 'training';
-  const isEvaluation = experiment?.type === 'evaluation' || experiment?.type === 'agent_evaluation';
+  const isAgent = experiment?.type === 'agent_evaluation';
+  const isEvaluation = experiment?.type === 'evaluation' || isAgent;
 
   // 收集所有实验组的自定义指标名（必须在条件返回之前）
   const customMetricNames = React.useMemo(() => {
@@ -65,7 +68,7 @@ const DashboardPage: React.FC = () => {
     );
   }, [tableData, search]);
 
-  // 收集参数名
+  // 收集变量名
   const paramKeys = React.useMemo(() => {
     const keys = new Set<string>();
     groups.forEach((g) => Object.keys(g.parameters || {}).forEach((k) => keys.add(k)));
@@ -115,7 +118,7 @@ const DashboardPage: React.FC = () => {
   const commonColumns: ColumnsType<GroupRow> = [
     { title: '实验组', dataIndex: 'name', key: 'name', fixed: 'left', width: 160, sorter: (a, b) => a.name.localeCompare(b.name), render: (n: string) => <strong>{n}</strong> },
     { title: '模型', dataIndex: 'model', key: 'model', width: 180, ellipsis: true, sorter: (a, b) => a.model.localeCompare(b.model) },
-    // 参数列——每个参数名作为独立列
+    // 变量列——每个变量名作为独立列
     ...paramKeys.map((key) => ({
       title: key,
       key: `param_${key}`,
@@ -251,6 +254,7 @@ const DashboardPage: React.FC = () => {
         <Space wrap>
           {isTraining && <Button icon={<SettingOutlined />} onClick={handleOpenMetrics}>管理指标</Button>}
           {isEvaluation && <Button onClick={() => setTestCasesTab(true)}>管理测试用例</Button>}
+          {(isEvaluation || isAgent) && <Button onClick={() => setImportTab(true)}>一键导入</Button>}
           <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateGroup}>创建实验组</Button>
         </Space>
       </div>
@@ -322,6 +326,10 @@ const DashboardPage: React.FC = () => {
 
       <Modal title="管理训练指标" open={metricsModalOpen} onCancel={() => setMetricsModalOpen(false)} footer={null} width={1000} destroyOnClose>
         <TrainingMetricsManager groups={groups} onRefresh={refreshExperiment} />
+      </Modal>
+
+      <Modal title="一键导入实验数据" open={importTab} onCancel={() => setImportTab(false)} footer={null} width={800}>
+        <BulkImport experimentId={experiment.id!} experimentType={experiment.type} onSuccess={refreshExperiment} />
       </Modal>
 
       <Modal title="管理测试用例" open={testCasesTab} onCancel={() => setTestCasesTab(false)} footer={null} width={900}>
