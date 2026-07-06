@@ -27,44 +27,29 @@ router.post('/experiments/:expId/test-cases', (req, res) => {
 router.post('/experiments/:expId/test-cases/upload', upload.single('file'), (req, res) => {
   const exp = findExp(req.params.expId);
   if (!exp) return res.status(404).json({ error: '实验不存在' });
-  if (!req.file) return res.status(400).json({ error: '请上传 CSV 文件' });
+  if (!req.file) return res.status(400).json({ error: '请上传 JSON 文件' });
 
-  const csv = req.file.buffer.toString('utf-8');
-  const lines = csv.trim().split('\n');
-  if (lines.length < 2) return res.status(400).json({ error: 'CSV 至少需要表头+1行数据' });
-
-  const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
-  const qIdx = headers.indexOf('question');
-  const aIdx = headers.indexOf('expected_answer');
-  const tagIdx = headers.indexOf('category_tag');
-  if (qIdx < 0 || aIdx < 0) return res.status(400).json({ error: 'CSV 需包含 question 和 expected_answer 列' });
+  let items;
+  try { items = JSON.parse(req.file.buffer.toString('utf-8')); } catch {
+    return res.status(400).json({ error: 'JSON 格式错误' });
+  }
+  if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ error: 'JSON 应为数组，至少包含一个元素' });
 
   exp.test_cases = exp.test_cases || [];
   let imported = 0;
-  for (let i = 1; i < lines.length; i++) {
-    const cols = parseCSVLine(lines[i]);
-    if (cols.length <= Math.max(qIdx, aIdx)) continue;
+  for (const item of items) {
+    if (!item.question) continue;
     exp.test_cases.push({
       id: uuidv4(), experiment_id: exp.id,
-      question: cols[qIdx] || '', expected_answer: cols[aIdx] || '',
-      category_tag: tagIdx >= 0 ? (cols[tagIdx] || '') : '',
+      question: item.question,
+      expected_answer: item.expected_answer || '',
+      category_tag: item.category_tag || '',
     });
     imported++;
   }
   save();
   res.json({ imported });
 });
-
-function parseCSVLine(line) {
-  const result = []; let current = ''; let inQuotes = false;
-  for (const ch of line) {
-    if (ch === '"') { inQuotes = !inQuotes; continue; }
-    if (ch === ',' && !inQuotes) { result.push(current.trim()); current = ''; continue; }
-    current += ch;
-  }
-  result.push(current.trim());
-  return result;
-}
 
 router.put('/test-cases/:id', (req, res) => {
   for (const c of data.categories) {

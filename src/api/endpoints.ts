@@ -38,7 +38,7 @@ export const saveMetrics = (groupId: string, data: Partial<TrainingMetrics>) =>
 export const fetchTestCases = (experimentId: string) => get<TestCase[]>(`/experiments/${experimentId}/test-cases`);
 export const createTestCase = (experimentId: string, data: { question: string; expected_answer?: string; category_tag?: string }) =>
   post<TestCase>(`/experiments/${experimentId}/test-cases`, data);
-export const uploadTestCasesCsv = (experimentId: string, file: File) =>
+export const uploadTestCasesJson = (experimentId: string, file: File) =>
   uploadFile<{ imported: number }>(`/experiments/${experimentId}/test-cases/upload`, file);
 export const updateTestCase = (id: string, data: { question?: string; expected_answer?: string; category_tag?: string }) =>
   put<TestCase>(`/test-cases/${id}`, data);
@@ -48,7 +48,7 @@ export const deleteTestCase = (id: string) => del<{ success: boolean }>(`/test-c
 export const fetchResults = (groupId: string) => get<EvaluationSummary>(`/groups/${groupId}/results`);
 export const createResult = (groupId: string, data: { test_case_id?: string; question?: string; expected_answer?: string; model_response?: string; is_correct?: boolean; score?: number; runtime_ms?: number; token_count?: number; trajectory?: unknown; custom_scores?: Record<string, number> }) =>
   post<EvaluationResult>(`/groups/${groupId}/results`, data);
-export const uploadResultsCsv = (groupId: string, file: File) =>
+export const uploadResultsJson = (groupId: string, file: File) =>
   uploadFile<{ imported: number }>(`/groups/${groupId}/results/upload`, file);
 export const updateResult = (id: string, data: { model_response?: string; is_correct?: boolean; score?: number; runtime_ms?: number; token_count?: number }) =>
   put<EvaluationResult>(`/results/${id}`, data);

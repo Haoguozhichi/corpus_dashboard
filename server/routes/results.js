@@ -80,89 +80,49 @@ router.post('/groups/:groupId/results', (req, res) => {
 router.post('/groups/:groupId/results/upload', upload.single('file'), (req, res) => {
   const group = findGroup(req.params.groupId);
   if (!group) return res.status(404).json({ error: '实验组不存在' });
-  if (!req.file) return res.status(400).json({ error: '请上传 CSV 文件' });
+  if (!req.file) return res.status(400).json({ error: '请上传 JSON 文件' });
 
   let exp = null;
   for (const c of data.categories) for (const e of c.experiments) {
     if ((e.groups || []).some((g) => g.id === group.id)) { exp = e; break; }
   }
 
-  const csv = req.file.buffer.toString('utf-8');
-  const lines = csv.trim().split('\n');
-  if (lines.length < 2) return res.status(400).json({ error: 'CSV 至少需要表头+1行数据' });
-
-  const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
-  const qIdx = headers.indexOf('question');
-  const aIdx = headers.indexOf('expected_answer');
-  const rIdx = headers.indexOf('model_response');
-  const cIdx = headers.indexOf('is_correct');
-  const sIdx = headers.indexOf('score');
-  const rtIdx = headers.indexOf('runtime_ms');
-  const tkIdx = headers.indexOf('token_count');
-  const tjIdx = headers.indexOf('trajectory');
-  const csIdx = headers.indexOf('custom_scores');
-
-  if (rIdx < 0) return res.status(400).json({ error: 'CSV 需包含 model_response 列' });
+  let items;
+  try { items = JSON.parse(req.file.buffer.toString('utf-8')); } catch {
+    return res.status(400).json({ error: 'JSON 格式错误' });
+  }
+  if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ error: 'JSON 应为数组' });
 
   const testCases = exp?.test_cases || [];
   group.evaluation_results = group.evaluation_results || [];
   let imported = 0;
 
-  for (let i = 1; i < lines.length; i++) {
-    const cols = parseCSVLine(lines[i]);
-    if (cols.length <= Math.max(rIdx, 0)) continue;
-
-    let tcId = null;
-    const q = qIdx >= 0 ? cols[qIdx] : '';
-    const a = aIdx >= 0 ? cols[aIdx] : '';
-
-    // 尝试匹配已有测试用例
-    if (qIdx >= 0) {
-      const match = testCases.find((tc) => tc.question === q && tc.expected_answer === a);
-      if (match) tcId = match.id;
-    }
-    // 按行号匹配（兼容旧格式）
-    if (!tcId && i - 1 < testCases.length) tcId = testCases[i - 1].id;
-    // 自动创建不存在的测试用例
+  for (const r of items) {
+    const q = r.question || '';
+    const a = r.expected_answer || '';
+    let tcId = (testCases).find((tc) => tc.question === q && tc.expected_answer === a)?.id;
     if (!tcId && q) {
-      const newTc = { id: uuidv4(), experiment_id: exp.id, question: q, expected_answer: a };
-      exp.test_cases.push(newTc);
-      testCases.push(newTc);
-      tcId = newTc.id;
+      tcId = uuidv4();
+      exp.test_cases.push({ id: tcId, experiment_id: exp.id, question: q, expected_answer: a });
+      testCases.push(exp.test_cases[exp.test_cases.length - 1]);
     }
     if (!tcId) continue;
 
-    const resultEntry = {
+    group.evaluation_results.push({
       id: uuidv4(), group_id: group.id, test_case_id: tcId,
-      model_response: cols[rIdx] || '',
-      is_correct: cIdx >= 0 ? (cols[cIdx] === '1' || cols[cIdx] === 'true' ? 1 : 0) : 0,
-      score: sIdx >= 0 ? (parseFloat(cols[sIdx]) || 0) : (cIdx >= 0 && cols[cIdx] === '1' ? 1.0 : 0.0),
-      runtime_ms: rtIdx >= 0 ? (parseInt(cols[rtIdx]) || 0) : 0,
-      token_count: tkIdx >= 0 ? (parseInt(cols[tkIdx]) || 0) : 0,
-    };
-    if (tjIdx >= 0 && cols[tjIdx]) {
-      try { resultEntry.trajectory = JSON.parse(cols[tjIdx]); } catch { resultEntry.trajectory = cols[tjIdx]; }
-    }
-    if (csIdx >= 0 && cols[csIdx]) {
-      try { resultEntry.custom_scores = JSON.parse(cols[csIdx]); } catch { /* skip */ }
-    }
-    group.evaluation_results.push(resultEntry);
+      model_response: r.model_response || '',
+      is_correct: r.is_correct ? 1 : 0,
+      score: r.score ?? (r.is_correct ? 1 : 0),
+      runtime_ms: r.runtime_ms || 0,
+      token_count: r.token_count || 0,
+      trajectory: r.trajectory || undefined,
+      custom_scores: r.custom_scores || undefined,
+    });
     imported++;
   }
   save();
   res.json({ imported });
 });
-
-function parseCSVLine(line) {
-  const result = []; let current = ''; let inQuotes = false;
-  for (const ch of line) {
-    if (ch === '"') { inQuotes = !inQuotes; continue; }
-    if (ch === ',' && !inQuotes) { result.push(current.trim()); current = ''; continue; }
-    current += ch;
-  }
-  result.push(current.trim());
-  return result;
-}
 
 router.put('/results/:id', (req, res) => {
   for (const c of data.categories) for (const e of c.experiments) for (const g of (e.groups || [])) {

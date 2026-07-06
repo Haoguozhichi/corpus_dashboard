@@ -3,7 +3,7 @@ import { Button, message, Table, Space, Input, Switch, Popconfirm, Tag, Tabs } f
 import { InboxOutlined, PlusOutlined, DeleteOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import Upload from 'antd/es/upload';
-import { uploadResultsCsv, createResult, deleteResult, updateResult } from '../api/endpoints';
+import { uploadResultsJson, createResult, deleteResult, updateResult } from '../api/endpoints';
 import type { TestCase, EvaluationResult } from '../types';
 
 const { Dragger } = Upload;
@@ -85,7 +85,7 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
   const handleUpload: UploadProps['customRequest'] = async ({ file }) => {
     setUploading(true);
     try {
-      const result = await uploadResultsCsv(groupId, file as File);
+      const result = await uploadResultsJson(groupId, file as File);
       message.success(`成功导入 ${result.imported} 条评测结果`);
       onRefresh();
     } catch (err: unknown) {
@@ -311,25 +311,26 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
           ),
         },
         {
-          key: 'csv',
-          label: 'CSV 批量上传',
+          key: 'json',
+          label: 'JSON 批量上传',
           children: (
             <div>
-              <Dragger accept=".csv" showUploadList={false} disabled={uploading} customRequest={handleUpload} style={{ marginBottom: 16 }}>
+              <Dragger accept=".json" showUploadList={false} disabled={uploading} customRequest={handleUpload} style={{ marginBottom: 16 }}>
                 <p className="ant-upload-drag-icon"><InboxOutlined /></p>
-                <p className="ant-upload-text">拖拽或点击上传 CSV</p>
-                <p className="ant-upload-hint">
-                  CSV 需包含: question, expected_answer, model_response, is_correct
-                </p>
+                <p className="ant-upload-text">拖拽或点击上传 JSON</p>
+                <p className="ant-upload-hint">JSON 数组，每项为一个评测结果</p>
               </Dragger>
-              <div style={{ fontSize: 12, color: '#888', lineHeight: 1.8 }}>
-                <div><strong>CSV 格式说明：</strong></div>
-                <div>• <code>question</code> — 题目（用于匹配测试用例）</div>
+              <div style={{ fontSize: 12, color: '#888', lineHeight: 1.8, marginBottom: 8 }}>
+                <div><strong>JSON 格式说明：</strong></div>
+                <div>• <code>question</code> — 题目（匹配测试用例）</div>
                 <div>• <code>expected_answer</code> — 标准答案</div>
                 <div>• <code>model_response</code> — 模型回答</div>
-                <div>• <code>is_correct</code> — 正确填 1，错误填 0</div>
+                <div>• <code>is_correct</code> — true 或 false</div>
                 <div style={{ marginTop: 4 }}>未匹配到测试用例的行将自动创建。</div>
               </div>
+              <pre style={{ fontSize: 11, background: '#f5f5f5', padding: 8, borderRadius: 4, margin: 0 }}>{`[
+  { "question": "...", "expected_answer": "...", "model_response": "...", "is_correct": true, "score": 1.0, "runtime_ms": 190, "token_count": 25 }
+]`}</pre>
             </div>
           ),
         },

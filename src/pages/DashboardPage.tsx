@@ -254,7 +254,7 @@ const DashboardPage: React.FC = () => {
         <Space wrap>
           {isTraining && <Button icon={<SettingOutlined />} onClick={handleOpenMetrics}>管理指标</Button>}
           {isEvaluation && <Button onClick={() => setTestCasesTab(true)}>管理测试用例</Button>}
-          {(isEvaluation || isAgent) && <Button onClick={() => setImportTab(true)}>一键导入</Button>}
+          <Button onClick={() => setImportTab(true)}>一键导入</Button>
           <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateGroup}>创建实验组</Button>
         </Space>
       </div>
@@ -339,7 +339,7 @@ const DashboardPage: React.FC = () => {
             children: <TestCaseTable experimentId={experiment.id!} testCases={experiment.testCases || []} onRefresh={refreshExperiment} />,
           },
           {
-            key: 'csv', label: 'CSV 批量上传',
+            key: 'json', label: 'JSON 批量上传',
             children: <CsvUploader experimentId={experiment.id!} onSuccess={refreshExperiment} />,
           },
         ]} />

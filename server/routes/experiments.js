@@ -82,66 +82,70 @@ router.delete('/:id', (req, res) => {
   res.status(404).json({ error: '实验不存在' });
 });
 
-// POST 一键导入：JSON 格式包含实验组信息和评测结果
+// POST 一键导入：JSON 格式包含实验组信息和数据
 router.post('/:expId/import', upload.single('file'), (req, res) => {
   const exp = findExp(req.params.expId);
   if (!exp) return res.status(404).json({ error: '实验不存在' });
   if (!req.file) return res.status(400).json({ error: '请上传 JSON 文件' });
 
   let groupsData;
-  try {
-    groupsData = JSON.parse(req.file.buffer.toString('utf-8'));
-  } catch {
-    return res.status(400).json({ error: 'JSON 格式错误，请检查文件内容' });
+  try { groupsData = JSON.parse(req.file.buffer.toString('utf-8')); } catch {
+    return res.status(400).json({ error: 'JSON 格式错误' });
   }
-
   if (!Array.isArray(groupsData) || groupsData.length === 0) {
-    return res.status(400).json({ error: 'JSON 应为实验组数组，至少包含一个实验组' });
+    return res.status(400).json({ error: 'JSON 应为实验组数组' });
   }
 
   exp.groups = exp.groups || [];
   exp.test_cases = exp.test_cases || [];
-  let groupsCreated = 0;
-  let resultsCreated = 0;
+  let groupsCreated = 0, resultsCreated = 0;
 
-  for (const gData of groupsData) {
-    if (!gData.group_name) continue;
-
-    // 创建实验组
-    const gid = uuidv4();
-    const params = gData.variables || {};
-    exp.groups.push({
-      id: gid, experiment_id: exp.id, name: gData.group_name,
-      model: gData.model || '', parameters: params, created_at: new Date().toISOString(),
-    });
-
-    // 创建评测结果
-    const evalResults = [];
-    const results = gData.results || [];
-    for (const r of results) {
-      const q = r.question || '';
-      const a = r.expected_answer || '';
-      let tcId = (exp.test_cases || []).find((tc) => tc.question === q && tc.expected_answer === a)?.id;
-      if (!tcId && q) {
-        tcId = uuidv4();
-        exp.test_cases.push({ id: tcId, experiment_id: exp.id, question: q, expected_answer: a });
-      }
-      if (!tcId) continue;
-
-      evalResults.push({
-        id: uuidv4(), group_id: gid, test_case_id: tcId,
-        model_response: r.model_response || '',
-        is_correct: r.is_correct ? 1 : 0,
-        score: r.score ?? (r.is_correct ? 1 : 0),
-        runtime_ms: r.runtime_ms || 0,
-        token_count: r.token_count || 0,
-        trajectory: r.trajectory || undefined,
-        custom_scores: r.custom_scores || undefined,
+  // 训练类型
+  if (exp.type === 'training') {
+    for (const gData of groupsData) {
+      if (!gData.group_name) continue;
+      const gid = uuidv4();
+      const m = gData.metrics || {};
+      exp.groups.push({
+        id: gid, experiment_id: exp.id, name: gData.group_name,
+        model: gData.model || '', parameters: gData.variables || {}, created_at: new Date().toISOString(),
+        training_metrics: {
+          id: uuidv4(),
+          accuracy: m.accuracy ?? 0, precision: m.precision ?? 0,
+          recall: m.recall ?? 0, f1_score: m.f1_score ?? 0,
+          token_count: m.token_count ?? 0, runtime: m.runtime ?? 0,
+          loss_curve: m.loss_curve || [], accuracy_curve: m.accuracy_curve || [],
+          custom_metrics: m.custom_metrics || {},
+        },
       });
+      groupsCreated++;
     }
-    exp.groups[exp.groups.length - 1].evaluation_results = evalResults;
-    groupsCreated++;
-    resultsCreated += evalResults.length;
+  } else {
+    // 评测 / Agent 评测类型
+    for (const gData of groupsData) {
+      if (!gData.group_name) continue;
+      const gid = uuidv4();
+      exp.groups.push({
+        id: gid, experiment_id: exp.id, name: gData.group_name,
+        model: gData.model || '', parameters: gData.variables || {}, created_at: new Date().toISOString(),
+      });
+      const evalResults = [];
+      for (const r of (gData.results || [])) {
+        const q = r.question || '', a = r.expected_answer || '';
+        let tcId = (exp.test_cases || []).find((tc) => tc.question === q && tc.expected_answer === a)?.id;
+        if (!tcId && q) { tcId = uuidv4(); exp.test_cases.push({ id: tcId, experiment_id: exp.id, question: q, expected_answer: a }); }
+        if (!tcId) continue;
+        evalResults.push({
+          id: uuidv4(), group_id: gid, test_case_id: tcId,
+          model_response: r.model_response || '', is_correct: r.is_correct ? 1 : 0,
+          score: r.score ?? (r.is_correct ? 1 : 0), runtime_ms: r.runtime_ms || 0, token_count: r.token_count || 0,
+          trajectory: r.trajectory || undefined, custom_scores: r.custom_scores || undefined,
+        });
+      }
+      exp.groups[exp.groups.length - 1].evaluation_results = evalResults;
+      groupsCreated++;
+      resultsCreated += evalResults.length;
+    }
   }
 
   save();
