@@ -114,12 +114,12 @@ const DetailPage: React.FC = () => {
         <Col xs={12} sm={8} md={6}>
           <Card style={{ height: '100%' }}><Statistic title="运行时间" value={formatRuntime(metrics.runtime)} /></Card>
         </Col>
+        {paramData.map(({ key, value }) => (
+          <Col xs={12} sm={8} md={6} key={key}>
+            <Card style={{ height: '100%' }}><Statistic title={key} value={value} /></Card>
+          </Col>
+        ))}
       </Row>
-
-      <Card title={<span><SettingOutlined /> 实验参数</span>} style={{ borderRadius: 8, marginBottom: 24 }}>
-        <Table columns={[{ title: '参数名', dataIndex: 'key', width: 200 }, { title: '参数值', dataIndex: 'value' }]}
-          dataSource={paramData} pagination={false} size="middle" bordered />
-      </Card>
 
       {/* 自定义指标 */}
       {metrics.custom_metrics && Object.keys(metrics.custom_metrics).length > 0 && (

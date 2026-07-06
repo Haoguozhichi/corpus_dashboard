@@ -182,7 +182,7 @@ const ComparePage: React.FC = () => {
       </Row>
 
       <Card title="📊 准确率对比" style={{ borderRadius: 8, marginBottom: 24 }}>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={280}>
           <BarChart data={[
             { metric: '准确率', [L.name]: +(Lacc * 100).toFixed(1), [R.name]: +(Racc * 100).toFixed(1) },
           ]}>

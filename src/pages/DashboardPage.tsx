@@ -65,6 +65,13 @@ const DashboardPage: React.FC = () => {
     );
   }, [tableData, search]);
 
+  // 收集参数名
+  const paramKeys = React.useMemo(() => {
+    const keys = new Set<string>();
+    groups.forEach((g) => Object.keys(g.parameters || {}).forEach((k) => keys.add(k)));
+    return Array.from(keys);
+  }, [groups]);
+
   // 只在首次加载时显示 spinner，刷新时保持已有内容
   if (!experimentDetail && experimentLoading) return <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />;
   if (!experiment) return <Empty description="未找到该实验" style={{ marginTop: 80 }} />;
@@ -106,8 +113,26 @@ const DashboardPage: React.FC = () => {
 
   // ====== 表格列 ======
   const commonColumns: ColumnsType<GroupRow> = [
-    { title: '实验组', dataIndex: 'name', key: 'name', fixed: 'left', width: 160, render: (n: string) => <strong>{n}</strong> },
-    { title: '模型', dataIndex: 'model', key: 'model', width: 200, ellipsis: true },
+    { title: '实验组', dataIndex: 'name', key: 'name', fixed: 'left', width: 160, sorter: (a, b) => a.name.localeCompare(b.name), render: (n: string) => <strong>{n}</strong> },
+    { title: '模型', dataIndex: 'model', key: 'model', width: 180, ellipsis: true, sorter: (a, b) => a.model.localeCompare(b.model) },
+    // 参数列——每个参数名作为独立列
+    ...paramKeys.map((key) => ({
+      title: key,
+      key: `param_${key}`,
+      width: Math.max(80, key.length * 10 + 40),
+      ellipsis: true,
+      sorter: (a: GroupRow, b: GroupRow) => {
+        const va = a.parameters?.[key]; const vb = b.parameters?.[key];
+        if (va === undefined && vb === undefined) return 0;
+        if (va === undefined) return -1; if (vb === undefined) return 1;
+        if (typeof va === 'number' && typeof vb === 'number') return va - vb;
+        return String(va).localeCompare(String(vb));
+      },
+      render: (_: unknown, r: GroupRow) => {
+        const v = r.parameters?.[key];
+        return v !== undefined ? String(v) : <span style={{ color: '#ccc' }}>—</span>;
+      },
+    })),
   ];
 
   const trainingColumns: ColumnsType<GroupRow> = [
@@ -165,14 +190,27 @@ const DashboardPage: React.FC = () => {
     ...commonColumns,
     {
       title: '准确率', key: 'accuracy', width: 100,
+      sorter: (a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0),
       render: (_: unknown, r: GroupRow) => {
         const v = r.accuracy ?? 0;
         const best = bestGroup?.accuracy ?? 0;
         return <span style={{ color: v === best ? '#52c41a' : undefined }}>{(v * 100).toFixed(1)}%{v === best && <TrophyOutlined style={{ color: '#faad14', marginLeft: 4 }} />}</span>;
       },
     },
-    { title: '正确/总数', key: 'cnt', width: 100, render: (_: unknown, r: GroupRow) => `${r.correctCount ?? 0}/${r.resultCount ?? 0}` },
-    { title: '平均耗时', key: 'latency', width: 100, render: (_: unknown, r: GroupRow) => r.results && r.results.length > 0 ? `${(r.results.reduce((s, x) => s + (x.runtime_ms || 0), 0) / r.results.length).toFixed(0)}ms` : '-' },
+    {
+      title: '正确/总数', key: 'cnt', width: 100,
+      sorter: (a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0),
+      render: (_: unknown, r: GroupRow) => `${r.correctCount ?? 0}/${r.resultCount ?? 0}`,
+    },
+    {
+      title: '平均耗时', key: 'latency', width: 100,
+      sorter: (a, b) => {
+        const avgA = a.results?.length ? a.results.reduce((s, x) => s + (x.runtime_ms || 0), 0) / a.results.length : 0;
+        const avgB = b.results?.length ? b.results.reduce((s, x) => s + (x.runtime_ms || 0), 0) / b.results.length : 0;
+        return avgA - avgB;
+      },
+      render: (_: unknown, r: GroupRow) => r.results && r.results.length > 0 ? `${(r.results.reduce((s, x) => s + (x.runtime_ms || 0), 0) / r.results.length).toFixed(0)}ms` : '-',
+    },
   ];
 
   const actionColumn: ColumnsType<GroupRow> = [
@@ -269,7 +307,7 @@ const DashboardPage: React.FC = () => {
           rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredData}
-          scroll={{ x: 1100 }}
+          scroll={{ x: 1100 + paramKeys.length * 100 }}
           pagination={false}
           size="middle"
           onRow={(record) => ({

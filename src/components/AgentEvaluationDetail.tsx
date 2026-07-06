@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal } from 'antd';
+import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input } from 'antd';
 import {
   CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined,
-  ThunderboltOutlined, ToolOutlined, WarningOutlined, UploadOutlined,
+  ThunderboltOutlined, ToolOutlined, WarningOutlined, UploadOutlined, SearchOutlined,
 } from '@ant-design/icons';
 import type { ExperimentGroup, TestCase, EvaluationResult, TrajectoryStep } from '../types';
 import ResultsUploader from './ResultsUploader';
@@ -33,8 +33,12 @@ function computeTrajectoryStats(trajectory?: TrajectoryStep[]) {
 const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId, testCases, onRefresh }) => {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
+  const [filterText, setFilterText] = useState('');
 
   const results = group.results || [];
+  const filtered = filterText.trim()
+    ? results.filter((r) => (r.question || '').includes(filterText) || (r.model_response || '').includes(filterText))
+    : results;
   const correctCount = group.correctCount || 0;
   const totalCount = group.resultCount || results.length;
   const accuracy = totalCount > 0 ? correctCount / totalCount : 0;
@@ -155,6 +159,11 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
         <Col xs={12} sm={8} md={6}>
           <Card style={{ height: '100%' }}><Statistic title="测试用例数" value={totalCount} /></Card>
         </Col>
+        {Object.entries(group.parameters || {}).map(([k, v]) => (
+          <Col xs={12} sm={8} md={6} key={k}>
+            <Card style={{ height: '100%' }}><Statistic title={k} value={String(v)} /></Card>
+          </Col>
+        ))}
       </Row>
 
       {/* 多维评分 */}
@@ -164,11 +173,17 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
       <Card
         title="📋 Agent 评测结果"
         style={{ borderRadius: 8 }}
-        extra={<Button type="primary" icon={<UploadOutlined />} onClick={() => setUploadOpen(true)}>管理评测结果</Button>}
+        extra={
+          <span style={{ display: 'flex', gap: 8 }}>
+            <Input size="small" placeholder="筛选..." prefix={<SearchOutlined />}
+              value={filterText} onChange={(e) => setFilterText(e.target.value)} allowClear style={{ width: 180 }} />
+            <Button type="primary" size="small" icon={<UploadOutlined />} onClick={() => setUploadOpen(true)}>管理评测结果</Button>
+          </span>
+        }
       >
         <Table
           columns={columns}
-          dataSource={results}
+          dataSource={filtered}
           rowKey="id"
           pagination={{ pageSize: 20 }}
           size="small"

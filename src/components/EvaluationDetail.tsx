@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal } from 'antd';
+import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, ThunderboltOutlined, UploadOutlined } from '@ant-design/icons';
 import type { ExperimentGroup, TestCase } from '../types';
 import ResultsUploader from './ResultsUploader';
@@ -16,8 +17,15 @@ interface Props {
 
 const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId, testCases, onRefresh }) => {
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [filterText, setFilterText] = useState('');
 
   const results = group.results || [];
+  const filtered = filterText.trim()
+    ? results.filter((r) =>
+        (r.question || '').includes(filterText) ||
+        (r.expected_answer || '').includes(filterText) ||
+        (r.model_response || '').includes(filterText))
+    : results;
   const correctCount = group.correctCount || 0;
   const totalCount = group.resultCount || results.length;
   const accuracy = totalCount > 0 ? correctCount / totalCount : 0;
@@ -45,6 +53,8 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
         v ? <Tag icon={<CheckCircleOutlined />} color="success">正确</Tag> : <Tag icon={<CloseCircleOutlined />} color="error">错误</Tag>,
     },
     { title: '得分', dataIndex: 'score', key: 'score', width: 60, render: (v: number) => v?.toFixed(2) ?? '-' },
+    { title: '耗时', dataIndex: 'runtime_ms', key: 'runtime', width: 80, render: (v: number) => v ? `${v}ms` : '-' },
+    { title: 'Token', dataIndex: 'token_count', key: 'token', width: 70, render: (v: number) => v > 0 ? v.toLocaleString() : '-' },
     { title: '标签', dataIndex: 'category_tag', key: 'category_tag', width: 80 },
   ];
 
@@ -71,6 +81,11 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
             <Statistic title="平均耗时" value={totalCount > 0 ? (results.reduce((s, r) => s + (r.runtime_ms || 0), 0) / totalCount).toFixed(0) : '-'} suffix="ms" />
           </Card>
         </Col>
+        {Object.entries(group.parameters || {}).map(([k, v]) => (
+          <Col xs={12} sm={12} md={6} key={k}>
+            <Card style={{ height: '100%' }}><Statistic title={k} value={String(v)} /></Card>
+          </Col>
+        ))}
       </Row>
 
       {(() => {
@@ -93,9 +108,17 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
       })()}
 
       <Card title="📋 评测结果与答案对比" style={{ borderRadius: 8 }}
-        extra={<Button type="primary" icon={<UploadOutlined />} onClick={() => setUploadOpen(true)}>管理评测结果</Button>}
+        extra={
+          <span style={{ display: 'flex', gap: 8 }}>
+            <Input
+              size="small" placeholder="筛选..." prefix={<SearchOutlined />}
+              value={filterText} onChange={(e) => setFilterText(e.target.value)} allowClear style={{ width: 180 }}
+            />
+            <Button type="primary" size="small" icon={<UploadOutlined />} onClick={() => setUploadOpen(true)}>管理评测结果</Button>
+          </span>
+        }
       >
-        <Table columns={columns} dataSource={results} rowKey="id" pagination={{ pageSize: 20 }}
+        <Table columns={columns} dataSource={filtered} rowKey="id" pagination={{ pageSize: 20 }}
           size="small" bordered scroll={{ x: 900 }}
           rowClassName={(record) => (record.is_correct ? '' : 'param-diff-row')} />
       </Card>
