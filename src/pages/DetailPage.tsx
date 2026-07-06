@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Card, Col, Row, Typography, Descriptions, Statistic, Table,
   Empty, Tag, Spin,
@@ -18,7 +18,12 @@ const { Title } = Typography;
 
 const DetailPage: React.FC = () => {
   const { experimentId, groupId } = useParams<{ experimentId: string; groupId: string }>();
-  const { experimentDetail, experimentLoading, refreshExperiment } = useData();
+  const { experimentDetail, experimentLoading, refreshExperiment, selectExperiment } = useData();
+
+  // 同步 URL 到 context，触发数据加载
+  useEffect(() => {
+    if (experimentId) selectExperiment(experimentId);
+  }, [experimentId, selectExperiment]);
 
   // 数据未加载完时显示 spinner
   if (!experimentDetail) return <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />;
