@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input } from 'antd';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input, Spin } from 'antd';
 import {
   CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined,
   ThunderboltOutlined, ToolOutlined, WarningOutlined, UploadOutlined, SearchOutlined,
 } from '@ant-design/icons';
 import type { ExperimentGroup, TestCase, EvaluationResult, TrajectoryStep } from '../types';
+import { fetchResults } from '../api/endpoints';
 import ResultsUploader from './ResultsUploader';
 import TrajectoryViewer from './TrajectoryViewer';
 import CustomScoresChart from './CustomScoresChart';
@@ -34,12 +35,23 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
   const [uploadOpen, setUploadOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
   const [filterText, setFilterText] = useState('');
+  const [allResults, setAllResults] = useState<EvaluationResult[]>([]);
+  const [resultsLoading, setResultsLoading] = useState(false);
 
-  const results = group.results || [];
+  // 独立加载全量结果
+  const loadResults = async () => {
+    setResultsLoading(true);
+    try { const data = await fetchResults(group.id); setAllResults(data.results || []); }
+    catch { setAllResults(group.results || []); }
+    finally { setResultsLoading(false); }
+  };
+  useEffect(() => { loadResults(); }, [group.id]);
+
+  const results = allResults.length > 0 ? allResults : (group.results || []);
   const filtered = filterText.trim()
     ? results.filter((r) => (r.question || '').includes(filterText) || (r.model_response || '').includes(filterText))
     : results;
-  const correctCount = group.correctCount || 0;
+  const correctCount = group.correctCount || results.filter((r) => r.is_correct).length;
   const totalCount = group.resultCount || results.length;
   const accuracy = totalCount > 0 ? correctCount / totalCount : 0;
 

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
-import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, ThunderboltOutlined, UploadOutlined } from '@ant-design/icons';
-import type { ExperimentGroup, TestCase } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input, Spin } from 'antd';
+import { SearchOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, ThunderboltOutlined, UploadOutlined } from '@ant-design/icons';
+import type { ExperimentGroup, TestCase, EvaluationResult } from '../types';
+import { fetchResults } from '../api/endpoints';
 import ResultsUploader from './ResultsUploader';
 
 const { Title } = Typography;
@@ -18,15 +18,26 @@ interface Props {
 const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId, testCases, onRefresh }) => {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [filterText, setFilterText] = useState('');
+  const [allResults, setAllResults] = useState<EvaluationResult[]>([]);
+  const [resultsLoading, setResultsLoading] = useState(false);
 
-  const results = group.results || [];
+  // 独立加载全量结果（不受experiment detail的100条限制）
+  const loadResults = async () => {
+    setResultsLoading(true);
+    try { const data = await fetchResults(group.id); setAllResults(data.results || []); }
+    catch { setAllResults(group.results || []); }
+    finally { setResultsLoading(false); }
+  };
+  useEffect(() => { loadResults(); }, [group.id]);
+
+  const results = allResults.length > 0 ? allResults : (group.results || []);
   const filtered = filterText.trim()
     ? results.filter((r) =>
         (r.question || '').includes(filterText) ||
         (r.expected_answer || '').includes(filterText) ||
         (r.model_response || '').includes(filterText))
     : results;
-  const correctCount = group.correctCount || 0;
+  const correctCount = group.correctCount || results.filter((r) => r.is_correct).length;
   const totalCount = group.resultCount || results.length;
   const accuracy = totalCount > 0 ? correctCount / totalCount : 0;
 

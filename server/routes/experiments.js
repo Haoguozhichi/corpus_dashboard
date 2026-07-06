@@ -4,7 +4,7 @@ const multer = require('multer');
 const { data, save, findCat, findExp } = require('../db');
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 router.get('/', (req, res) => {
   const { categoryId } = req.query;
@@ -32,12 +32,16 @@ router.get('/:id', (req, res) => {
       const m = g.training_metrics;
       return { ...g, parameters: g.parameters || {}, metrics: m ? { ...m, loss_curve: m.loss_curve || [], accuracy_curve: m.accuracy_curve || [] } : null };
     } else if (exp.type === 'evaluation' || exp.type === 'agent_evaluation') {
-      const results = (g.evaluation_results || []).map((er) => {
+      const allResults = g.evaluation_results || [];
+      const correctCount = allResults.filter((r) => r.is_correct).length;
+      const totalTokens = allResults.reduce((s, r) => s + (r.token_count || 0), 0);
+      const avgRuntime = allResults.length > 0 ? allResults.reduce((s, r) => s + (r.runtime_ms || 0), 0) / allResults.length : 0;
+      // 只返回摘要，不返回全量结果（可通过 /api/groups/:groupId/results 获取详情）
+      const preview = allResults.slice(0, 100).map((er) => {
         const tc = exp.test_cases?.find((t) => t.id === er.test_case_id);
         return { ...er, question: tc?.question || '', expected_answer: tc?.expected_answer || '', category_tag: tc?.category_tag || '' };
       });
-      const correctCount = results.filter((r) => r.is_correct).length;
-      return { ...g, parameters: g.parameters || {}, results, resultCount: results.length, correctCount, accuracy: results.length > 0 ? correctCount / results.length : 0 };
+      return { ...g, parameters: g.parameters || {}, results: preview, resultCount: allResults.length, correctCount, accuracy: allResults.length > 0 ? correctCount / allResults.length : 0, totalTokens, avgRuntime };
     }
     return { ...g, parameters: g.parameters || {} };
   });
@@ -78,63 +82,21 @@ router.delete('/:id', (req, res) => {
   res.status(404).json({ error: '实验不存在' });
 });
 
-// POST 一键导入：CSV 中含实验组信息和评测结果
+// POST 一键导入：JSON 格式包含实验组信息和评测结果
 router.post('/:expId/import', upload.single('file'), (req, res) => {
   const exp = findExp(req.params.expId);
   if (!exp) return res.status(404).json({ error: '实验不存在' });
-  if (!req.file) return res.status(400).json({ error: '请上传 CSV 文件' });
+  if (!req.file) return res.status(400).json({ error: '请上传 JSON 文件' });
 
-  const csv = req.file.buffer.toString('utf-8');
-  const lines = csv.trim().split('\n');
-  if (lines.length < 2) return res.status(400).json({ error: 'CSV 至少需要表头+1行数据' });
+  let groupsData;
+  try {
+    groupsData = JSON.parse(req.file.buffer.toString('utf-8'));
+  } catch {
+    return res.status(400).json({ error: 'JSON 格式错误，请检查文件内容' });
+  }
 
-  const headers = lines[0].split(',').map((h) => h.trim());
-
-  // 识别列
-  const idx = (name) => headers.findIndex((h) => h.trim().toLowerCase() === name.toLowerCase());
-  const groupNameIdx = idx('group_name');
-  const modelIdx = idx('model');
-  const questionIdx = idx('question');
-  const answerIdx = idx('expected_answer');
-  const respIdx = idx('model_response');
-  const correctIdx = idx('is_correct');
-  const scoreIdx = idx('score');
-  const runtimeIdx = idx('runtime_ms');
-  const tokenIdx = idx('token_count');
-  const trajIdx = idx('trajectory');
-  const scoresIdx = idx('custom_scores');
-
-  if (groupNameIdx < 0) return res.status(400).json({ error: 'CSV 需包含 group_name 列（实验组名称）' });
-  if (questionIdx < 0) return res.status(400).json({ error: 'CSV 需包含 question 列' });
-
-  // 找出哪些列是组变量（不在已知结果列中的）
-  const knownCols = new Set(['group_name', 'model', 'question', 'expected_answer', 'model_response', 'is_correct', 'score', 'runtime_ms', 'token_count', 'trajectory', 'custom_scores']);
-  const paramCols = headers.filter((h) => !knownCols.has(h.toLowerCase()));
-
-  // 按 group_name 分组
-  const groupMap = {};
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const cols = parseCSVLine(lines[i]);
-    if (cols.length < headers.length) continue;
-    const row = {};
-    headers.forEach((h, j) => { row[h.trim()] = (cols[j] || '').trim(); });
-    const gName = row['group_name'];
-    if (!gName) continue;
-    if (!groupMap[gName]) {
-      groupMap[gName] = {
-        model: row['model'] || '',
-        params: {},
-        rows: [],
-      };
-      paramCols.forEach((p) => {
-        const val = row[p];
-        if (val !== undefined && val !== '') {
-          groupMap[gName].params[p] = isNaN(Number(val)) ? val : Number(val);
-        }
-      });
-    }
-    groupMap[gName].rows.push(row);
+  if (!Array.isArray(groupsData) || groupsData.length === 0) {
+    return res.status(400).json({ error: 'JSON 应为实验组数组，至少包含一个实验组' });
   }
 
   exp.groups = exp.groups || [];
@@ -142,19 +104,23 @@ router.post('/:expId/import', upload.single('file'), (req, res) => {
   let groupsCreated = 0;
   let resultsCreated = 0;
 
-  for (const [gName, gData] of Object.entries(groupMap)) {
+  for (const gData of groupsData) {
+    if (!gData.group_name) continue;
+
     // 创建实验组
     const gid = uuidv4();
+    const params = gData.variables || {};
     exp.groups.push({
-      id: gid, experiment_id: exp.id, name: gName, model: gData.model,
-      parameters: gData.params, created_at: new Date().toISOString(),
+      id: gid, experiment_id: exp.id, name: gData.group_name,
+      model: gData.model || '', parameters: params, created_at: new Date().toISOString(),
     });
 
     // 创建评测结果
     const evalResults = [];
-    for (const row of gData.rows) {
-      const q = row['question'] || '';
-      const a = row['expected_answer'] || '';
+    const results = gData.results || [];
+    for (const r of results) {
+      const q = r.question || '';
+      const a = r.expected_answer || '';
       let tcId = (exp.test_cases || []).find((tc) => tc.question === q && tc.expected_answer === a)?.id;
       if (!tcId && q) {
         tcId = uuidv4();
@@ -162,22 +128,15 @@ router.post('/:expId/import', upload.single('file'), (req, res) => {
       }
       if (!tcId) continue;
 
-      let trajectory, custom_scores;
-      if (trajIdx >= 0 && row['trajectory']) {
-        try { trajectory = JSON.parse(row['trajectory']); } catch { /* skip */ }
-      }
-      if (scoresIdx >= 0 && row['custom_scores']) {
-        try { custom_scores = JSON.parse(row['custom_scores']); } catch { /* skip */ }
-      }
-
       evalResults.push({
         id: uuidv4(), group_id: gid, test_case_id: tcId,
-        model_response: respIdx >= 0 ? (row['model_response'] || '') : '',
-        is_correct: correctIdx >= 0 ? (row['is_correct'] === '1' || row['is_correct'] === 'true' ? 1 : 0) : 0,
-        score: scoreIdx >= 0 ? (parseFloat(row['score']) || 0) : (correctIdx >= 0 && row['is_correct'] === '1' ? 1 : 0),
-        runtime_ms: runtimeIdx >= 0 ? (parseInt(row['runtime_ms']) || 0) : 0,
-        token_count: tokenIdx >= 0 ? (parseInt(row['token_count']) || 0) : 0,
-        trajectory, custom_scores,
+        model_response: r.model_response || '',
+        is_correct: r.is_correct ? 1 : 0,
+        score: r.score ?? (r.is_correct ? 1 : 0),
+        runtime_ms: r.runtime_ms || 0,
+        token_count: r.token_count || 0,
+        trajectory: r.trajectory || undefined,
+        custom_scores: r.custom_scores || undefined,
       });
     }
     exp.groups[exp.groups.length - 1].evaluation_results = evalResults;
