@@ -23,9 +23,9 @@ export const importExperimentJson = (experimentId: string, file: File) =>
 
 // ====== 实验组 ======
 export const fetchGroups = (experimentId: string) => get<ExperimentGroup[]>(`/experiments/${experimentId}/groups`);
-export const createGroup = (experimentId: string, data: { name: string; model?: string; parameters?: Record<string, unknown> }) =>
+export const createGroup = (experimentId: string, data: { name: string; model?: string; eval_dataset?: string; parameters?: Record<string, unknown> }) =>
   post<ExperimentGroup>(`/experiments/${experimentId}/groups`, data);
-export const updateGroup = (id: string, data: { name?: string; model?: string; parameters?: Record<string, unknown> }) =>
+export const updateGroup = (id: string, data: { name?: string; model?: string; eval_dataset?: string; parameters?: Record<string, unknown> }) =>
   put<ExperimentGroup>(`/groups/${id}`, data);
 export const deleteGroup = (id: string) => del<{ success: boolean }>(`/groups/${id}`);
 

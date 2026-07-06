@@ -28,9 +28,9 @@ router.get('/experiments/:expId/groups', (req, res) => {
 router.post('/experiments/:expId/groups', (req, res) => {
   const exp = findExp(req.params.expId);
   if (!exp) return res.status(404).json({ error: '实验不存在' });
-  const { name, model, parameters } = req.body;
+  const { name, model, eval_dataset, parameters } = req.body;
   if (!name) return res.status(400).json({ error: '名称不能为空' });
-  const group = { id: uuidv4(), experiment_id: exp.id, name, model: model || '', parameters: parameters || {}, created_at: new Date().toISOString() };
+  const group = { id: uuidv4(), experiment_id: exp.id, name, model: model || '', eval_dataset: eval_dataset || '', parameters: parameters || {}, created_at: new Date().toISOString() };
   exp.groups = exp.groups || [];
   exp.groups.push(group);
   save();
@@ -40,9 +40,10 @@ router.post('/experiments/:expId/groups', (req, res) => {
 router.put('/groups/:id', (req, res) => {
   const group = findGroup(req.params.id);
   if (!group) return res.status(404).json({ error: '实验组不存在' });
-  const { name, model, parameters } = req.body;
+  const { name, model, eval_dataset, parameters } = req.body;
   if (name !== undefined) group.name = name;
   if (model !== undefined) group.model = model;
+  if (eval_dataset !== undefined) group.eval_dataset = eval_dataset;
   if (parameters !== undefined) group.parameters = parameters;
   save();
   res.json(group);

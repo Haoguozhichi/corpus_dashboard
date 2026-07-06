@@ -6,7 +6,7 @@ import type { ExperimentGroup } from '../types';
 interface Props {
   open: boolean;
   editing?: ExperimentGroup | null;
-  onOk: (values: { name: string; model: string; parameters: Record<string, string | number> }) => void;
+  onOk: (values: { name: string; model: string; eval_dataset?: string; parameters: Record<string, string | number> }) => void;
   onCancel: () => void;
 }
 
@@ -19,6 +19,7 @@ const GroupFormModal: React.FC<Props> = ({ open, editing, onOk, onCancel }) => {
       form.setFieldsValue({
         name: editing?.name || '',
         model: editing?.model || '',
+        eval_dataset: editing?.eval_dataset || '',
       });
       const p = editing?.parameters || {};
       const entries = Object.entries(p).map(([key, value]) => ({ key, value: String(value) }));
@@ -40,7 +41,7 @@ const GroupFormModal: React.FC<Props> = ({ open, editing, onOk, onCancel }) => {
     params.forEach(({ key, value }) => {
       if (key.trim()) parameters[key.trim()] = isNaN(Number(value)) ? value : Number(value);
     });
-    onOk({ name: values.name, model: values.model, parameters });
+    onOk({ name: values.name, model: values.model, eval_dataset: values.eval_dataset, parameters });
     form.resetFields();
     setParams([{ key: '', value: '' }]);
   };
@@ -60,6 +61,9 @@ const GroupFormModal: React.FC<Props> = ({ open, editing, onOk, onCancel }) => {
         </Form.Item>
         <Form.Item name="model" label="模型">
           <Input placeholder="例如：gpt-4o-2024-05-13" />
+        </Form.Item>
+        <Form.Item name="eval_dataset" label="评测集">
+          <Input placeholder="例如：HumanEval、AlpacaEval" />
         </Form.Item>
         <Form.Item label="变量">
           {params.map((p, i) => (

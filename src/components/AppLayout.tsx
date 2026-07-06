@@ -11,7 +11,7 @@ const AppLayout: React.FC = () => {
   const location = useLocation();
   const {
     selectedCategory, selectedExperiment, selectedGroup,
-    compareLeft, compareRight, goHome,
+    compareGroups, goHome,
     selectCategory, selectExperiment,
   } = useData();
 
@@ -53,12 +53,12 @@ const AppLayout: React.FC = () => {
 
   // 面包屑最后一级（当前页面，不可点击，黑色加粗）
   const currentLabel = useMemo(() => {
-    if (isCompare && compareLeft && compareRight) return `对比: ${compareLeft.name} vs ${compareRight.name}`;
+    if (isCompare && compareGroups.length >= 2) return `对比 ${compareGroups.length} 组`;
     if (isDetail && selectedGroup) return selectedGroup.name;
     if (isExperiment && selectedExperiment) return selectedExperiment.name;
     if (isCategory && selectedCategory) return selectedCategory.name;
     return null;
-  }, [isCompare, isDetail, isExperiment, isCategory, compareLeft, compareRight, selectedGroup, selectedExperiment, selectedCategory]);
+  }, [isCompare, isDetail, isExperiment, isCategory, compareGroups, selectedGroup, selectedExperiment, selectedCategory]);
 
   // 返回按钮
   const backBtn = useMemo(() => {

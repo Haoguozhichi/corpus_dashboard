@@ -117,7 +117,9 @@ const DashboardPage: React.FC = () => {
   // ====== 表格列 ======
   const commonColumns: ColumnsType<GroupRow> = [
     { title: '实验组', dataIndex: 'name', key: 'name', fixed: 'left', width: 160, sorter: (a, b) => a.name.localeCompare(b.name), render: (n: string) => <strong>{n}</strong> },
-    { title: '模型', dataIndex: 'model', key: 'model', width: 180, ellipsis: true, sorter: (a, b) => a.model.localeCompare(b.model) },
+    { title: '模型', dataIndex: 'model', key: 'model', width: 160, ellipsis: true, sorter: (a, b) => a.model.localeCompare(b.model) },
+    { title: '评测集', dataIndex: 'eval_dataset', key: 'eval_dataset', width: 120, ellipsis: true, sorter: (a, b) => (a.eval_dataset || '').localeCompare(b.eval_dataset || ''),
+      render: (t: string) => t || <span style={{ color: '#ccc' }}>—</span> },
     // 变量列——每个变量名作为独立列
     ...paramKeys.map((key) => ({
       title: key,
@@ -234,14 +236,15 @@ const DashboardPage: React.FC = () => {
 
   const handleCompare = () => {
     if (selectedRowKeys.length >= 2) {
-      setCompareGroups(selectedRowKeys[0] as string, selectedRowKeys[1] as string);
-      navigate(`/experiment/${experiment.id}/compare?left=${selectedRowKeys[0]}&right=${selectedRowKeys[1]}`);
+      const ids = selectedRowKeys as string[];
+      setCompareGroups(ids);
+      navigate(`/experiment/${experiment.id}/compare?groups=${ids.join(',')}`);
     }
   };
 
   const rowSelection = {
     selectedRowKeys,
-    onChange: (keys: React.Key[]) => setSelectedRowKeys(keys.slice(0, 2)),
+    onChange: (keys: React.Key[]) => setSelectedRowKeys(keys),
   };
 
   return (
@@ -301,7 +304,7 @@ const DashboardPage: React.FC = () => {
               style={{ width: 180 }}
               size="small"
             />
-            <Tag color="blue">{selectedRowKeys.length} / 2 已选</Tag>
+            <Tag color="blue">已选 {selectedRowKeys.length} 组</Tag>
             <Button type="primary" icon={<BarChartOutlined />} disabled={selectedRowKeys.length < 2} onClick={handleCompare}>对比选中组</Button>
           </Space>
         }

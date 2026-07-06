@@ -7,21 +7,20 @@ const initialNav: NavigationState = {
   selectedCategoryId: null,
   selectedExperimentId: null,
   selectedGroupId: null,
-  compareLeftId: null,
-  compareRightId: null,
+  compareGroupIds: [],
 };
 
 // ========== Reducer ==========
 function navReducer(state: NavigationState, action: NavigationAction): NavigationState {
   switch (action.type) {
     case 'SELECT_CATEGORY':
-      return { ...state, selectedCategoryId: action.categoryId, selectedExperimentId: null, selectedGroupId: null, compareLeftId: null, compareRightId: null };
+      return { ...state, selectedCategoryId: action.categoryId, selectedExperimentId: null, selectedGroupId: null, compareGroupIds: [] };
     case 'SELECT_EXPERIMENT':
-      return { ...state, selectedExperimentId: action.experimentId, selectedGroupId: null, compareLeftId: null, compareRightId: null };
+      return { ...state, selectedExperimentId: action.experimentId, selectedGroupId: null, compareGroupIds: [] };
     case 'SELECT_GROUP':
       return { ...state, selectedGroupId: action.groupId };
     case 'SET_COMPARE_GROUPS':
-      return { ...state, compareLeftId: action.leftId, compareRightId: action.rightId };
+      return { ...state, compareGroupIds: action.groupIds };
     case 'GO_HOME':
       return { ...initialNav };
     default:
@@ -42,13 +41,12 @@ interface DataContextValue {
   selectedCategory: Category | null;
   selectedExperiment: Experiment | null;
   selectedGroup: ExperimentGroup | null;
-  compareLeft: ExperimentGroup | null;
-  compareRight: ExperimentGroup | null;
+  compareGroups: ExperimentGroup[];
   goHome: () => void;
   selectCategory: (id: string) => void;
   selectExperiment: (id: string) => void;
   selectGroup: (id: string) => void;
-  setCompareGroups: (leftId: string, rightId: string) => void;
+  setCompareGroups: (ids: string[]) => void;
 }
 
 const DataContext = createContext<DataContextValue | null>(null);
@@ -93,27 +91,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return experimentDetail.groups.find((g) => g.id === nav.selectedGroupId) ?? null;
   }, [experimentDetail, nav.selectedGroupId]);
 
-  const compareLeft = useMemo(() => {
-    if (!experimentDetail?.groups) return null;
-    return experimentDetail.groups.find((g) => g.id === nav.compareLeftId) ?? null;
-  }, [experimentDetail, nav.compareLeftId]);
-
-  const compareRight = useMemo(() => {
-    if (!experimentDetail?.groups) return null;
-    return experimentDetail.groups.find((g) => g.id === nav.compareRightId) ?? null;
-  }, [experimentDetail, nav.compareRightId]);
+  const compareGroups = useMemo(() => {
+    if (!experimentDetail?.groups) return [];
+    return nav.compareGroupIds.map((id) => experimentDetail!.groups!.find((g) => g.id === id)).filter(Boolean) as ExperimentGroup[];
+  }, [experimentDetail, nav.compareGroupIds]);
 
   const goHome = useCallback(() => dispatch({ type: 'GO_HOME' }), []);
   const selectCategory = useCallback((id: string) => dispatch({ type: 'SELECT_CATEGORY', categoryId: id }), []);
   const selectExperiment = useCallback((id: string) => dispatch({ type: 'SELECT_EXPERIMENT', experimentId: id }), []);
   const selectGroup = useCallback((id: string) => dispatch({ type: 'SELECT_GROUP', groupId: id }), []);
-  const setCompareGroups = useCallback((leftId: string, rightId: string) => dispatch({ type: 'SET_COMPARE_GROUPS', leftId, rightId }), []);
+  const setCompareGroups = useCallback((ids: string[]) => dispatch({ type: 'SET_COMPARE_GROUPS', groupIds: ids }), []);
 
   const value: DataContextValue = {
     categories, loading, refreshCategories: loadCategories,
     experimentDetail, experimentLoading, refreshExperiment: loadExperiment,
     nav, dispatch,
-    selectedCategory, selectedExperiment, selectedGroup, compareLeft, compareRight,
+    selectedCategory, selectedExperiment, selectedGroup, compareGroups,
     goHome, selectCategory, selectExperiment, selectGroup, setCompareGroups,
   };
 

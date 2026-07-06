@@ -83,6 +83,7 @@ export interface ExperimentGroup {
   experimentId?: string;        // 前端兼容
   name: string;
   model: string;
+  eval_dataset?: string;           // 评测集名称
   parameters: ExperimentParameters;
   // 训练指标（仅 training 型）
   metrics?: TrainingMetrics | null;
@@ -122,13 +123,12 @@ export interface NavigationState {
   selectedCategoryId: string | null;
   selectedExperimentId: string | null;
   selectedGroupId: string | null;
-  compareLeftId: string | null;
-  compareRightId: string | null;
+  compareGroupIds: string[];
 }
 
 export type NavigationAction =
   | { type: 'SELECT_CATEGORY'; categoryId: string }
   | { type: 'SELECT_EXPERIMENT'; experimentId: string }
   | { type: 'SELECT_GROUP'; groupId: string }
-  | { type: 'SET_COMPARE_GROUPS'; leftId: string; rightId: string }
+  | { type: 'SET_COMPARE_GROUPS'; groupIds: string[] }
   | { type: 'GO_HOME' };

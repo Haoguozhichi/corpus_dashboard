@@ -56,7 +56,8 @@ corpus_dashboard/
 │   │   ├── ResultsUploader.tsx   # 评测结果管理（上传+逐条+删除）
 │   │   ├── TrainingMetricsManager.tsx # 训练指标统一管理
 │   │   ├── TestCaseTable.tsx     # 测试用例可编辑表格
-│   │   └── CsvUploader.tsx       # CSV 拖拽上传组件
+│   │   ├── JsonUploader.tsx      # JSON 批量上传组件
+│   │   └── BulkImport.tsx        # 一键导入组件
 │   └── pages/
 │       ├── HomePage.tsx          # 首页 - 实验类别卡片
 │       ├── ExperimentListPage.tsx # 实验列表
@@ -91,7 +92,7 @@ corpus_dashboard/
 | 类型值 | `training` | `evaluation` | `agent_evaluation` |
 | 典型场景 | 模型训练对比 | NL2SQL、NER 评测 | WebAgent、工具调用评测 |
 | 核心数据 | 准确率/精确率/召回率/F1/Loss曲线 | 题目→标准答案→模型回答→正确/错误 | 题目→正确率→轨迹→工具调用统计 |
-| 详情表格列 | — | 题目、标准答案、模型回答、结果、得分、标签 | 题目、结果、Token、耗时、步骤、工具调用、展开 |
+| 详情表格列 | — | 题目、标准答案、模型回答、结果、原因、得分、耗时、Token、标注、Think | 题目、正确答案、Agent回答、结果、原因、Token、耗时、步骤、工具、轨迹、标注 |
 | 可展开轨迹 | 否 | 否 | 是 |
 | 多维评分 | 自定义指标 | 否 | 是 |
 
@@ -108,16 +109,17 @@ interface EvaluationResult {
   score: number;            // 得分 (0~1)
   runtime_ms: number;       // 执行耗时(毫秒)
   token_count: number;      // Token 消耗
+  reason?: string;          // 正确性判断原因
+  annotation?: string;      // 人工标注
+  think?: string;           // 模型思考过程
 
   // Agent 评测专用 (可选)
   trajectory?: TrajectoryStep[];
   custom_scores?: Record<string, number>;
-  conversations?: { role: string; content: string }[];
 
   // JOIN 字段 (后端自动填充)
   question?: string;
   expected_answer?: string;
-  category_tag?: string;
 }
 
 // Agent 轨迹步骤
@@ -169,109 +171,109 @@ interface TrainingMetrics {
 ### 4. 评测实验工作流
 
 1. 创建评测实验
-2. 点击「管理测试用例」→ 逐条添加或 CSV 上传题目+标准答案
-3. 创建实验组
-4. 点击实验组行进入详情
-5. 点击「管理评测结果」→ 逐条录入或 CSV 批量导入
-6. 详情页展示题目/标准答案/模型回答的对比表
-7. 错误行高亮显示
+2. **一键导入 JSON**（推荐）：直接上传含实验组、变量、评测结果的 JSON 文件
+3. 或手动创建实验组 → 进入详情 → 「管理评测结果」逐条或 JSON 批量录入
+4. 详情页展示题目/标准答案/模型回答的对比表，支持列排序和筛选
+5. 可对每条结果添加人工标注（`annotation`）
+6. 错误行高亮显示
 
 ### 5. Agent 评测工作流
 
 1. 创建 Agent 评测实验
-2. 添加测试用例
-3. 创建实验组
-4. 进入详情 → 「管理评测结果」→ 录入结果时需填写：
-   - 模型回答
-   - **轨迹 JSON**：`[{"step":1,"thought":"...","action":"...","observation":"..."}]`
-   - **多维评分**：`tool_accuracy:0.9, reasoning:0.8`
-5. 详情页展示：题目、正确性、Token、耗时、步骤数、工具调用次数
-6. 点击「展开」查看每步轨迹时间线
+2. **一键导入 JSON**（推荐）：上传含轨迹和多维评分的 JSON 文件
+3. 详情页展示：题目、正确答案、Agent 回答、正确性、Token、耗时
+4. 点击行末尾 👁 按钮弹出轨迹弹窗，可展开 Think 过程
+5. 支持人工标注、列排序、题目和结果筛选
 
 ### 6. 对比分析
 
-仪表盘 → 勾选两个实验组 → 点击「对比选中组」
+仪表盘 → 勾选**多个**实验组 → 点击「对比选中组」
 
-- 训练实验：指标柱状图 + 参数差异表 + Loss/Accuracy 曲线叠加
-- 评测实验：准确率对比 + 参数差异 + 共同用例回答对比
-- Agent 评测：准确率对比 + 多维评分对比柱状图 + 参数差异
+- **训练实验**：指标柱状图 + 变量差异表 + Loss/Accuracy 曲线叠加
+- **评测实验**：准确率柱状图 + 变量差异表 + 共同用例回答对比（支持题目搜索和正确性筛选）
+- **Agent评测**：准确率 + 工具调用对比 + 多维评分柱状图 + 变量差异 + 共同用例回答对比
 
-## CSV 批量导入格式
+对比分析支持任意数量的实验组同时对比，每组用不同颜色标识。
 
-### 测试用例 CSV
+## JSON 批量导入格式
 
-用于批量导入评测实验的题目和标准答案。
+所有数据导入统一使用 JSON 格式。
 
-**表头**：
+### 一键导入（推荐）
 
-| 列名 | 必填 | 说明 | 示例 |
-|------|:--:|------|------|
-| question | ✅ | 题目/问题文本 | `法国首都是哪里？` |
-| expected_answer | ✅ | 标准答案 | `巴黎` |
-| category_tag | | 分类标签（可选） | `知识问答` |
+一个 JSON 文件包含实验组、变量、评测结果，适用于所有实验类型。
 
-**示例**：
-```csv
-question,expected_answer,category_tag
-法国首都是哪里？,巴黎,知识问答
-计算 123 * 456,56088,数学计算
-将 Hello 翻译成中文,你好,翻译
+#### 训练实验
+
+```json
+[{
+  "group_name": "ResNet-50",
+  "model": "ResNet-50",
+  "variables": { "lr": 0.1, "batch_size": 256 },
+  "metrics": {
+    "accuracy": 0.761, "precision": 0.758, "recall": 0.764, "f1_score": 0.761,
+    "runtime": 32400, "token_count": 0,
+    "loss_curve": [2.8, 2.3, 1.9, 1.6, 1.4],
+    "accuracy_curve": [0.15, 0.32, 0.45, 0.55, 0.63],
+    "custom_metrics": { "top5_accuracy": 0.95 }
+  }
+}]
 ```
 
----
+#### 评测实验
 
-### 评测结果 CSV（评测实验）
+| 字段 | 必填 | 说明 |
+|------|:--:|------|
+| group_name | ✅ | 实验组名称 |
+| model | | 模型名 |
+| eval_dataset | | 评测集名称 |
+| variables | | 实验变量键值对 |
+| results[].question | ✅ | 题目 |
+| results[].expected_answer | | 标准答案 |
+| results[].model_response | | 模型回答 |
+| results[].is_correct | | 是否正确 (true/false) |
+| results[].score | | 得分 (0~1) |
+| results[].runtime_ms | | 耗时(毫秒) |
+| results[].token_count | | Token 数 |
+| results[].reason | | 正确性判断原因 |
+| results[].annotation | | 人工标注 |
+| results[].think | | 模型思考过程 |
 
-用于批量导入 evaluation 类型的评测结果。
+#### Agent 评测
 
-**表头**：
+在上表基础上，results 额外支持：
 
-| 列名 | 必填 | 说明 | 示例 |
-|------|:--:|------|------|
-| question | ✅ | 题目（用于匹配已有测试用例） | `法国首都是哪里？` |
-| expected_answer | ✅ | 标准答案（用于匹配） | `巴黎` |
-| model_response | ✅ | 模型回答 | `巴黎是法国的首都。` |
-| is_correct | | 是否正确：1=是, 0=否 | `1` |
-| score | | 得分 (0~1)，默认等于 is_correct | `1.0` |
-| runtime_ms | | 执行耗时(毫秒) | `190` |
-| token_count | | Token 消耗 | `25` |
+| 字段 | 说明 |
+|------|------|
+| trajectory | 执行轨迹数组 `[{"step":1,"thought":"...","action":"..."}]` |
+| custom_scores | 多维评分 `{"tool_accuracy":0.9,"reasoning":0.8}` |
 
-**示例**：
-```csv
-question,expected_answer,model_response,is_correct,score,runtime_ms,token_count
-法国首都是哪里？,巴黎,巴黎是法国的首都。,1,1.0,190,25
-计算 123 * 456,56088,56088,1,1.0,160,20
-将 Hello 翻译成中文,你好,哈喽,0,0.0,230,32
+### 测试用例 JSON 批量上传
+
+```json
+[
+  { "question": "法国首都是哪里？", "expected_answer": "巴黎", "category_tag": "知识问答" },
+  { "question": "计算 123 * 456", "expected_answer": "56088" }
+]
 ```
 
----
+### 评测结果 JSON 批量上传
 
-### 评测结果 CSV（Agent 评测）
-
-用于批量导入 agent_evaluation 类型的评测结果，额外包含轨迹和多维评分。
-
-**表头**（在上表基础上增加）：
-
-| 列名 | 必填 | 说明 | 示例 |
-|------|:--:|------|------|
-| trajectory | | 执行轨迹 JSON 数组 | 见下方示例 |
-| custom_scores | | 多维评分 JSON 对象 | `{"tool_accuracy":0.9}` |
-
-**示例**：
-```csv
-question,expected_answer,model_response,is_correct,score,runtime_ms,token_count,trajectory,custom_scores
-搜索北京天气,返回气温和湿度,搜索成功 22°C 45%,1,1.0,2500,350,"[{""step"":1,""thought"":""打开天气网站"",""action"":""navigate"",""observation"":""页面加载成功""},{""step"":2,""thought"":""搜索北京"",""action"":""type"",""observation"":""输入完成""},{""step"":3,""thought"":""提取结果"",""action"":""extract"",""observation"":""22°C, 45%""}]","{""search_accuracy"":1.0,""extraction_quality"":1.0,""efficiency"":0.9}"
+```json
+[
+  { "question": "...", "expected_answer": "...", "model_response": "...", "is_correct": true, "score": 1.0, "runtime_ms": 190, "token_count": 25 }
+]
 ```
 
----
+### Mock 数据文件
 
-### CSV 注意事项
+项目根目录提供了三个示例 JSON 文件用于测试一键导入：
 
-1. **编码**：必须使用 UTF-8 编码
-2. **匹配规则**：系统用 `question` + `expected_answer` 匹配已有测试用例；匹配不到则**自动创建**新测试用例
-3. **JSON 字段**：`trajectory` 和 `custom_scores` 必须是合法 JSON。CSV 中 JSON 内的双引号需转义为两个双引号 `""`
-4. **逗号处理**：如果字段内容包含逗号，需用双引号包裹该字段
-5. **推荐工具**：Excel、VS Code（保存时选 UTF-8）
+| 文件 | 实验组数 | 用例数 |
+|------|---------|--------|
+| `sample_training.json` | 6 | — |
+| `sample_evaluation.json` | 6 | 每12条, 共72条 |
+| `sample_agent.json` | 5 | 每12条(含轨迹), 共60条 |
 
 ## API 接口一览
 
@@ -289,6 +291,7 @@ question,expected_answer,model_response,is_correct,score,runtime_ms,token_count,
 | GET | `/api/experiments?categoryId=` | 列表 |
 | GET | `/api/experiments/:id` | 详情(含实验组和结果) |
 | POST | `/api/experiments` | 创建 |
+| POST | `/api/experiments/:expId/import` | 一键导入 JSON |
 | PUT | `/api/experiments/:id` | 更新 |
 | DELETE | `/api/experiments/:id` | 删除 |
 
@@ -311,7 +314,7 @@ question,expected_answer,model_response,is_correct,score,runtime_ms,token_count,
 |------|------|------|
 | GET | `/api/experiments/:expId/test-cases` | 列表 |
 | POST | `/api/experiments/:expId/test-cases` | 逐条创建 |
-| POST | `/api/experiments/:expId/test-cases/upload` | CSV 批量上传 |
+| POST | `/api/experiments/:expId/test-cases/upload` | JSON 批量上传 |
 | PUT | `/api/test-cases/:id` | 更新 |
 | DELETE | `/api/test-cases/:id` | 删除（级联删除关联评测结果） |
 
@@ -320,7 +323,7 @@ question,expected_answer,model_response,is_correct,score,runtime_ms,token_count,
 |------|------|------|
 | GET | `/api/groups/:groupId/results` | 列表(含汇总统计) |
 | POST | `/api/groups/:groupId/results` | 逐条创建 |
-| POST | `/api/groups/:groupId/results/upload` | CSV 批量上传 |
+| POST | `/api/groups/:groupId/results/upload` | JSON 批量上传 |
 | PUT | `/api/results/:id` | 更新 |
 | DELETE | `/api/results/:id` | 删除 |
 

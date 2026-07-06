@@ -108,7 +108,7 @@ router.post('/:expId/import', upload.single('file'), (req, res) => {
       const m = gData.metrics || {};
       exp.groups.push({
         id: gid, experiment_id: exp.id, name: gData.group_name,
-        model: gData.model || '', parameters: gData.variables || {}, created_at: new Date().toISOString(),
+        model: gData.model || '', eval_dataset: gData.eval_dataset || '', parameters: gData.variables || {}, created_at: new Date().toISOString(),
         training_metrics: {
           id: uuidv4(),
           accuracy: m.accuracy ?? 0, precision: m.precision ?? 0,
@@ -127,7 +127,7 @@ router.post('/:expId/import', upload.single('file'), (req, res) => {
       const gid = uuidv4();
       exp.groups.push({
         id: gid, experiment_id: exp.id, name: gData.group_name,
-        model: gData.model || '', parameters: gData.variables || {}, created_at: new Date().toISOString(),
+        model: gData.model || '', eval_dataset: gData.eval_dataset || '', parameters: gData.variables || {}, created_at: new Date().toISOString(),
       });
       const evalResults = [];
       for (const r of (gData.results || [])) {

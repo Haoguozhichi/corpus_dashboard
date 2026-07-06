@@ -99,7 +99,6 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
     { title: '得分', dataIndex: 'score', key: 'score', width: 60, sorter: (a, b) => (a.score || 0) - (b.score || 0), render: (v: number) => v?.toFixed(2) ?? '-' },
     { title: '耗时', dataIndex: 'runtime_ms', key: 'runtime', width: 80, sorter: (a, b) => (a.runtime_ms || 0) - (b.runtime_ms || 0), render: (v: number) => v ? `${v}ms` : '-' },
     { title: 'Token', dataIndex: 'token_count', key: 'token', width: 70, sorter: (a, b) => (a.token_count || 0) - (b.token_count || 0), render: (v: number) => v > 0 ? v.toLocaleString() : '-' },
-    { title: '标签', dataIndex: 'category_tag', key: 'category_tag', width: 80, sorter: (a, b) => (a.category_tag || '').localeCompare(b.category_tag || '') },
     {
       title: '标注', key: 'annotation', width: 150,
       render: (_: unknown, record: EvaluationResult) =>
