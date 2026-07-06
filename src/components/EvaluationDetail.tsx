@@ -66,6 +66,7 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
     { title: '得分', dataIndex: 'score', key: 'score', width: 60, render: (v: number) => v?.toFixed(2) ?? '-' },
     { title: '耗时', dataIndex: 'runtime_ms', key: 'runtime', width: 80, render: (v: number) => v ? `${v}ms` : '-' },
     { title: 'Token', dataIndex: 'token_count', key: 'token', width: 70, render: (v: number) => v > 0 ? v.toLocaleString() : '-' },
+    { title: '原因', dataIndex: 'reason', key: 'reason', width: 120, ellipsis: true, render: (t: string) => t || '-' },
     { title: '标签', dataIndex: 'category_tag', key: 'category_tag', width: 80 },
   ];
 

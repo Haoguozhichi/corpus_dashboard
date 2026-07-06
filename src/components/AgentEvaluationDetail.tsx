@@ -94,6 +94,10 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
       title: '耗时', key: 'runtime', width: 80,
       render: (_: unknown, r: EvaluationResult) => `${r.runtime_ms || 0}ms`,
     },
+    {
+      title: '原因', key: 'reason', width: 120, ellipsis: true,
+      render: (_: unknown, r: EvaluationResult) => r.reason || '-',
+    },
     ...(hasTrajectory ? [
       {
         title: '步骤', key: 'steps', width: 60,

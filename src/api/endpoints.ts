@@ -46,10 +46,10 @@ export const deleteTestCase = (id: string) => del<{ success: boolean }>(`/test-c
 
 // ====== 评测结果 ======
 export const fetchResults = (groupId: string) => get<EvaluationSummary>(`/groups/${groupId}/results`);
-export const createResult = (groupId: string, data: { test_case_id?: string; question?: string; expected_answer?: string; model_response?: string; is_correct?: boolean; score?: number; runtime_ms?: number; token_count?: number; trajectory?: unknown; custom_scores?: Record<string, number> }) =>
+export const createResult = (groupId: string, data: { test_case_id?: string; question?: string; expected_answer?: string; model_response?: string; is_correct?: boolean; score?: number; runtime_ms?: number; token_count?: number; reason?: string; trajectory?: unknown; custom_scores?: Record<string, number> }) =>
   post<EvaluationResult>(`/groups/${groupId}/results`, data);
 export const uploadResultsJson = (groupId: string, file: File) =>
   uploadFile<{ imported: number }>(`/groups/${groupId}/results/upload`, file);
-export const updateResult = (id: string, data: { model_response?: string; is_correct?: boolean; score?: number; runtime_ms?: number; token_count?: number }) =>
+export const updateResult = (id: string, data: { model_response?: string; is_correct?: boolean; score?: number; runtime_ms?: number; token_count?: number; reason?: string }) =>
   put<EvaluationResult>(`/results/${id}`, data);
 export const deleteResult = (id: string) => del<{ success: boolean }>(`/results/${id}`);

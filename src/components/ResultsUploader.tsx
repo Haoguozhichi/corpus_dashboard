@@ -23,8 +23,9 @@ interface ManualEntry {
   expected_answer: string;
   model_response: string;
   is_correct: boolean;
-  trajectory: string;     // JSON text
-  custom_scores: string;  // key:value text
+  reason: string;
+  trajectory: string;
+  custom_scores: string;
 }
 
 let entryCounter = 0;
@@ -49,6 +50,7 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
         expected_answer: tc.expected_answer,
         model_response: '',
         is_correct: false,
+        reason: '',
         trajectory: '',
         custom_scores: '',
       }));
@@ -75,7 +77,7 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
   };
 
   const addRow = () => {
-    setEntries((prev) => [...prev, { key: `new-${++entryCounter}`, question: '', expected_answer: '', model_response: '', is_correct: false, trajectory: '', custom_scores: '' }]);
+    setEntries((prev) => [...prev, { key: `new-${++entryCounter}`, question: '', expected_answer: '', model_response: '', is_correct: false, reason: '', trajectory: '', custom_scores: '' }]);
   };
 
   const removeRow = (key: string) => {
@@ -123,9 +125,9 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
           }
         }
         if (entry.test_case_id) {
-          await createResult(groupId, { test_case_id: entry.test_case_id, model_response: entry.model_response, is_correct: entry.is_correct, score: entry.is_correct ? 1 : 0, trajectory, custom_scores });
+          await createResult(groupId, { test_case_id: entry.test_case_id, model_response: entry.model_response, is_correct: entry.is_correct, score: entry.is_correct ? 1 : 0, reason: entry.reason || undefined, trajectory, custom_scores });
         } else if (entry.question.trim()) {
-          await createResult(groupId, { question: entry.question.trim(), expected_answer: entry.expected_answer.trim(), model_response: entry.model_response, is_correct: entry.is_correct, score: entry.is_correct ? 1 : 0, trajectory, custom_scores });
+          await createResult(groupId, { question: entry.question.trim(), expected_answer: entry.expected_answer.trim(), model_response: entry.model_response, is_correct: entry.is_correct, score: entry.is_correct ? 1 : 0, reason: entry.reason || undefined, trajectory, custom_scores });
         } else continue;
         count++;
       } catch { /* skip */ }
@@ -237,6 +239,12 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
     {
       title: '正确', key: 'correct', width: 56, align: 'center' as const,
       render: (_: unknown, record: ManualEntry) => <Switch size="small" checked={record.is_correct} onChange={(v) => updateEntry(record.key, 'is_correct', v)} />,
+    },
+    {
+      title: '原因', key: 'reason', width: 130,
+      render: (_: unknown, record: ManualEntry) => (
+        <Input size="small" placeholder="判断原因..." value={record.reason} onChange={(e) => updateEntry(record.key, 'reason', e.target.value)} />
+      ),
     },
     ...(isAgent ? [{
       title: '轨迹(JSON)', key: 'trajectory', width: 180,

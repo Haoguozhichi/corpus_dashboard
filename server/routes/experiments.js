@@ -139,6 +139,7 @@ router.post('/:expId/import', upload.single('file'), (req, res) => {
           id: uuidv4(), group_id: gid, test_case_id: tcId,
           model_response: r.model_response || '', is_correct: r.is_correct ? 1 : 0,
           score: r.score ?? (r.is_correct ? 1 : 0), runtime_ms: r.runtime_ms || 0, token_count: r.token_count || 0,
+          reason: r.reason || undefined,
           trajectory: r.trajectory || undefined, custom_scores: r.custom_scores || undefined,
         });
       }

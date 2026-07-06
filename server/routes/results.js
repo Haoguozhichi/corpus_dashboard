@@ -34,7 +34,7 @@ router.post('/groups/:groupId/results', (req, res) => {
   const group = findGroup(req.params.groupId);
   if (!group) return res.status(404).json({ error: '实验组不存在' });
 
-  let { test_case_id, question, expected_answer, model_response, is_correct, score, runtime_ms, token_count, trajectory, custom_scores, conversations } = req.body;
+  let { test_case_id, question, expected_answer, model_response, is_correct, score, runtime_ms, token_count, reason, trajectory, custom_scores, conversations } = req.body;
 
   // 找到所属实验
   let exp = null;
@@ -65,6 +65,7 @@ router.post('/groups/:groupId/results', (req, res) => {
     id: uuidv4(), group_id: group.id, test_case_id,
     model_response: model_response || '', is_correct: is_correct ? 1 : 0,
     score: score ?? (is_correct ? 1 : 0), runtime_ms: runtime_ms || 0, token_count: token_count || 0,
+    reason: reason || undefined,
     trajectory: trajectory || undefined,
     custom_scores: custom_scores || undefined,
     conversations: conversations || undefined,
@@ -128,12 +129,13 @@ router.put('/results/:id', (req, res) => {
   for (const c of data.categories) for (const e of c.experiments) for (const g of (e.groups || [])) {
     const er = (g.evaluation_results || []).find((r) => r.id === req.params.id);
     if (er) {
-      const { model_response, is_correct, score, runtime_ms, token_count, trajectory, custom_scores, conversations } = req.body;
+      const { model_response, is_correct, score, runtime_ms, token_count, reason, trajectory, custom_scores, conversations } = req.body;
       if (model_response !== undefined) er.model_response = model_response;
       if (is_correct !== undefined) er.is_correct = is_correct ? 1 : 0;
       if (score !== undefined) er.score = score;
       if (runtime_ms !== undefined) er.runtime_ms = runtime_ms;
       if (token_count !== undefined) er.token_count = token_count;
+      if (reason !== undefined) er.reason = reason;
       if (trajectory !== undefined) er.trajectory = trajectory;
       if (custom_scores !== undefined) er.custom_scores = custom_scores;
       if (conversations !== undefined) er.conversations = conversations;
