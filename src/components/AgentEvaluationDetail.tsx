@@ -83,7 +83,11 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
 
   const handleSaveAnnotation = async (id: string) => {
     setSavingAnno(true);
-    try { await updateResult(id, { annotation: annoText }); loadResults(); setEditingAnno(null); }
+    try {
+      await updateResult(id, { annotation: annoText });
+      setAllResults((prev) => prev.map((r) => (r.id === id ? { ...r, annotation: annoText } : r)));
+      setEditingAnno(null);
+    } catch { /* */ }
     finally { setSavingAnno(false); }
   };
   const startEditAnno = (record: EvaluationResult) => { setEditingAnno(record.id); setAnnoText(record.annotation || ''); };

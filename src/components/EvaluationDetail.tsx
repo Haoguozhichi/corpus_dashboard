@@ -44,7 +44,12 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
 
   const handleSaveAnnotation = async (id: string) => {
     setSavingAnno(true);
-    try { await updateResult(id, { annotation: annoText }); loadResults(); setEditingAnno(null); }
+    try {
+      await updateResult(id, { annotation: annoText });
+      // 乐观更新本地数据
+      setAllResults((prev) => prev.map((r) => (r.id === id ? { ...r, annotation: annoText } : r)));
+      setEditingAnno(null);
+    } catch { /* */ }
     finally { setSavingAnno(false); }
   };
 
