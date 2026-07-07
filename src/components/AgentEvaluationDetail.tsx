@@ -100,6 +100,8 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
     {
       title: '正确答案', dataIndex: 'expected_answer', key: 'expected_answer', width: 160, ellipsis: true,
       sorter: (a, b) => (a.expected_answer || '').localeCompare(b.expected_answer || ''),
+      filters: [...new Set(results.slice(0, 500).map((r) => r.expected_answer || '').filter(Boolean))].slice(0, 100).map((v) => ({ text: v.length > 40 ? v.slice(0, 40) + '...' : v, value: v })),
+      onFilter: (v, r) => r.expected_answer === v, filterSearch: true,
       render: (t: string) => <span style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{t || '-'}</span>,
     },
     {

@@ -75,6 +75,11 @@ const DashboardPage: React.FC = () => {
     return Array.from(keys);
   }, [groups]);
 
+  // 为筛选收集唯一值
+  const nameFilters = useMemo(() => [...new Set(groups.map((g) => g.name))].map((v) => ({ text: v, value: v })), [groups]);
+  const modelFilters = useMemo(() => [...new Set(groups.map((g) => g.model).filter(Boolean))].slice(0, 50).map((v) => ({ text: v, value: v })), [groups]);
+  const datasetFilters = useMemo(() => [...new Set(groups.map((g) => g.eval_dataset).filter(Boolean))].map((v) => ({ text: v, value: v })), [groups]);
+
   // 只在首次加载时显示 spinner，刷新时保持已有内容
   if (!experimentDetail) return <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />;
   if (!experiment) return <Empty description="未找到该实验" style={{ marginTop: 80 }} />;
@@ -116,9 +121,10 @@ const DashboardPage: React.FC = () => {
 
   // ====== 表格列 ======
   const commonColumns: ColumnsType<GroupRow> = [
-    { title: '实验组', dataIndex: 'name', key: 'name', fixed: 'left', width: 160, sorter: (a, b) => a.name.localeCompare(b.name), render: (n: string) => <strong>{n}</strong> },
-    { title: '模型', dataIndex: 'model', key: 'model', width: 160, ellipsis: true, sorter: (a, b) => a.model.localeCompare(b.model) },
+    { title: '实验组', dataIndex: 'name', key: 'name', fixed: 'left', width: 160, sorter: (a, b) => a.name.localeCompare(b.name), filters: nameFilters, onFilter: (v, r) => r.name === v, render: (n: string) => <strong>{n}</strong> },
+    { title: '模型', dataIndex: 'model', key: 'model', width: 160, ellipsis: true, sorter: (a, b) => a.model.localeCompare(b.model), filters: modelFilters, onFilter: (v, r) => r.model === v, filterSearch: true },
     { title: '评测集', dataIndex: 'eval_dataset', key: 'eval_dataset', width: 120, ellipsis: true, sorter: (a, b) => (a.eval_dataset || '').localeCompare(b.eval_dataset || ''),
+      filters: datasetFilters, onFilter: (v, r) => r.eval_dataset === v,
       render: (t: string) => t || <span style={{ color: '#ccc' }}>—</span> },
     // 变量列——每个变量名作为独立列
     ...paramKeys.map((key) => ({

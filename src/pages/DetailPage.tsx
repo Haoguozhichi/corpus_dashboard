@@ -43,7 +43,6 @@ const DetailPage: React.FC = () => {
         group={group}
         experimentName={experiment.name}
         experimentId={experiment.id!}
-        experimentType={experiment.type}
         testCases={experiment.testCases || []}
         onRefresh={refreshExperiment}
       />
