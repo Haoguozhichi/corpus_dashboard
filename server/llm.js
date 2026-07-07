@@ -8,6 +8,7 @@ const CONFIG_PATH = path.join(__dirname, 'llm_config.json');
 let config = {
   apiUrl: 'http://localhost:8000/v1/chat/completions',
   modelName: 'gpt-4o',
+  apiKey: '',
 };
 
 // 加载配置
@@ -28,7 +29,10 @@ async function callLLM(messages, options = {}) {
   const { temperature = 0.3, max_tokens = 2000 } = options;
   const res = await fetch(config.apiUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(config.apiKey ? { 'Authorization': `Bearer ${config.apiKey}` } : {}),
+    },
     body: JSON.stringify({
       model: config.modelName,
       messages,
@@ -67,7 +71,7 @@ ${modelResponse}
 
 // ====== 2. 批量自动标注（多维度评分） ======
 async function autoAnnotate(question, expectedAnswer, modelResponse) {
-  const prompt = `你是一个AI评测专家。请对以下模型回答进行多维度评分。
+  const prompt = `你是一个严格的AI评测专家。请仔细对比【标准答案】和【模型回答】，从以下四个维度评分。
 
 【题目】
 ${question}
@@ -78,18 +82,25 @@ ${expectedAnswer}
 【模型回答】
 ${modelResponse}
 
-请按JSON格式输出评分（0~1，保留两位小数），不要输出其他内容：
-{
-  "correctness": 0.0,   // 是否正确回答了问题
-  "completeness": 0.0,  // 是否遗漏关键信息
-  "conciseness": 0.0,   // 是否简洁不冗余
-  "format": 0.0         // 输出格式是否规范
-}`;
+评分标准：
+- correctness（正确性 0~1）：事实是否与标准答案一致
+  1.0=完全一致  0.7-0.9=基本正确有轻微偏差  0.4-0.6=部分正确  0-0.3=错误
+- completeness（完整性 0~1）：是否覆盖标准答案的关键信息点
+  1.0=全部覆盖  0.5-0.9=覆盖主要信息  0-0.4=遗漏重要信息
+- conciseness（简洁性 0~1）：是否简洁无冗余
+  1.0=简洁精炼  0.5-0.9=稍有冗余  0-0.4=严重啰嗦或过度简略
+- format（格式规范 0~1）：输出格式是否符合题目要求
+  1.0=格式规范  0.5-0.9=基本规范  0-0.4=格式混乱
 
-  const text = await callLLM([{ role: 'user', content: prompt }], { temperature: 0.1, max_tokens: 300 });
+请先给出一句话评语，然后严格按JSON格式输出评分：
+{"correctness":0.0,"completeness":0.0,"conciseness":0.0,"format":0.0}`;
+
+  const text = await callLLM([{ role: 'user', content: prompt }], { temperature: 0.1, max_tokens: 400 });
   try {
-    const cleaned = text.replace(/```json|```/g, '').trim();
-    return JSON.parse(cleaned);
+    // 从文本中提取 JSON 对象
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) return JSON.parse(match[0]);
+    return { error: 'parse_failed', raw: text };
   } catch {
     return { error: 'parse_failed', raw: text };
   }
@@ -98,25 +109,28 @@ ${modelResponse}
 // ====== 3. 错误聚类分析 ======
 async function clusterErrors(errorCases) {
   const casesText = errorCases.map((c, i) =>
-    `${i + 1}. 题目：${c.question}\n   模型回答：${c.model_response?.slice(0, 200)}`
+    `${i + 1}. 题目：${c.question}\n   模型回答：${c.model_response?.slice(0, 300)}`
   ).join('\n\n');
 
-  const prompt = `你是一个AI评测分析专家。以下是一个模型在评测中的 ${errorCases.length} 条错误用例，请归纳为3~5个主要错误类型，并为每个错误用例归类。
+  const count = errorCases.length;
+  const prompt = `你是一个AI评测分析专家。以下是一个模型在评测中的全部 ${count} 条错误用例。请仔细阅读每一条，根据错误的本质原因进行自然聚类（聚类数量不作限制，完全由数据决定）。
 
 【错误用例】
 ${casesText}
 
-请按JSON格式输出（不要输出其他内容）：
+请严格按JSON格式输出，归类每条错误（caseIndices为错误用例的序号）：
 {
   "clusters": [
-    { "name": "错误类型名称", "description": "简要说明", "count": 0, "caseIndices": [1, 3, 5] }
+    { "name": "错误类型名称", "description": "详细说明", "count": 0, "caseIndices": [1, 3] }
   ],
-  "summary": "总体分析摘要"
+  "summary": "整体评价和改进方向（100字以内）"
 }`;
 
-  const text = await callLLM([{ role: 'user', content: prompt }], { temperature: 0.3, max_tokens: 2000 });
+  const text = await callLLM([{ role: 'user', content: prompt }], { temperature: 0.3, max_tokens: 3000 });
   try {
-    return JSON.parse(text.replace(/```json|```/g, '').trim());
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) return JSON.parse(match[0]);
+    return { error: 'parse_failed', raw: text };
   } catch {
     return { error: 'parse_failed', raw: text };
   }

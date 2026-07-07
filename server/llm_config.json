@@ -1,0 +1,5 @@
+{
+  "apiUrl": "https://api.deepseek.com/chat/completions",
+  "modelName": "deepseek-v4-pro",
+  "apiKey": "sk-8f1d3f6ee61843df8c80cd7a876983a5"
+}

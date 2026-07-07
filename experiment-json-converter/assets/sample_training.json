@@ -1,0 +1,38 @@
+[
+  {
+    "group_name": "ResNet-50 (Baseline)",
+    "model": "ResNet-50",
+    "variables": { "lr": 0.1, "batch_size": 256, "epochs": 90, "optimizer": "SGD", "weight_decay": 1e-4 },
+    "metrics": { "accuracy": 0.761, "precision": 0.758, "recall": 0.764, "f1_score": 0.761, "runtime": 32400, "token_count": 0, "loss_curve": [2.8, 2.3, 1.9, 1.6, 1.4, 1.2, 1.1, 1.0, 0.95, 0.9], "accuracy_curve": [0.15, 0.32, 0.45, 0.55, 0.63, 0.68, 0.72, 0.74, 0.75, 0.76] }
+  },
+  {
+    "group_name": "ResNet-101",
+    "model": "ResNet-101",
+    "variables": { "lr": 0.1, "batch_size": 256, "epochs": 90, "optimizer": "SGD", "weight_decay": 1e-4 },
+    "metrics": { "accuracy": 0.774, "precision": 0.771, "recall": 0.777, "f1_score": 0.774, "runtime": 46800, "token_count": 0, "loss_curve": [2.6, 2.1, 1.7, 1.4, 1.2, 1.0, 0.9, 0.85, 0.8, 0.78], "accuracy_curve": [0.18, 0.35, 0.48, 0.58, 0.66, 0.71, 0.74, 0.76, 0.77, 0.77] }
+  },
+  {
+    "group_name": "ResNeXt-50 (32x4d)",
+    "model": "ResNeXt-50-32x4d",
+    "variables": { "lr": 0.1, "batch_size": 256, "epochs": 90, "optimizer": "SGD", "weight_decay": 1e-4 },
+    "metrics": { "accuracy": 0.791, "precision": 0.788, "recall": 0.794, "f1_score": 0.791, "runtime": 43200, "token_count": 0, "loss_curve": [2.5, 2.0, 1.6, 1.3, 1.1, 0.95, 0.85, 0.78, 0.74, 0.72], "accuracy_curve": [0.2, 0.38, 0.52, 0.62, 0.69, 0.74, 0.77, 0.78, 0.79, 0.79] }
+  },
+  {
+    "group_name": "ConvNeXt-Tiny",
+    "model": "ConvNeXt-Tiny",
+    "variables": { "lr": 4e-3, "batch_size": 512, "epochs": 300, "optimizer": "AdamW", "weight_decay": 0.05 },
+    "metrics": { "accuracy": 0.821, "precision": 0.818, "recall": 0.824, "f1_score": 0.821, "runtime": 28800, "token_count": 0, "loss_curve": [2.2, 1.7, 1.3, 1.0, 0.8, 0.7, 0.6, 0.55, 0.5, 0.48], "accuracy_curve": [0.25, 0.45, 0.58, 0.68, 0.74, 0.78, 0.80, 0.81, 0.82, 0.82] }
+  },
+  {
+    "group_name": "ViT-B/16 (Fine-tune)",
+    "model": "ViT-B/16",
+    "variables": { "lr": 3e-2, "batch_size": 512, "epochs": 100, "optimizer": "SGD", "weight_decay": 0, "custom_metrics": { "top5_accuracy": 0.95 } },
+    "metrics": { "accuracy": 0.843, "precision": 0.84, "recall": 0.846, "f1_score": 0.843, "runtime": 36000, "token_count": 0, "loss_curve": [2.0, 1.5, 1.1, 0.85, 0.7, 0.6, 0.5, 0.45, 0.4, 0.38], "accuracy_curve": [0.3, 0.5, 0.63, 0.72, 0.78, 0.81, 0.83, 0.84, 0.84, 0.84], "custom_metrics": { "top5_accuracy": 0.95 } }
+  },
+  {
+    "group_name": "EfficientNetV2-S",
+    "model": "EfficientNetV2-S",
+    "variables": { "lr": 0.05, "batch_size": 256, "epochs": 120, "optimizer": "RMSprop", "weight_decay": 1e-5 },
+    "metrics": { "accuracy": 0.808, "precision": 0.805, "recall": 0.811, "f1_score": 0.808, "runtime": 26000, "token_count": 0, "loss_curve": [2.4, 1.9, 1.5, 1.2, 1.0, 0.85, 0.75, 0.68, 0.62, 0.58], "accuracy_curve": [0.22, 0.4, 0.54, 0.64, 0.71, 0.76, 0.79, 0.8, 0.81, 0.81] }
+  }
+]

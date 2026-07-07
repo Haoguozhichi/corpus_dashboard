@@ -55,8 +55,9 @@ export const updateResult = (id: string, data: { model_response?: string; is_cor
 export const deleteResult = (id: string) => del<{ success: boolean }>(`/results/${id}`);
 
 // ====== LLM ======
-export const getLlmConfig = () => get<{ apiUrl: string; modelName: string }>('/llm/config');
-export const saveLlmConfig = (data: { apiUrl: string; modelName: string }) => put('/llm/config', data);
+export const getLlmConfig = () => get<{ apiUrl: string; modelName: string; apiKey: string }>('/llm/config');
+export const saveLlmConfig = (data: { apiUrl: string; modelName: string; apiKey: string }) => put('/llm/config', data);
+export const testLlmConnection = (data: { apiUrl: string; modelName: string; apiKey: string }) => post<{ success: boolean; message?: string; error?: string }>('/llm/test-connection', data);
 export const diagnoseError = (data: { question: string; expected_answer: string; model_response: string }) => post<{ result: string }>('/llm/diagnose-error', data);
 export const autoAnnotate = (data: { question: string; expected_answer: string; model_response: string }) => post<Record<string, number>>('/llm/auto-annotate', data);
 export const clusterErrors = (data: { cases: { question: string; model_response: string }[] }) => post<{ clusters?: { name: string; description: string; count: number; caseIndices: number[] }[]; summary?: string; error?: string; raw?: string }>('/llm/cluster-errors', data);

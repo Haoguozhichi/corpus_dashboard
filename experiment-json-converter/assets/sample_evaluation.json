@@ -1,0 +1,788 @@
+[
+  {
+    "group_name": "GPT-4o",
+    "model": "gpt-4o-2024-05-13",
+    "eval_dataset": "General Knowledge QA",
+    "variables": {
+      "temperature": 0.7,
+      "max_tokens": 4096
+    },
+    "results": [
+      {
+        "question": "What is the capital of France?",
+        "expected_answer": "Paris",
+        "model_response": "Paris",
+        "is_correct": true,
+        "score": 0.9165981149567354,
+        "runtime_ms": 274,
+        "token_count": 12,
+        "reason": ""
+      },
+      {
+        "question": "Solve: 123 * 456",
+        "expected_answer": "56088",
+        "model_response": "56088",
+        "is_correct": true,
+        "score": 0.8055934299636108,
+        "runtime_ms": 434,
+        "token_count": 28,
+        "reason": ""
+      },
+      {
+        "question": "Translate Hello to Chinese",
+        "expected_answer": "你好",
+        "model_response": "Hello的中文翻译是你好",
+        "is_correct": true,
+        "score": 0.8999708414857541,
+        "runtime_ms": 226,
+        "token_count": 9,
+        "reason": ""
+      },
+      {
+        "question": "What is the boiling point of water in Celsius?",
+        "expected_answer": "100C",
+        "model_response": "100C",
+        "is_correct": true,
+        "score": 0.8533167198528581,
+        "runtime_ms": 264,
+        "token_count": 8,
+        "reason": ""
+      },
+      {
+        "question": "Who wrote Romeo and Juliet?",
+        "expected_answer": "William Shakespeare",
+        "model_response": "William Shakespeare",
+        "is_correct": true,
+        "score": 0.8470136502727035,
+        "runtime_ms": 191,
+        "token_count": 18,
+        "reason": ""
+      },
+      {
+        "question": "What is the chemical formula for water?",
+        "expected_answer": "H2O",
+        "model_response": "H2O",
+        "is_correct": true,
+        "score": 0.958414903885827,
+        "runtime_ms": 371,
+        "token_count": 14,
+        "reason": ""
+      },
+      {
+        "question": "How many continents are there on Earth?",
+        "expected_answer": "7",
+        "model_response": "7",
+        "is_correct": true,
+        "score": 0.9833720496377856,
+        "runtime_ms": 211,
+        "token_count": 17,
+        "reason": ""
+      },
+      {
+        "question": "What is the largest planet in our solar system?",
+        "expected_answer": "Jupiter",
+        "model_response": "Jupiter",
+        "is_correct": true,
+        "score": 0.9086603824373645,
+        "runtime_ms": 233,
+        "token_count": 14,
+        "reason": ""
+      },
+      {
+        "question": "What year did World War II end?",
+        "expected_answer": "1945",
+        "model_response": "1945",
+        "is_correct": true,
+        "score": 0.9933633699264123,
+        "runtime_ms": 365,
+        "token_count": 16,
+        "reason": ""
+      },
+      {
+        "question": "What is the speed of light in m/s?",
+        "expected_answer": "3e8 m/s",
+        "model_response": "3e8 m/s",
+        "is_correct": true,
+        "score": 0.9982311287502149,
+        "runtime_ms": 252,
+        "token_count": 27,
+        "reason": ""
+      },
+      {
+        "question": "What is the driest continent on Earth?",
+        "expected_answer": "Antarctica",
+        "model_response": "Antarctica",
+        "is_correct": false,
+        "score": 0.009824486007303578,
+        "runtime_ms": 155,
+        "token_count": 22,
+        "reason": ""
+      },
+      {
+        "question": "Translate Good morning to French",
+        "expected_answer": "Bonjour",
+        "model_response": "Bonjour is Good morning in French",
+        "is_correct": true,
+        "score": 0.9618730151388875,
+        "runtime_ms": 379,
+        "token_count": 11,
+        "reason": ""
+      }
+    ]
+  },
+  {
+    "group_name": "GPT-4-Turbo",
+    "model": "gpt-4-turbo",
+    "eval_dataset": "General Knowledge QA",
+    "variables": {
+      "temperature": 0.7,
+      "max_tokens": 4096
+    },
+    "results": [
+      {
+        "question": "What is the capital of France?",
+        "expected_answer": "Paris",
+        "model_response": "Paris",
+        "is_correct": true,
+        "score": 0.8689650057322349,
+        "runtime_ms": 431,
+        "token_count": 33,
+        "reason": ""
+      },
+      {
+        "question": "Solve: 123 * 456",
+        "expected_answer": "56088",
+        "model_response": "56088",
+        "is_correct": true,
+        "score": 0.8473123170201019,
+        "runtime_ms": 400,
+        "token_count": 16,
+        "reason": ""
+      },
+      {
+        "question": "Translate Hello to Chinese",
+        "expected_answer": "你好",
+        "model_response": "你好",
+        "is_correct": true,
+        "score": 0.9848291913739875,
+        "runtime_ms": 404,
+        "token_count": 6,
+        "reason": ""
+      },
+      {
+        "question": "What is the boiling point of water in Celsius?",
+        "expected_answer": "100C",
+        "model_response": "100C",
+        "is_correct": true,
+        "score": 0.844302810265157,
+        "runtime_ms": 153,
+        "token_count": 20,
+        "reason": ""
+      },
+      {
+        "question": "Who wrote Romeo and Juliet?",
+        "expected_answer": "William Shakespeare",
+        "model_response": "William Shakespeare",
+        "is_correct": true,
+        "score": 0.9660072881231915,
+        "runtime_ms": 156,
+        "token_count": 21,
+        "reason": ""
+      },
+      {
+        "question": "What is the chemical formula for water?",
+        "expected_answer": "H2O",
+        "model_response": "H2O",
+        "is_correct": true,
+        "score": 0.9427308614583134,
+        "runtime_ms": 367,
+        "token_count": 6,
+        "reason": ""
+      },
+      {
+        "question": "How many continents are there on Earth?",
+        "expected_answer": "7",
+        "model_response": "7",
+        "is_correct": true,
+        "score": 0.9440708455418575,
+        "runtime_ms": 511,
+        "token_count": 5,
+        "reason": ""
+      },
+      {
+        "question": "What is the largest planet in our solar system?",
+        "expected_answer": "Jupiter",
+        "model_response": "Jupiter",
+        "is_correct": true,
+        "score": 0.9895740529270878,
+        "runtime_ms": 335,
+        "token_count": 12,
+        "reason": ""
+      },
+      {
+        "question": "What year did World War II end?",
+        "expected_answer": "1945",
+        "model_response": "1945",
+        "is_correct": true,
+        "score": 0.8404227609666893,
+        "runtime_ms": 421,
+        "token_count": 8,
+        "reason": ""
+      },
+      {
+        "question": "What is the speed of light in m/s?",
+        "expected_answer": "3e8 m/s",
+        "model_response": "3e8 m/s",
+        "is_correct": true,
+        "score": 0.8644158809896895,
+        "runtime_ms": 391,
+        "token_count": 24,
+        "reason": ""
+      },
+      {
+        "question": "What is the driest continent on Earth?",
+        "expected_answer": "Antarctica",
+        "model_response": "The Sahara desert is the driest",
+        "is_correct": true,
+        "score": 0.8770401325753674,
+        "runtime_ms": 151,
+        "token_count": 17,
+        "reason": "Wrong - confused continent with desert"
+      },
+      {
+        "question": "Translate Good morning to French",
+        "expected_answer": "Bonjour",
+        "model_response": "Bonjour",
+        "is_correct": true,
+        "score": 0.9850078947783446,
+        "runtime_ms": 192,
+        "token_count": 8,
+        "reason": ""
+      }
+    ]
+  },
+  {
+    "group_name": "Claude-Sonnet-5",
+    "model": "claude-sonnet-5",
+    "eval_dataset": "General Knowledge QA",
+    "variables": {
+      "temperature": 0.5,
+      "max_tokens": 4096
+    },
+    "results": [
+      {
+        "question": "What is the capital of France?",
+        "expected_answer": "Paris",
+        "model_response": "Paris",
+        "is_correct": true,
+        "score": 0.8349691430491191,
+        "runtime_ms": 251,
+        "token_count": 20,
+        "reason": ""
+      },
+      {
+        "question": "Solve: 123 * 456",
+        "expected_answer": "56088",
+        "model_response": "56088",
+        "is_correct": true,
+        "score": 0.9001992285428936,
+        "runtime_ms": 444,
+        "token_count": 19,
+        "reason": ""
+      },
+      {
+        "question": "Translate Hello to Chinese",
+        "expected_answer": "你好",
+        "model_response": "你好",
+        "is_correct": true,
+        "score": 0.9882717183382237,
+        "runtime_ms": 176,
+        "token_count": 12,
+        "reason": ""
+      },
+      {
+        "question": "What is the boiling point of water in Celsius?",
+        "expected_answer": "100C",
+        "model_response": "100C",
+        "is_correct": true,
+        "score": 0.9749367846535588,
+        "runtime_ms": 438,
+        "token_count": 19,
+        "reason": ""
+      },
+      {
+        "question": "Who wrote Romeo and Juliet?",
+        "expected_answer": "William Shakespeare",
+        "model_response": "William Shakespeare",
+        "is_correct": true,
+        "score": 0.8117665481073123,
+        "runtime_ms": 374,
+        "token_count": 31,
+        "reason": ""
+      },
+      {
+        "question": "What is the chemical formula for water?",
+        "expected_answer": "H2O",
+        "model_response": "H2O",
+        "is_correct": true,
+        "score": 0.8268538304048527,
+        "runtime_ms": 202,
+        "token_count": 29,
+        "reason": ""
+      },
+      {
+        "question": "How many continents are there on Earth?",
+        "expected_answer": "7",
+        "model_response": "7",
+        "is_correct": true,
+        "score": 0.8342287486185098,
+        "runtime_ms": 153,
+        "token_count": 33,
+        "reason": ""
+      },
+      {
+        "question": "What is the largest planet in our solar system?",
+        "expected_answer": "Jupiter",
+        "model_response": "Jupiter",
+        "is_correct": true,
+        "score": 0.8996893295502648,
+        "runtime_ms": 508,
+        "token_count": 7,
+        "reason": ""
+      },
+      {
+        "question": "What year did World War II end?",
+        "expected_answer": "1945",
+        "model_response": "1945",
+        "is_correct": true,
+        "score": 0.8984721305681642,
+        "runtime_ms": 427,
+        "token_count": 18,
+        "reason": ""
+      },
+      {
+        "question": "What is the speed of light in m/s?",
+        "expected_answer": "3e8 m/s",
+        "model_response": "3e8 m/s",
+        "is_correct": true,
+        "score": 0.951002312135586,
+        "runtime_ms": 239,
+        "token_count": 22,
+        "reason": ""
+      },
+      {
+        "question": "What is the driest continent on Earth?",
+        "expected_answer": "Antarctica",
+        "model_response": "Antarctica",
+        "is_correct": true,
+        "score": 0.910476544676669,
+        "runtime_ms": 495,
+        "token_count": 31,
+        "reason": ""
+      },
+      {
+        "question": "Translate Good morning to French",
+        "expected_answer": "Bonjour",
+        "model_response": "Bonjour",
+        "is_correct": true,
+        "score": 0.9051790886215041,
+        "runtime_ms": 253,
+        "token_count": 24,
+        "reason": ""
+      }
+    ]
+  },
+  {
+    "group_name": "Gemini-2.5-Pro",
+    "model": "gemini-2.5-pro",
+    "eval_dataset": "General Knowledge QA",
+    "variables": {
+      "temperature": 0.6,
+      "max_tokens": 8192
+    },
+    "results": [
+      {
+        "question": "What is the capital of France?",
+        "expected_answer": "Paris",
+        "model_response": "Paris",
+        "is_correct": true,
+        "score": 0.8726145440737734,
+        "runtime_ms": 328,
+        "token_count": 26,
+        "reason": ""
+      },
+      {
+        "question": "Solve: 123 * 456",
+        "expected_answer": "56088",
+        "model_response": "56088",
+        "is_correct": true,
+        "score": 0.9572893622211692,
+        "runtime_ms": 252,
+        "token_count": 31,
+        "reason": ""
+      },
+      {
+        "question": "Translate Hello to Chinese",
+        "expected_answer": "你好",
+        "model_response": "你好",
+        "is_correct": true,
+        "score": 0.9024054084603039,
+        "runtime_ms": 251,
+        "token_count": 31,
+        "reason": ""
+      },
+      {
+        "question": "What is the boiling point of water in Celsius?",
+        "expected_answer": "100C",
+        "model_response": "100C",
+        "is_correct": true,
+        "score": 0.8781390850127877,
+        "runtime_ms": 327,
+        "token_count": 15,
+        "reason": ""
+      },
+      {
+        "question": "Who wrote Romeo and Juliet?",
+        "expected_answer": "William Shakespeare",
+        "model_response": "William Shakespeare",
+        "is_correct": true,
+        "score": 0.895795186476968,
+        "runtime_ms": 245,
+        "token_count": 24,
+        "reason": ""
+      },
+      {
+        "question": "What is the chemical formula for water?",
+        "expected_answer": "H2O",
+        "model_response": "H2O",
+        "is_correct": true,
+        "score": 0.9183689603323997,
+        "runtime_ms": 451,
+        "token_count": 9,
+        "reason": ""
+      },
+      {
+        "question": "How many continents are there on Earth?",
+        "expected_answer": "7",
+        "model_response": "7",
+        "is_correct": true,
+        "score": 0.8582083377537186,
+        "runtime_ms": 440,
+        "token_count": 25,
+        "reason": ""
+      },
+      {
+        "question": "What is the largest planet in our solar system?",
+        "expected_answer": "Jupiter",
+        "model_response": "Jupiter",
+        "is_correct": true,
+        "score": 0.8442085829179803,
+        "runtime_ms": 196,
+        "token_count": 15,
+        "reason": ""
+      },
+      {
+        "question": "What year did World War II end?",
+        "expected_answer": "1945",
+        "model_response": "1945",
+        "is_correct": true,
+        "score": 0.9690568595319141,
+        "runtime_ms": 377,
+        "token_count": 30,
+        "reason": ""
+      },
+      {
+        "question": "What is the speed of light in m/s?",
+        "expected_answer": "3e8 m/s",
+        "model_response": "3e8 m/s",
+        "is_correct": true,
+        "score": 0.9534337886876,
+        "runtime_ms": 508,
+        "token_count": 9,
+        "reason": ""
+      },
+      {
+        "question": "What is the driest continent on Earth?",
+        "expected_answer": "Antarctica",
+        "model_response": "Sahara Desert",
+        "is_correct": false,
+        "score": 0.02253745331446596,
+        "runtime_ms": 515,
+        "token_count": 20,
+        "reason": "Hallucination - Sahara is not a continent"
+      },
+      {
+        "question": "Translate Good morning to French",
+        "expected_answer": "Bonjour",
+        "model_response": "Bonjour",
+        "is_correct": true,
+        "score": 0.9674281295101637,
+        "runtime_ms": 273,
+        "token_count": 8,
+        "reason": ""
+      }
+    ]
+  },
+  {
+    "group_name": "LLaMA-3-70B",
+    "model": "meta-llama-3-70b",
+    "eval_dataset": "General Knowledge QA",
+    "variables": {
+      "temperature": 0.8,
+      "max_tokens": 2048
+    },
+    "results": [
+      {
+        "question": "What is the capital of France?",
+        "expected_answer": "Paris",
+        "model_response": "Paris",
+        "is_correct": true,
+        "score": 0.8883507044510299,
+        "runtime_ms": 427,
+        "token_count": 31,
+        "reason": ""
+      },
+      {
+        "question": "Solve: 123 * 456",
+        "expected_answer": "56088",
+        "model_response": "56088",
+        "is_correct": true,
+        "score": 0.8812690074923097,
+        "runtime_ms": 454,
+        "token_count": 9,
+        "reason": ""
+      },
+      {
+        "question": "Translate Hello to Chinese",
+        "expected_answer": "你好",
+        "model_response": "你好",
+        "is_correct": true,
+        "score": 0.8127690784347061,
+        "runtime_ms": 413,
+        "token_count": 21,
+        "reason": ""
+      },
+      {
+        "question": "What is the boiling point of water in Celsius?",
+        "expected_answer": "100C",
+        "model_response": "100C",
+        "is_correct": true,
+        "score": 0.8919118482243431,
+        "runtime_ms": 334,
+        "token_count": 34,
+        "reason": ""
+      },
+      {
+        "question": "Who wrote Romeo and Juliet?",
+        "expected_answer": "William Shakespeare",
+        "model_response": "William Shakespeare",
+        "is_correct": true,
+        "score": 0.8641296350894957,
+        "runtime_ms": 388,
+        "token_count": 33,
+        "reason": ""
+      },
+      {
+        "question": "What is the chemical formula for water?",
+        "expected_answer": "H2O",
+        "model_response": "H2O",
+        "is_correct": true,
+        "score": 0.8878078229294941,
+        "runtime_ms": 429,
+        "token_count": 6,
+        "reason": ""
+      },
+      {
+        "question": "How many continents are there on Earth?",
+        "expected_answer": "7",
+        "model_response": "7",
+        "is_correct": true,
+        "score": 0.8705950711034848,
+        "runtime_ms": 517,
+        "token_count": 30,
+        "reason": ""
+      },
+      {
+        "question": "What is the largest planet in our solar system?",
+        "expected_answer": "Jupiter",
+        "model_response": "Jupiter",
+        "is_correct": true,
+        "score": 0.8528680669663316,
+        "runtime_ms": 181,
+        "token_count": 16,
+        "reason": ""
+      },
+      {
+        "question": "What year did World War II end?",
+        "expected_answer": "1945",
+        "model_response": "1945",
+        "is_correct": true,
+        "score": 0.9196420891118079,
+        "runtime_ms": 448,
+        "token_count": 24,
+        "reason": ""
+      },
+      {
+        "question": "What is the speed of light in m/s?",
+        "expected_answer": "3e8 m/s",
+        "model_response": "3e8 m/s",
+        "is_correct": true,
+        "score": 0.8772903079450615,
+        "runtime_ms": 431,
+        "token_count": 22,
+        "reason": ""
+      },
+      {
+        "question": "What is the driest continent on Earth?",
+        "expected_answer": "Antarctica",
+        "model_response": "Antarctica is the driest continent",
+        "is_correct": true,
+        "score": 0.9148356129015527,
+        "runtime_ms": 180,
+        "token_count": 15,
+        "reason": "Correct"
+      },
+      {
+        "question": "Translate Good morning to French",
+        "expected_answer": "Bonjour",
+        "model_response": "Bonjour",
+        "is_correct": true,
+        "score": 0.8814412385772067,
+        "runtime_ms": 512,
+        "token_count": 5,
+        "reason": ""
+      }
+    ]
+  },
+  {
+    "group_name": "Qwen-2.5-72B",
+    "model": "qwen-2.5-72b",
+    "eval_dataset": "General Knowledge QA",
+    "variables": {
+      "temperature": 0.7,
+      "max_tokens": 4096
+    },
+    "results": [
+      {
+        "question": "What is the capital of France?",
+        "expected_answer": "Paris",
+        "model_response": "Paris",
+        "is_correct": true,
+        "score": 0.8359028999644149,
+        "runtime_ms": 249,
+        "token_count": 9,
+        "reason": ""
+      },
+      {
+        "question": "Solve: 123 * 456",
+        "expected_answer": "56088",
+        "model_response": "56088",
+        "is_correct": true,
+        "score": 0.9282980852221799,
+        "runtime_ms": 475,
+        "token_count": 16,
+        "reason": ""
+      },
+      {
+        "question": "Translate Hello to Chinese",
+        "expected_answer": "你好",
+        "model_response": "你好",
+        "is_correct": true,
+        "score": 0.8063282615442612,
+        "runtime_ms": 159,
+        "token_count": 15,
+        "reason": ""
+      },
+      {
+        "question": "What is the boiling point of water in Celsius?",
+        "expected_answer": "100C",
+        "model_response": "100C",
+        "is_correct": true,
+        "score": 0.9720096708486461,
+        "runtime_ms": 495,
+        "token_count": 6,
+        "reason": ""
+      },
+      {
+        "question": "Who wrote Romeo and Juliet?",
+        "expected_answer": "William Shakespeare",
+        "model_response": "William Shakespeare",
+        "is_correct": true,
+        "score": 0.8865691003444958,
+        "runtime_ms": 318,
+        "token_count": 14,
+        "reason": ""
+      },
+      {
+        "question": "What is the chemical formula for water?",
+        "expected_answer": "H2O",
+        "model_response": "H2O",
+        "is_correct": true,
+        "score": 0.8903693981665537,
+        "runtime_ms": 458,
+        "token_count": 12,
+        "reason": ""
+      },
+      {
+        "question": "How many continents are there on Earth?",
+        "expected_answer": "7",
+        "model_response": "7",
+        "is_correct": true,
+        "score": 0.9712897150814807,
+        "runtime_ms": 461,
+        "token_count": 24,
+        "reason": ""
+      },
+      {
+        "question": "What is the largest planet in our solar system?",
+        "expected_answer": "Jupiter",
+        "model_response": "Jupiter",
+        "is_correct": true,
+        "score": 0.8861339817433185,
+        "runtime_ms": 198,
+        "token_count": 16,
+        "reason": ""
+      },
+      {
+        "question": "What year did World War II end?",
+        "expected_answer": "1945",
+        "model_response": "1945",
+        "is_correct": true,
+        "score": 0.8531417612455267,
+        "runtime_ms": 293,
+        "token_count": 10,
+        "reason": ""
+      },
+      {
+        "question": "What is the speed of light in m/s?",
+        "expected_answer": "3e8 m/s",
+        "model_response": "3e8 m/s",
+        "is_correct": true,
+        "score": 0.8366233412491383,
+        "runtime_ms": 440,
+        "token_count": 30,
+        "reason": ""
+      },
+      {
+        "question": "What is the driest continent on Earth?",
+        "expected_answer": "Antarctica",
+        "model_response": "Australia is the driest continent",
+        "is_correct": false,
+        "score": 0.24635584431579394,
+        "runtime_ms": 464,
+        "token_count": 27,
+        "reason": "Wrong - should be Antarctica"
+      },
+      {
+        "question": "Translate Good morning to French",
+        "expected_answer": "Bonjour",
+        "model_response": "Bonjour",
+        "is_correct": true,
+        "score": 0.9254523239828372,
+        "runtime_ms": 215,
+        "token_count": 33,
+        "reason": ""
+      }
+    ]
+  }
+]

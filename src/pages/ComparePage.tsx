@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import {
-  Card, Col, Row, Typography, Table, Statistic, Empty, Tag, Spin, Input,
+  Card, Col, Row, Typography, Table, Statistic, Empty, Tag, Spin, Input, Button, Modal,
 } from 'antd';
-import { CheckCircleOutlined, ClockCircleOutlined, ThunderboltOutlined, SearchOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, ClockCircleOutlined, ThunderboltOutlined, SearchOutlined, RobotOutlined } from '@ant-design/icons';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line,
 } from 'recharts';
 import { useData } from '../context/DataContext';
+import { llmCompareAnalysis } from '../api/endpoints';
 import type { ExperimentGroup } from '../types';
 
 const { Title, Paragraph } = Typography;
@@ -113,6 +114,36 @@ const ComparePage: React.FC = () => {
   }
 
   // ====== 评测 / Agent 对比 ======
+  const [llmResult, setLlmResult] = useState('');
+  const [llmOpen, setLlmOpen] = useState(false);
+  const [llmLoading, setLlmLoading] = useState(false);
+
+  const handleCompareAnalysis = async () => {
+    setLlmOpen(true); setLlmLoading(true); setLlmResult('分析中...');
+    const parts: string[] = [];
+    const sample = commonData.filter((d) => {
+      const results = groups.map((g) => d[`${g.name}_ok`] as string);
+      return results.some((v) => v !== results[0]); // 找出有分歧的行
+    }).slice(0, 5);
+    for (const row of sample) {
+      try {
+        const res = await llmCompareAnalysis({
+          question: row.question as string,
+          expected_answer: row.expected_answer as string,
+          responseA: row[`${groups[0].name}_resp`] as string,
+          correctA: row[`${groups[0].name}_ok`] === 'correct',
+          responseB: row[`${groups[1].name}_resp`] as string,
+          correctB: row[`${groups[1].name}_ok`] === 'correct',
+          nameA: groups[0].name,
+          nameB: groups[1].name,
+        });
+        parts.push(`## ${row.question?.slice(0, 40)}...\n${res.result}\n`);
+      } catch { parts.push('分析失败\n'); }
+    }
+    setLlmResult(parts.join('\n---\n'));
+    setLlmLoading(false);
+  };
+
   const isAgent = experiment.type === 'agent_evaluation';
   const [evalFilter, setEvalFilter] = useState('');
   const [resultFilter, setResultFilter] = useState<string | null>(null); // 'correct' | 'incorrect' | null
@@ -219,6 +250,10 @@ const ComparePage: React.FC = () => {
     <div>
       <HeaderLine groups={groups} experimentName={experiment.name} />
 
+      <Button icon={<RobotOutlined />} onClick={handleCompareAnalysis} loading={llmLoading} style={{ marginBottom: 16 }}>
+        AI 对比评析
+      </Button>
+
       <Title level={5} style={{ marginBottom: 16 }}>📊 准确率对比</Title>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={accData}>
@@ -271,6 +306,12 @@ const ComparePage: React.FC = () => {
           <Table columns={commonColumns} dataSource={filteredCommon} pagination={{ pageSize: 15 }} size="small" bordered scroll={{ x: 600 + groups.length * 220 }} />
         </>
       )}
+
+      <Modal title="AI 对比评析" open={llmOpen} onCancel={() => setLlmOpen(false)} footer={null} width={700}>
+        <div style={{ whiteSpace: 'pre-wrap', maxHeight: 500, overflow: 'auto', background: '#fafafa', padding: 12, borderRadius: 4, fontSize: 13 }}>
+          {llmResult || '分析中...'}
+        </div>
+      </Modal>
     </div>
   );
 };

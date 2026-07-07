@@ -60,29 +60,39 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   };
 
   // LLM 状态
+  // 行选择
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
+
   const [llmLoading, setLlmLoading] = useState(false);
   const [llmResult, setLlmResult] = useState<string | null>(null);
   const [llmModalTitle, setLlmModalTitle] = useState('');
 
-  const handleDiagnoseAll = async () => {
-    const errors = filtered.filter((r) => !r.is_correct);
-    if (errors.length === 0) { message.warning('没有错误用例'); return; }
-    setLlmLoading(true); setLlmModalTitle(`错误诊断 (${errors.length}条)`);
+  const getSelected = () => {
+    if (selectedRowKeys.length === 0) return filtered;
+    return filtered.filter((r) => selectedRowKeys.includes(r.id));
+  };
+
+  const handleDiagnose = async () => {
+    const targets = getSelected();
+    const errors = targets.filter((r) => !r.is_correct);
+    if (errors.length === 0) { message.warning('所选用例中没有错误的'); return; }
+    setLlmLoading(true); setLlmModalTitle(`错误诊断 (${Math.min(errors.length, 10)}条)`);
     const parts: string[] = [];
-    for (let i = 0; i < Math.min(errors.length, 5); i++) {
+    for (let i = 0; i < Math.min(errors.length, 10); i++) {
       const r = errors[i];
       try {
         const res = await diagnoseError({ question: r.question || '', expected_answer: r.expected_answer || '', model_response: r.model_response || '' });
         parts.push(`## ${i + 1}. ${r.question?.slice(0, 40)}...\n${res.result}\n`);
-      } catch { parts.push(`## ${i + 1}. 诊断失败\n`); }
+      } catch (err: any) { parts.push(`## ${i + 1}. 诊断失败: ${err?.message || err}\n`); }
     }
     setLlmResult(parts.join('\n---\n'));
     setLlmLoading(false);
   };
 
   const handleAutoAnnotate = async () => {
-    setLlmLoading(true); setLlmModalTitle('自动标注');
-    const sample = filtered.slice(0, 10);
+    const targets = getSelected();
+    setLlmLoading(true); setLlmModalTitle(`自动标注 (${Math.min(targets.length, 10)}条)`);
+    const sample = targets.slice(0, 10);
     const parts: string[] = [];
     for (const r of sample) {
       try {
@@ -97,7 +107,7 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   const handleClusterErrors = async () => {
     const errors = filtered.filter((r) => !r.is_correct);
     if (errors.length === 0) { message.warning('没有错误用例'); return; }
-    setLlmLoading(true); setLlmModalTitle('错误聚类分析');
+    setLlmLoading(true); setLlmModalTitle(`错误聚类分析 (${errors.length}条)`);
     try {
       const res = await clusterErrors({ cases: errors.map((r) => ({ question: r.question || '', model_response: r.model_response || '' })) });
       if (res.clusters) {
@@ -222,9 +232,9 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
             <Input size="small" placeholder="搜索..." prefix={<SearchOutlined />}
               value={filterText} onChange={(e) => setFilterText(e.target.value)} allowClear style={{ width: 180 }} />
             <Dropdown menu={{ items: [
-              { key: 'diagnose', label: 'AI 诊断错误', onClick: handleDiagnoseAll },
-              { key: 'annotate', label: 'AI 自动标注', onClick: handleAutoAnnotate },
-              { key: 'cluster', label: 'AI 错误聚类', onClick: handleClusterErrors },
+              { key: 'diagnose', label: `AI 诊断错误${selectedRowKeys.length > 0 ? ' (' + selectedRowKeys.length + '已选)' : ''}`, onClick: handleDiagnose },
+              { key: 'annotate', label: `AI 自动标注${selectedRowKeys.length > 0 ? ' (' + selectedRowKeys.length + '已选)' : ''}`, onClick: handleAutoAnnotate },
+              { key: 'cluster', label: 'AI 错误聚类(全量)', onClick: handleClusterErrors },
             ] }}>
               <Button size="small" icon={<RobotOutlined />} loading={llmLoading}>AI 分析 <DownOutlined /></Button>
             </Dropdown>
@@ -233,6 +243,10 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
         }
       >
         <Table columns={columns} dataSource={filtered} rowKey="id" pagination={{ pageSize: 20 }}
+          rowSelection={{
+            selectedRowKeys,
+            onChange: (keys) => setSelectedRowKeys(keys as string[]),
+          }}
           size="small" bordered scroll={{ x: 1400 }}
           loading={resultsLoading}
           rowClassName={(record) => (record.is_correct ? '' : 'param-diff-row')} />

@@ -275,6 +275,16 @@ interface TrainingMetrics {
 | `sample_evaluation.json` | 6 | 每12条, 共72条 |
 | `sample_agent.json` | 5 | 每12条(含轨迹), 共60条 |
 
+### Claude Code Skill：实验数据格式转换
+
+项目包含一个 Claude Code Skill（`experiment-json-converter/`），可将任意格式（CSV、Excel、JSON、Markdown 表格、纯文本）的实验数据自动转换为平台的一键导入 JSON 格式。
+
+**使用方式**：在 Claude Code 中描述你的实验数据，Skill 会自动识别实验类型、映射字段、生成 JSON 文件。
+
+```
+示例：我有一个 results.csv，包含 model, question, answer, correct 四列...
+```
+
 ## API 接口一览
 
 ### 类别

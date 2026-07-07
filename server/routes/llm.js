@@ -5,13 +5,47 @@ const router = express.Router();
 
 // ====== 配置 ======
 router.get('/config', (_req, res) => {
-  res.json(llm.getConfig());
+  const cfg = llm.getConfig();
+  res.json({ apiUrl: cfg.apiUrl, modelName: cfg.modelName, apiKey: cfg.apiKey ? '***' : '' });
+});
+
+// 测试连接（通过后端代理，避免CORS）
+router.post('/test-connection', async (req, res) => {
+  try {
+    const cfg = llm.getConfig();
+    const url = req.body.apiUrl || cfg.apiUrl;
+    const model = req.body.modelName || cfg.modelName;
+    const key = req.body.apiKey !== undefined ? req.body.apiKey : cfg.apiKey;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(key ? { 'Authorization': `Bearer ${key}` } : {}),
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: 'Hello' }],
+        max_tokens: 10,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      res.json({ success: true, model: data.model || model, message: '连接成功' });
+    } else {
+      const err = await response.text();
+      res.json({ success: false, error: `API返回 (${response.status}): ${err.slice(0, 500)}` });
+    }
+  } catch (err) {
+    res.json({ success: false, error: `网络错误: ${err.message}` });
+  }
 });
 
 router.put('/config', (req, res) => {
-  const { apiUrl, modelName } = req.body;
-  const config = llm.saveConfig({ apiUrl, modelName });
-  res.json(config);
+  const { apiUrl, modelName, apiKey } = req.body;
+  const config = llm.saveConfig({ apiUrl, modelName, apiKey });
+  res.json({ apiUrl: config.apiUrl, modelName: config.modelName, apiKey: config.apiKey ? '***' : '' });
 });
 
 // ====== 1. 错误诊断 ======
