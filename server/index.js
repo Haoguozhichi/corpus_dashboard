@@ -8,6 +8,7 @@ const groupsRouter = require('./routes/groups');
 const metricsRouter = require('./routes/metrics');
 const testCasesRouter = require('./routes/testCases');
 const resultsRouter = require('./routes/results');
+const llmRouter = require('./routes/llm');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,6 +24,7 @@ app.use('/api', groupsRouter);
 app.use('/api', metricsRouter);
 app.use('/api', testCasesRouter);
 app.use('/api', resultsRouter);
+app.use('/api/llm', llmRouter);
 
 // 健康检查
 app.get('/api/health', (_req, res) => {

@@ -4,13 +4,13 @@ import {
   Spin, Popconfirm, message, Tabs, Modal, Input,
 } from 'antd';
 import {
-  BarChartOutlined, TrophyOutlined, SearchOutlined,
+  BarChartOutlined, TrophyOutlined, SearchOutlined, RobotOutlined,
   PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
 import { useData } from '../context/DataContext';
-import { createGroup, updateGroup, deleteGroup } from '../api/endpoints';
+import { createGroup, updateGroup, deleteGroup, generateReport } from '../api/endpoints';
 import GroupFormModal from '../components/GroupFormModal';
 import TrainingMetricsManager from '../components/TrainingMetricsManager';
 import TestCaseTable from '../components/TestCaseTable';
@@ -90,6 +90,19 @@ const DashboardPage: React.FC = () => {
     const b = isTraining ? (best.metrics?.accuracy ?? 0) : (best.accuracy ?? 0);
     return a > b ? g : best;
   }, groups[0]);
+
+  // 实验报告
+  const [reportModal, setReportModal] = useState(false);
+  const [reportText, setReportText] = useState('');
+  const [reportLoading, setReportLoading] = useState(false);
+  const handleGenerateReport = async () => {
+    setReportLoading(true); setReportModal(true); setReportText('生成中...');
+    try {
+      const res = await generateReport({ experiment: { name: experiment?.name, type: experiment?.type, groups } });
+      setReportText(res.result);
+    } catch { setReportText('报告生成失败'); }
+    finally { setReportLoading(false); }
+  };
 
   // ====== Group CRUD ======
   const handleCreateGroup = () => { setEditingGroup(null); setGroupModalOpen(true); };
@@ -267,6 +280,7 @@ const DashboardPage: React.FC = () => {
           {isTraining && <Button icon={<SettingOutlined />} onClick={handleOpenMetrics}>管理指标</Button>}
           {isEvaluation && <Button onClick={() => setTestCasesTab(true)}>管理测试用例</Button>}
           <Button onClick={() => setImportTab(true)}>一键导入</Button>
+          <Button icon={<RobotOutlined />} onClick={handleGenerateReport} loading={reportLoading}>AI 报告</Button>
           <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateGroup}>创建实验组</Button>
         </Space>
       </div>
@@ -338,6 +352,12 @@ const DashboardPage: React.FC = () => {
 
       <Modal title="管理训练指标" open={metricsModalOpen} onCancel={() => setMetricsModalOpen(false)} footer={null} width={1000} destroyOnClose>
         <TrainingMetricsManager groups={groups} onRefresh={refreshExperiment} />
+      </Modal>
+
+      <Modal title="AI 实验报告" open={reportModal} onCancel={() => setReportModal(false)} footer={null} width={700}>
+        <div style={{ whiteSpace: 'pre-wrap', maxHeight: 500, overflow: 'auto', background: '#fafafa', padding: 12, borderRadius: 4, fontSize: 13 }}>
+          {reportText || '正在生成...'}
+        </div>
       </Modal>
 
       <Modal title="一键导入实验数据" open={importTab} onCancel={() => setImportTab(false)} footer={null} width={800}>

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input, Space } from 'antd';
-import { SearchOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, ThunderboltOutlined, UploadOutlined, EditOutlined, BulbOutlined } from '@ant-design/icons';
+import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input, Space, Dropdown, message } from 'antd';
+import { SearchOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, ThunderboltOutlined, UploadOutlined, EditOutlined, BulbOutlined, RobotOutlined, DownOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { ExperimentGroup, TestCase, EvaluationResult } from '../types';
 import { fetchResults, updateResult } from '../api/endpoints';
+import { diagnoseError, autoAnnotate, clusterErrors } from '../api/endpoints';
 import ResultsUploader from './ResultsUploader';
 
 const { Title } = Typography;
@@ -56,6 +57,56 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   const startEditAnno = (record: EvaluationResult) => {
     setEditingAnno(record.id);
     setAnnoText(record.annotation || '');
+  };
+
+  // LLM 状态
+  const [llmLoading, setLlmLoading] = useState(false);
+  const [llmResult, setLlmResult] = useState<string | null>(null);
+  const [llmModalTitle, setLlmModalTitle] = useState('');
+
+  const handleDiagnoseAll = async () => {
+    const errors = filtered.filter((r) => !r.is_correct);
+    if (errors.length === 0) { message.warning('没有错误用例'); return; }
+    setLlmLoading(true); setLlmModalTitle(`错误诊断 (${errors.length}条)`);
+    const parts: string[] = [];
+    for (let i = 0; i < Math.min(errors.length, 5); i++) {
+      const r = errors[i];
+      try {
+        const res = await diagnoseError({ question: r.question || '', expected_answer: r.expected_answer || '', model_response: r.model_response || '' });
+        parts.push(`## ${i + 1}. ${r.question?.slice(0, 40)}...\n${res.result}\n`);
+      } catch { parts.push(`## ${i + 1}. 诊断失败\n`); }
+    }
+    setLlmResult(parts.join('\n---\n'));
+    setLlmLoading(false);
+  };
+
+  const handleAutoAnnotate = async () => {
+    setLlmLoading(true); setLlmModalTitle('自动标注');
+    const sample = filtered.slice(0, 10);
+    const parts: string[] = [];
+    for (const r of sample) {
+      try {
+        const scores = await autoAnnotate({ question: r.question || '', expected_answer: r.expected_answer || '', model_response: r.model_response || '' });
+        parts.push(`- ${r.question?.slice(0, 30)}... | correctness:${scores.correctness} completeness:${scores.completeness} conciseness:${scores.conciseness} format:${scores.format}`);
+      } catch { parts.push(`- 标注失败`); }
+    }
+    setLlmResult(parts.join('\n'));
+    setLlmLoading(false);
+  };
+
+  const handleClusterErrors = async () => {
+    const errors = filtered.filter((r) => !r.is_correct);
+    if (errors.length === 0) { message.warning('没有错误用例'); return; }
+    setLlmLoading(true); setLlmModalTitle('错误聚类分析');
+    try {
+      const res = await clusterErrors({ cases: errors.map((r) => ({ question: r.question || '', model_response: r.model_response || '' })) });
+      if (res.clusters) {
+        setLlmResult(res.clusters.map((c) => `### ${c.name} (${c.count}条)\n${c.description}`).join('\n\n') + (res.summary ? `\n\n---\n**总结**: ${res.summary}` : ''));
+      } else {
+        setLlmResult(res.raw || JSON.stringify(res));
+      }
+    } catch { setLlmResult('聚类分析失败'); }
+    setLlmLoading(false);
   };
 
   // 为筛选收集唯一值
@@ -167,9 +218,16 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
 
       <Card title="📋 评测结果与答案对比" style={{ borderRadius: 8 }}
         extra={
-          <span style={{ display: 'flex', gap: 8 }}>
+          <span style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <Input size="small" placeholder="搜索..." prefix={<SearchOutlined />}
               value={filterText} onChange={(e) => setFilterText(e.target.value)} allowClear style={{ width: 180 }} />
+            <Dropdown menu={{ items: [
+              { key: 'diagnose', label: 'AI 诊断错误', onClick: handleDiagnoseAll },
+              { key: 'annotate', label: 'AI 自动标注', onClick: handleAutoAnnotate },
+              { key: 'cluster', label: 'AI 错误聚类', onClick: handleClusterErrors },
+            ] }}>
+              <Button size="small" icon={<RobotOutlined />} loading={llmLoading}>AI 分析 <DownOutlined /></Button>
+            </Dropdown>
             <Button type="primary" size="small" icon={<UploadOutlined />} onClick={() => setUploadOpen(true)}>管理评测结果</Button>
           </span>
         }
@@ -189,6 +247,13 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
         ) : (
           <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>该用例没有录入 Think 过程</div>
         )}
+      </Modal>
+
+      {/* LLM 分析结果弹窗 */}
+      <Modal title={`AI 分析 - ${llmModalTitle}`} open={!!llmResult} onCancel={() => setLlmResult(null)} footer={null} width={700}>
+        <div style={{ whiteSpace: 'pre-wrap', maxHeight: 500, overflow: 'auto', background: '#fafafa', padding: 12, borderRadius: 4, fontSize: 13 }}>
+          {llmResult || '分析中...'}
+        </div>
       </Modal>
 
       <Modal title={`管理评测结果 — ${group.name}`} open={uploadOpen} onCancel={() => setUploadOpen(false)}

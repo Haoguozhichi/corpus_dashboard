@@ -1,14 +1,16 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Layout, Breadcrumb, Button } from 'antd';
-import { HomeOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { HomeOutlined, ArrowLeftOutlined, SettingOutlined } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import LlmSettingsModal from './LlmSettingsModal';
 
 const { Header: AntHeader, Content } = Layout;
 
 const AppLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [llmSettingsOpen, setLlmSettingsOpen] = useState(false);
   const {
     selectedCategory, selectedExperiment, selectedGroup,
     compareGroups, goHome,
@@ -100,6 +102,15 @@ const AppLayout: React.FC = () => {
         >
           📊 实验数据平台
         </span>
+        <Button
+          type="text"
+          size="small"
+          icon={<SettingOutlined />}
+          onClick={() => setLlmSettingsOpen(true)}
+          style={{ color: 'rgba(255,255,255,0.75)' }}
+        >
+          LLM
+        </Button>
       </AntHeader>
 
       {/* 面包屑 + 返回按钮 */}
@@ -131,6 +142,8 @@ const AppLayout: React.FC = () => {
       <Content style={{ padding: isHome ? '32px 32px' : '24px 32px', flex: 1 }}>
         <Outlet />
       </Content>
+
+      <LlmSettingsModal open={llmSettingsOpen} onCancel={() => setLlmSettingsOpen(false)} onSaved={() => setLlmSettingsOpen(false)} />
     </Layout>
   );
 };

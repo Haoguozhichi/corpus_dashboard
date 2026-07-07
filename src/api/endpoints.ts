@@ -53,3 +53,13 @@ export const uploadResultsJson = (groupId: string, file: File) =>
 export const updateResult = (id: string, data: { model_response?: string; is_correct?: boolean; score?: number; runtime_ms?: number; token_count?: number; reason?: string; annotation?: string; think?: string }) =>
   put<EvaluationResult>(`/results/${id}`, data);
 export const deleteResult = (id: string) => del<{ success: boolean }>(`/results/${id}`);
+
+// ====== LLM ======
+export const getLlmConfig = () => get<{ apiUrl: string; modelName: string }>('/llm/config');
+export const saveLlmConfig = (data: { apiUrl: string; modelName: string }) => put('/llm/config', data);
+export const diagnoseError = (data: { question: string; expected_answer: string; model_response: string }) => post<{ result: string }>('/llm/diagnose-error', data);
+export const autoAnnotate = (data: { question: string; expected_answer: string; model_response: string }) => post<Record<string, number>>('/llm/auto-annotate', data);
+export const clusterErrors = (data: { cases: { question: string; model_response: string }[] }) => post<{ clusters?: { name: string; description: string; count: number; caseIndices: number[] }[]; summary?: string; error?: string; raw?: string }>('/llm/cluster-errors', data);
+export const llmCompareAnalysis = (data: { question: string; expected_answer: string; responseA: string; correctA: boolean; responseB: string; correctB: boolean; nameA: string; nameB: string }) => post<{ result: string }>('/llm/compare-analysis', data);
+export const diagnoseTrajectory = (data: { question: string; trajectory: unknown; is_correct: boolean }) => post<{ result: string }>('/llm/diagnose-trajectory', data);
+export const generateReport = (data: { experiment: unknown }) => post<{ result: string }>('/llm/generate-report', data);

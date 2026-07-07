@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input, Space } from 'antd';
+import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input, Space, Dropdown, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined,
   ThunderboltOutlined, ToolOutlined, WarningOutlined, UploadOutlined, SearchOutlined, EditOutlined,
-  BulbOutlined, EyeOutlined,
+  BulbOutlined, EyeOutlined, RobotOutlined,
 } from '@ant-design/icons';
 import type { ExperimentGroup, TestCase, EvaluationResult, TrajectoryStep } from '../types';
-import { fetchResults, updateResult } from '../api/endpoints';
+import { fetchResults, updateResult, diagnoseTrajectory } from '../api/endpoints';
+import { diagnoseError as llmDiagnose } from '../api/endpoints';
 import ResultsUploader from './ResultsUploader';
 import TrajectoryViewer from './TrajectoryViewer';
 import CustomScoresChart from './CustomScoresChart';
@@ -84,6 +85,17 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
     finally { setSavingAnno(false); }
   };
   const startEditAnno = (record: EvaluationResult) => { setEditingAnno(record.id); setAnnoText(record.annotation || ''); };
+
+  // LLM 轨迹诊断
+  const [trajDiagnosis, setTrajDiagnosis] = useState<string | null>(null);
+  const handleDiagnoseTraj = async () => {
+    if (!trajModal) return;
+    setTrajDiagnosis('分析中...');
+    try {
+      const res = await diagnoseTrajectory({ question: trajModal.question || '', trajectory: trajModal.trajectory, is_correct: !!trajModal.is_correct });
+      setTrajDiagnosis(res.result);
+    } catch { setTrajDiagnosis('诊断失败'); }
+  };
 
   const questionFilters = [...new Set(results.map((r) => r.question || '').filter(Boolean))].slice(0, 200).map((q) => ({ text: q.length > 40 ? q.slice(0, 40) + '...' : q, value: q }));
   const resultFilters = [{ text: '✅ 正确', value: 'correct' }, { text: '❌ 错误', value: 'incorrect' }];
@@ -216,6 +228,17 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
                 )}
               </div>
             )}
+            {/* AI 轨迹诊断 */}
+            <div style={{ marginTop: 16, borderTop: '1px solid #f0f0f0', paddingTop: 12 }}>
+              <Button icon={<RobotOutlined />} onClick={handleDiagnoseTraj}>
+                AI 诊断轨迹
+              </Button>
+              {trajDiagnosis && (
+                <div style={{ whiteSpace: 'pre-wrap', maxHeight: 300, overflow: 'auto', background: '#fafafa', padding: 12, borderRadius: 4, fontSize: 13, marginTop: 8 }}>
+                  {trajDiagnosis}
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>该用例没有轨迹数据</div>
