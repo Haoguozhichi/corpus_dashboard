@@ -257,7 +257,10 @@ const DashboardPage: React.FC = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <Title level={3} style={{ marginBottom: 4 }}>{experiment.name}</Title>
+          <Title level={3} style={{ marginBottom: 4 }}>
+            {experiment.name}
+            {experiment.owner && <Tag style={{ marginLeft: 8, fontWeight: 400, fontSize: 13 }}>{experiment.owner}</Tag>}
+          </Title>
           <Paragraph type="secondary">{experiment.description}</Paragraph>
         </div>
         <Space wrap>

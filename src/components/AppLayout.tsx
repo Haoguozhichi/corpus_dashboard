@@ -17,7 +17,8 @@ const AppLayout: React.FC = () => {
 
   const pathname = location.pathname;
   const isHome = pathname === '/';
-  const isCategory = pathname.startsWith('/category/');
+  const isCategories = pathname === '/categories';
+  const isCategory = pathname.startsWith('/category/') && !isCategories;
   const isExperiment = pathname.startsWith('/experiment/') && !pathname.includes('/group/') && !pathname.includes('/compare');
   const isDetail = pathname.includes('/group/');
   const isCompare = pathname.includes('/compare');
@@ -57,6 +58,8 @@ const AppLayout: React.FC = () => {
     if (isDetail && selectedGroup) return selectedGroup.name;
     if (isExperiment && selectedExperiment) return selectedExperiment.name;
     if (isCategory && selectedCategory) return selectedCategory.name;
+    if (isCategories) return '实验类别';
+    if (isHome) return null;
     return null;
   }, [isCompare, isDetail, isExperiment, isCategory, compareGroups, selectedGroup, selectedExperiment, selectedCategory]);
 
@@ -66,6 +69,7 @@ const AppLayout: React.FC = () => {
     if (isDetail && selectedExperiment) return { label: '返回仪表盘', path: `/experiment/${selectedExperiment.id}` };
     if (isExperiment && selectedCategory) return { label: '返回实验列表', path: `/category/${selectedCategory.id}` };
     if (isCategory) return { label: '返回首页', path: '/' };
+    if (isCategories) return { label: '返回首页', path: '/' };
     return null;
   }, [isCompare, isDetail, isExperiment, isCategory, selectedExperiment, selectedCategory]);
 

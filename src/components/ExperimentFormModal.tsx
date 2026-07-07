@@ -7,7 +7,8 @@ interface Props {
   open: boolean;
   editing?: Experiment | null;
   categoryId?: string;
-  onOk: (values: { categoryId?: string; name: string; description: string; type: string; date: string }) => void;
+  categories?: { id: string; name: string }[];  // 首页创建时选择类别
+  onOk: (values: { categoryId?: string; name: string; description: string; type: string; date: string; owner?: string }) => void;
   onCancel: () => void;
 }
 
@@ -18,8 +19,9 @@ const TYPE_OPTIONS = [
   { label: '其他 (Other)', value: 'other' },
 ];
 
-const ExperimentFormModal: React.FC<Props> = ({ open, editing, categoryId, onOk, onCancel }) => {
+const ExperimentFormModal: React.FC<Props> = ({ open, editing, categoryId, categories, onOk, onCancel }) => {
   const [form] = Form.useForm();
+  const needCategorySelect = !categoryId && !editing; // 首页创建时需要选择类别
 
   useEffect(() => {
     if (open) {
@@ -28,6 +30,7 @@ const ExperimentFormModal: React.FC<Props> = ({ open, editing, categoryId, onOk,
         description: editing?.description || '',
         type: editing?.type || 'training',
         date: editing?.date ? dayjs(editing.date) : dayjs(),
+        owner: editing?.owner || '',
       });
     }
   }, [open, editing, form]);
@@ -35,11 +38,12 @@ const ExperimentFormModal: React.FC<Props> = ({ open, editing, categoryId, onOk,
   const handleOk = async () => {
     const values = await form.validateFields();
     onOk({
-      categoryId: categoryId || editing?.category_id,
+      categoryId: needCategorySelect ? values.category_id : (categoryId || editing?.category_id),
       name: values.name,
       description: values.description,
       type: values.type,
       date: values.date.format('YYYY-MM-DD'),
+      owner: values.owner,
     });
     form.resetFields();
   };
@@ -59,6 +63,19 @@ const ExperimentFormModal: React.FC<Props> = ({ open, editing, categoryId, onOk,
         </Form.Item>
         <Form.Item name="description" label="描述">
           <Input.TextArea rows={2} />
+        </Form.Item>
+        {needCategorySelect && (
+          <Form.Item name="category_id" label="实验类别" rules={[{ required: true, message: '请选择实验类别' }]}>
+            <Select
+              placeholder="选择实验类别..."
+              options={categories?.map((c) => ({ label: c.name, value: c.id })) || []}
+              showSearch
+              optionFilterProp="label"
+            />
+          </Form.Item>
+        )}
+        <Form.Item name="owner" label="实验负责人">
+          <Input placeholder="例如：张三" />
         </Form.Item>
         <Form.Item name="type" label="实验类型" rules={[{ required: true }]}>
           <Select options={TYPE_OPTIONS} />

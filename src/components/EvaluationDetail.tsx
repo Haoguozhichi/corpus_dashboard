@@ -165,25 +165,6 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
         ))}
       </Row>
 
-      {(() => {
-        const tagMap: Record<string, { total: number; correct: number }> = {};
-        results.forEach((r) => {
-          const tag = r.category_tag || '未分类';
-          if (!tagMap[tag]) tagMap[tag] = { total: 0, correct: 0 };
-          tagMap[tag].total++;
-          if (r.is_correct) tagMap[tag].correct++;
-        });
-        return Object.keys(tagMap).length > 0 ? (
-          <Card title="按类别统计" style={{ marginBottom: 16 }} size="small">
-            {Object.entries(tagMap).map(([tag, stats]) => (
-              <Tag key={tag} color={stats.correct === stats.total ? 'green' : 'orange'} style={{ marginBottom: 4 }}>
-                {tag}: {stats.correct}/{stats.total} ({(stats.correct / stats.total * 100).toFixed(0)}%)
-              </Tag>
-            ))}
-          </Card>
-        ) : null;
-      })()}
-
       <Card title="📋 评测结果与答案对比" style={{ borderRadius: 8 }}
         extra={
           <span style={{ display: 'flex', gap: 8 }}>

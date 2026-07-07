@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Card, Col, Row, Typography, Tag, Button, Spin, Empty, Popconfirm, message, Input, Space } from 'antd';
-import { CalendarOutlined, TeamOutlined, PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import { CalendarOutlined, TeamOutlined, UserOutlined, PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { fetchExperiments, createExperiment, updateExperiment, deleteExperiment } from '../api/endpoints';
@@ -50,12 +50,12 @@ const ExperimentListPage: React.FC = () => {
   const handleCreate = () => { setEditing(null); setModalOpen(true); };
   const handleEdit = (exp: Experiment) => { setEditing(exp); setModalOpen(true); };
 
-  const handleOk = async (values: { categoryId?: string; name: string; description: string; type: string; date: string }) => {
+  const handleOk = async (values: { categoryId?: string; name: string; description: string; type: string; date: string; owner?: string }) => {
     if (editing) {
       await updateExperiment(editing.id, values);
       message.success('实验已更新');
     } else {
-      await createExperiment({ ...values, categoryId: values.categoryId || categoryId! } as { categoryId: string; name: string; description?: string; type: string; date: string });
+      await createExperiment({ ...values, categoryId: values.categoryId || categoryId! } as { categoryId: string; name: string; description?: string; type: string; date: string; owner?: string });
       message.success('实验已创建');
     }
     setModalOpen(false);
@@ -123,9 +123,10 @@ const ExperimentListPage: React.FC = () => {
                   <Paragraph type="secondary" style={{ margin: '8px 0 12px' }} ellipsis={{ rows: 2 }}>
                     {exp.description}
                   </Paragraph>
-                  <div style={{ display: 'flex', gap: 12 }}>
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     <Tag icon={<CalendarOutlined />} color="default">{exp.date}</Tag>
                     <Tag icon={<TeamOutlined />} color="green">{exp.groupCount ?? 0} 个实验组</Tag>
+                    {exp.owner && <Tag icon={<UserOutlined />} color="blue">{exp.owner}</Tag>}
                     <Tag color={typeLabel[exp.type]?.color || 'default'}>
                       {typeLabel[exp.type]?.text || exp.type}
                     </Tag>

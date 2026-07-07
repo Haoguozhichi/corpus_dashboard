@@ -1,117 +1,211 @@
-import React, { useState, useMemo } from 'react';
-import { Card, Col, Row, Typography, Tag, Button, Spin, Popconfirm, message, Input, Space } from 'antd';
-import { ExperimentOutlined, FolderOutlined, PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Card, Col, Row, Typography, Table, Tag, Button, Input, Select, Space, DatePicker, Statistic, message } from 'antd';
+import {
+  SearchOutlined, ExperimentOutlined, FolderOpenOutlined,
+  UserOutlined, CalendarOutlined, TeamOutlined, ArrowRightOutlined, PlusOutlined,
+} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
-import { createCategory, updateCategory, deleteCategory } from '../api/endpoints';
-import CategoryFormModal from '../components/CategoryFormModal';
-import type { Category } from '../types';
+import { fetchExperiments, createExperiment } from '../api/endpoints';
+import ExperimentFormModal from '../components/ExperimentFormModal';
+import type { Experiment } from '../types';
+import type { ColumnsType } from 'antd/es/table';
 
-const { Title, Paragraph } = Typography;
+const { Title } = Typography;
+const { RangePicker } = DatePicker;
+
+const typeOptions = [
+  { label: '训练实验', value: 'training' },
+  { label: '评测实验', value: 'evaluation' },
+  { label: 'Agent评测', value: 'agent_evaluation' },
+  { label: '其他', value: 'other' },
+];
+
+const typeLabel: Record<string, { color: string; text: string }> = {
+  training: { color: 'green', text: '训练' },
+  evaluation: { color: 'orange', text: '评测' },
+  agent_evaluation: { color: 'purple', text: 'Agent评测' },
+  other: { color: 'default', text: '其他' },
+};
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { categories, loading, refreshCategories, selectCategory } = useData();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<Category | null>(null);
-  const [search, setSearch] = useState('');
+  const { categories, selectExperiment } = useData();
+  const [experiments, setExperiments] = useState<Experiment[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // 筛选状态
+  const [searchName, setSearchName] = useState('');
+  const [filterOwner, setFilterOwner] = useState('');
+  const [filterType, setFilterType] = useState<string | null>(null);
+  const [filterDateRange, setFilterDateRange] = useState<[string, string] | null>(null);
+
+  const [createOpen, setCreateOpen] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try { setExperiments(await fetchExperiments()); }
+    catch { /* */ }
+    finally { setLoading(false); }
+  };
+  useEffect(() => { load(); }, []);
+
+  const handleCreateExperiment = async (values: { categoryId?: string; name: string; description: string; type: string; date: string; owner?: string }) => {
+    await createExperiment(values as { categoryId: string; name: string; description?: string; type: string; date: string; owner?: string });
+    message.success('实验已创建');
+    setCreateOpen(false);
+    load();
+  };
+
+  // 收集所有负责人用于筛选
+  const ownerOptions = useMemo(() =>
+    [...new Set(experiments.map((e) => e.owner).filter(Boolean))].map((v) => ({ label: v, value: v! })),
+    [experiments],
+  );
+
+  // 筛选
   const filtered = useMemo(() => {
-    if (!search.trim()) return categories;
-    const q = search.toLowerCase();
-    return categories.filter(
-      (c) => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q),
-    );
-  }, [categories, search]);
+    return experiments.filter((e) => {
+      if (searchName && !e.name.toLowerCase().includes(searchName.toLowerCase())) return false;
+      if (filterOwner && e.owner !== filterOwner) return false;
+      if (filterType && e.type !== filterType) return false;
+      if (filterDateRange) {
+        const [start, end] = filterDateRange;
+        if (start && e.date < start) return false;
+        if (end && e.date > end) return false;
+      }
+      return true;
+    });
+  }, [experiments, searchName, filterOwner, filterType, filterDateRange]);
 
-  const handleCreate = () => { setEditing(null); setModalOpen(true); };
-  const handleEdit = (cat: Category) => { setEditing(cat); setModalOpen(true); };
-
-  const handleOk = async (values: { name: string; description: string }) => {
-    if (editing) {
-      await updateCategory(editing.id, values);
-      message.success('类别已更新');
-    } else {
-      await createCategory(values);
-      message.success('类别已创建');
-    }
-    setModalOpen(false);
-    refreshCategories();
-  };
-
-  const handleDelete = async (id: string) => {
-    await deleteCategory(id);
-    message.success('类别已删除');
-    refreshCategories();
-  };
-
-  const handleClick = (categoryId: string) => {
-    selectCategory(categoryId);
-    navigate(`/category/${categoryId}`);
-  };
+  const columns: ColumnsType<Experiment> = [
+    {
+      title: '实验名称', dataIndex: 'name', key: 'name', width: 280, ellipsis: true,
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      render: (name: string, record: Experiment) => (
+        <a onClick={() => { selectExperiment(record.id); navigate(`/experiment/${record.id}`); }}>
+          {name}
+        </a>
+      ),
+    },
+    {
+      title: '类别', key: 'category', width: 140,
+      sorter: (a, b) => {
+        const ca = categories.find((c) => c.id === a.category_id)?.name || '';
+        const cb = categories.find((c) => c.id === b.category_id)?.name || '';
+        return ca.localeCompare(cb);
+      },
+      render: (_: unknown, r: Experiment) => {
+        const cat = categories.find((c) => c.id === r.category_id);
+        return <Tag color="blue">{cat?.name || '—'}</Tag>;
+      },
+    },
+    {
+      title: '类型', dataIndex: 'type', key: 'type', width: 110,
+      sorter: (a, b) => a.type.localeCompare(b.type),
+      render: (t: string) => <Tag color={typeLabel[t]?.color || 'default'}>{typeLabel[t]?.text || t}</Tag>,
+    },
+    {
+      title: '负责人', dataIndex: 'owner', key: 'owner', width: 110, ellipsis: true,
+      sorter: (a, b) => (a.owner || '').localeCompare(b.owner || ''),
+      render: (v: string) => v ? <Tag icon={<UserOutlined />}>{v}</Tag> : <span style={{ color: '#ccc' }}>—</span>,
+    },
+    {
+      title: '日期', dataIndex: 'date', key: 'date', width: 120,
+      sorter: (a, b) => a.date.localeCompare(b.date),
+      render: (d: string) => <Tag icon={<CalendarOutlined />}>{d}</Tag>,
+    },
+    {
+      title: '实验组', dataIndex: 'groupCount', key: 'groupCount', width: 80, align: 'center',
+      sorter: (a, b) => (a.groupCount ?? 0) - (b.groupCount ?? 0),
+      render: (v: number) => <Tag icon={<TeamOutlined />} color="green">{v ?? 0}</Tag>,
+    },
+  ];
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <Title level={3} style={{ marginBottom: 4 }}>实验类别</Title>
-          <Paragraph type="secondary">选择一个实验类别以查看其下所有实验。</Paragraph>
-        </div>
-        <Space>
-          <Input
-            placeholder="搜索类别..."
-            prefix={<SearchOutlined />}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            allowClear
-            style={{ width: 220 }}
-          />
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>创建类别</Button>
-        </Space>
-      </div>
-
-      {loading ? (
-        <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#999' }}>
-          {search ? '没有匹配的类别' : '暂无实验类别，点击右上角创建'}
-        </div>
-      ) : (
-        <Row gutter={[24, 24]}>
-          {filtered.map((cat) => (
-            <Col xs={24} sm={12} lg={8} key={cat.id}>
-              <Card
-                hoverable
-                style={{ height: '100%', borderRadius: 8, display: 'flex', flexDirection: 'column' }}
-                styles={{ body: { flex: 1, minHeight: 120 } }}
-                actions={[
-                  <EditOutlined key="edit" onClick={(e) => { e.stopPropagation(); handleEdit(cat); }} />,
-                  <Popconfirm key="del" title="确认删除此类别及其下所有实验?" onConfirm={(e) => { e?.stopPropagation(); handleDelete(cat.id); }} onCancel={(e) => e?.stopPropagation()}>
-                    <DeleteOutlined onClick={(e) => e.stopPropagation()} />
-                  </Popconfirm>,
-                ]}
-              >
-                <div onClick={() => handleClick(cat.id)}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                    <FolderOutlined style={{ fontSize: 36, color: '#1677ff', marginTop: 4 }} />
-                    <div style={{ flex: 1 }}>
-                      <Title level={5} style={{ margin: 0 }}>{cat.name}</Title>
-                      <Paragraph type="secondary" style={{ margin: '8px 0 12px' }} ellipsis={{ rows: 2 }}>
-                        {cat.description}
-                      </Paragraph>
-                      <Tag icon={<ExperimentOutlined />} color="blue">
-                        {cat.experimentCount ?? 0} 个实验
-                      </Tag>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </Col>
-          ))}
+      {/* 顶部横幅 */}
+      <Card style={{ marginBottom: 24, background: 'linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%)', border: '1px solid #d6e4ff', borderRadius: 12 }}>
+        <Row align="middle" gutter={[24, 16]}>
+          <Col flex="auto">
+            <Title level={2} style={{ margin: 0, color: '#1677ff' }}>📊 语料实验室</Title>
+            <Typography.Paragraph type="secondary" style={{ margin: '8px 0 0', fontSize: 15 }}>
+              实验数据展示平台 — 统一管理训练实验、评测实验和 Agent 评测结果
+            </Typography.Paragraph>
+          </Col>
+          <Col>
+            <Space size={24}>
+              <Statistic title="实验类别" value={categories.length} prefix={<FolderOpenOutlined />} />
+              <Statistic title="实验总数" value={experiments.length} prefix={<ExperimentOutlined />} />
+            </Space>
+          </Col>
+          <Col>
+            <Space>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>创建实验</Button>
+              <Button icon={<ArrowRightOutlined />} onClick={() => navigate('/categories')}>实验类别管理</Button>
+            </Space>
+          </Col>
         </Row>
-      )}
+      </Card>
 
-      <CategoryFormModal open={modalOpen} editing={editing} onOk={handleOk} onCancel={() => setModalOpen(false)} />
+      {/* 筛选栏 */}
+      <Card size="small" style={{ marginBottom: 16, borderRadius: 8 }}>
+        <Space wrap>
+          <Input
+            placeholder="搜索实验名称..."
+            prefix={<SearchOutlined />}
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+            allowClear
+            style={{ width: 240 }}
+          />
+          <Select
+            placeholder="实验负责人"
+            value={filterOwner || undefined}
+            onChange={(v) => setFilterOwner(v || null)}
+            allowClear
+            options={ownerOptions}
+            style={{ width: 160 }}
+          />
+          <Select
+            placeholder="实验类型"
+            value={filterType}
+            onChange={(v) => setFilterType(v || null)}
+            allowClear
+            options={typeOptions}
+            style={{ width: 150 }}
+          />
+          <RangePicker
+            placeholder={['开始日期', '结束日期']}
+            onChange={(_, dateStrings) => setFilterDateRange(dateStrings[0] && dateStrings[1] ? [dateStrings[0], dateStrings[1]] as [string, string] : null)}
+            style={{ width: 260 }}
+            allowClear
+          />
+          <Tag color="blue">{filtered.length} / {experiments.length} 个实验</Tag>
+        </Space>
+      </Card>
+
+      {/* 实验列表 */}
+      <Table
+        columns={columns}
+        dataSource={filtered}
+        rowKey="id"
+        loading={loading}
+        pagination={{ pageSize: 20, showSizeChanger: true, pageSizeOptions: ['10', '20', '50'] }}
+        size="middle"
+        scroll={{ x: 900 }}
+        onRow={(record) => ({
+          onClick: () => { selectExperiment(record.id); navigate(`/experiment/${record.id}`); },
+          style: { cursor: 'pointer' },
+        })}
+      />
+
+      <ExperimentFormModal
+        open={createOpen}
+        categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+        onOk={handleCreateExperiment}
+        onCancel={() => setCreateOpen(false)}
+      />
     </div>
   );
 };

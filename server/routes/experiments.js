@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
   }
   const rows = exps.map((e) => ({
     id: e.id, category_id: e.category_id, name: e.name, description: e.description,
-    type: e.type, date: e.date, created_at: e.created_at,
+    type: e.type, date: e.date, owner: e.owner || '', created_at: e.created_at,
     groupCount: (e.groups || []).length,
   }));
   res.json(rows);
@@ -52,24 +52,25 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { categoryId, name, description, type, date } = req.body;
+  const { categoryId, name, description, type, date, owner } = req.body;
   if (!categoryId || !name || !type || !date) return res.status(400).json({ error: 'categoryId, name, type, date 为必填' });
   const cat = findCat(categoryId);
   if (!cat) return res.status(404).json({ error: '类别不存在' });
-  const exp = { id: uuidv4(), category_id: categoryId, name, description: description || '', type, date, created_at: new Date().toISOString(), groups: [], test_cases: [] };
+  const exp = { id: uuidv4(), category_id: categoryId, name, description: description || '', type, date, owner: owner || '', created_at: new Date().toISOString(), groups: [], test_cases: [] };
   cat.experiments.push(exp);
   save();
-  res.status(201).json({ id: exp.id, category_id: exp.category_id, name: exp.name, description: exp.description, type: exp.type, date: exp.date, created_at: exp.created_at, groupCount: 0 });
+  res.status(201).json({ id: exp.id, category_id: exp.category_id, name: exp.name, description: exp.description, type: exp.type, date: exp.date, owner: exp.owner, created_at: exp.created_at, groupCount: 0 });
 });
 
 router.put('/:id', (req, res) => {
   const exp = findExp(req.params.id);
   if (!exp) return res.status(404).json({ error: '实验不存在' });
-  const { name, description, type, date } = req.body;
+  const { name, description, type, date, owner } = req.body;
   if (name !== undefined) exp.name = name;
   if (description !== undefined) exp.description = description;
   if (type !== undefined) exp.type = type;
   if (date !== undefined) exp.date = date;
+  if (owner !== undefined) exp.owner = owner;
   save();
   res.json(exp);
 });
