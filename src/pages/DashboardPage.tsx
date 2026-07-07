@@ -75,6 +75,11 @@ const DashboardPage: React.FC = () => {
     return Array.from(keys);
   }, [groups]);
 
+  // 实验报告（必须在条件返回之前）
+  const [reportModal, setReportModal] = useState(false);
+  const [reportText, setReportText] = useState('');
+  const [reportLoading, setReportLoading] = useState(false);
+
   // 为筛选收集唯一值
   const nameFilters = useMemo(() => [...new Set(groups.map((g) => g.name))].map((v) => ({ text: v, value: v })), [groups]);
   const modelFilters = useMemo(() => [...new Set(groups.map((g) => g.model).filter(Boolean))].slice(0, 50).map((v) => ({ text: v, value: v })), [groups]);
@@ -91,10 +96,6 @@ const DashboardPage: React.FC = () => {
     return a > b ? g : best;
   }, groups[0]);
 
-  // 实验报告
-  const [reportModal, setReportModal] = useState(false);
-  const [reportText, setReportText] = useState('');
-  const [reportLoading, setReportLoading] = useState(false);
   const handleGenerateReport = async () => {
     setReportLoading(true); setReportModal(true); setReportText('生成中...');
     try {
