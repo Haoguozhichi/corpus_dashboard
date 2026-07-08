@@ -40,11 +40,12 @@ router.post('/experiments/:expId/groups', (req, res) => {
 router.put('/groups/:id', (req, res) => {
   const group = findGroup(req.params.id);
   if (!group) return res.status(404).json({ error: '实验组不存在' });
-  const { name, model, eval_dataset, parameters } = req.body;
+  const { name, model, eval_dataset, parameters, error_clusters } = req.body;
   if (name !== undefined) group.name = name;
   if (model !== undefined) group.model = model;
   if (eval_dataset !== undefined) group.eval_dataset = eval_dataset;
   if (parameters !== undefined) group.parameters = parameters;
+  if (error_clusters !== undefined) group.error_clusters = error_clusters;
   save();
   res.json(group);
 });

@@ -3,7 +3,7 @@ import { Card, Col, Row, Statistic, Table, Tag, Typography, Button, Modal, Input
 import { SearchOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, ThunderboltOutlined, UploadOutlined, EditOutlined, BulbOutlined, RobotOutlined, DownOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { ExperimentGroup, TestCase, EvaluationResult } from '../types';
-import { fetchResults, updateResult } from '../api/endpoints';
+import { fetchResults, updateResult, updateGroup } from '../api/endpoints';
 import { diagnoseError, autoAnnotate, clusterErrors } from '../api/endpoints';
 import ResultsUploader from './ResultsUploader';
 
@@ -36,9 +36,33 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   useEffect(() => { loadResults(); }, [group.id]);
 
   const results = allResults.length > 0 ? allResults : (group.results || []);
-  const filtered = filterText.trim()
-    ? results.filter((r) => ['question', 'expected_answer', 'model_response', 'reason'].some((k) => (r as Record<string, unknown>)[k] as string || '').includes(filterText))
-    : results;
+  const filtered = (() => {
+    if (!filterText.trim()) return results;
+    const q = filterText.toLowerCase();
+    return results.filter((r) =>
+      (r.question || '').toLowerCase().includes(q) ||
+      (r.expected_answer || '').toLowerCase().includes(q) ||
+      (r.model_response || '').toLowerCase().includes(q) ||
+      (r.reason || '').toLowerCase().includes(q),
+    );
+  })();
+
+  // 跟踪列筛选状态
+  const [colFilters, setColFilters] = useState<Record<string, string[] | null>>({});
+
+  // 综合文本搜索 + 列筛选后的最终条数
+  const displayCount = (() => {
+    let data = filtered;
+    for (const [key, vals] of Object.entries(colFilters)) {
+      if (!vals || vals.length === 0) continue;
+      data = data.filter((r) => {
+        if (key === 'is_correct') return vals.some((v: string) => v === 'correct' ? r.is_correct : !r.is_correct);
+        const rv = String((r as any)[key] ?? '');
+        return vals.some((v: string) => rv === v);
+      });
+    }
+    return data.length;
+  })();
   const correctCount = group.correctCount || results.filter((r) => r.is_correct).length;
   const totalCount = group.resultCount || results.length;
   const accuracy = totalCount > 0 ? correctCount / totalCount : 0;
@@ -67,12 +91,10 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   const [llmResult, setLlmResult] = useState<string | null>(null);
   const [llmModalTitle, setLlmModalTitle] = useState('');
 
-  const getSelected = () => {
-    if (selectedRowKeys.length === 0) return filtered;
-    return filtered.filter((r) => selectedRowKeys.includes(r.id));
-  };
+  const getSelected = () => filtered.filter((r) => selectedRowKeys.includes(r.id));
 
   const handleDiagnose = async () => {
+    if (selectedRowKeys.length === 0) { message.warning('请先勾选要诊断的用例'); return; }
     const targets = getSelected();
     const errors = targets.filter((r) => !r.is_correct);
     if (errors.length === 0) { message.warning('所选用例中没有错误的'); return; }
@@ -82,6 +104,9 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
       const r = errors[i];
       try {
         const res = await diagnoseError({ question: r.question || '', expected_answer: r.expected_answer || '', model_response: r.model_response || '' });
+        // 自动填入原因列
+        await updateResult(r.id, { reason: res.result }).catch(() => {});
+        setAllResults((prev) => prev.map((x) => (x.id === r.id ? { ...x, reason: res.result } : x)));
         parts.push(`## ${i + 1}. ${r.question?.slice(0, 40)}...\n${res.result}\n`);
       } catch (err: any) { parts.push(`## ${i + 1}. 诊断失败: ${err?.message || err}\n`); }
     }
@@ -90,6 +115,7 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   };
 
   const handleAutoAnnotate = async () => {
+    if (selectedRowKeys.length === 0) { message.warning('请先勾选要标注的用例'); return; }
     const targets = getSelected();
     setLlmLoading(true); setLlmModalTitle(`自动标注 (${Math.min(targets.length, 10)}条)`);
     const sample = targets.slice(0, 10);
@@ -97,6 +123,11 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
     for (const r of sample) {
       try {
         const scores = await autoAnnotate({ question: r.question || '', expected_answer: r.expected_answer || '', model_response: r.model_response || '' });
+        if (!scores.error) {
+          // 自动保存到 ai_scores
+          await updateResult(r.id, { ai_scores: scores }).catch(() => {});
+          setAllResults((prev) => prev.map((x) => (x.id === r.id ? { ...x, ai_scores: scores } : x)));
+        }
         parts.push(`- ${r.question?.slice(0, 30)}... | correctness:${scores.correctness} completeness:${scores.completeness} conciseness:${scores.conciseness} format:${scores.format}`);
       } catch { parts.push(`- 标注失败`); }
     }
@@ -105,13 +136,17 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   };
 
   const handleClusterErrors = async () => {
-    const errors = filtered.filter((r) => !r.is_correct);
+    const errors = results.filter((r) => !r.is_correct);
     if (errors.length === 0) { message.warning('没有错误用例'); return; }
     setLlmLoading(true); setLlmModalTitle(`错误聚类分析 (${errors.length}条)`);
     try {
       const res = await clusterErrors({ cases: errors.map((r) => ({ question: r.question || '', model_response: r.model_response || '' })) });
       if (res.clusters) {
-        setLlmResult(res.clusters.map((c) => `### ${c.name} (${c.count}条)\n${c.description}`).join('\n\n') + (res.summary ? `\n\n---\n**总结**: ${res.summary}` : ''));
+        // 保存聚类结果到实验组
+        await updateGroup(group.id, { error_clusters: res.clusters }).catch(() => {});
+        onRefresh();
+        const text = res.clusters.map((c: any) => `### ${c.name} (${c.count}条)\n${c.description}`).join('\n\n');
+        setLlmResult(text + (res.summary ? `\n\n---\n**总结**: ${res.summary}` : ''));
       } else {
         setLlmResult(res.raw || JSON.stringify(res));
       }
@@ -127,6 +162,10 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   ];
   const answerFilters = [...new Set(results.map((r) => r.expected_answer || '').filter(Boolean))].slice(0, 100).map((v) => ({ text: v.length > 40 ? v.slice(0, 40) + '...' : v, value: v }));
   const reasonFilters = [...new Set(results.map((r) => r.reason || '').filter(Boolean))].slice(0, 50).map((v) => ({ text: v, value: v }));
+
+  // 收集 JSON 导入带来的自定义字段（不在标准字段中的）
+  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'score', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'category_tag', 'trajectory', 'custom_scores', 'conversations', 'eval_dataset', 'experiment_id', 'name', 'model', 'parameters', 'created_at', 'key']);
+  const extraFields = [...new Set(results.flatMap((r) => Object.keys(r).filter((k) => !STD_FIELDS.has(k))))];
 
   const columns: ColumnsType<EvaluationResult> = [
     {
@@ -151,8 +190,27 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
         </div>
       ),
     },
+    // JSON 导入的自定义字段（插入在模型回答与结果之间）
+    ...extraFields.map((field) => ({
+      title: field,
+      dataIndex: field,
+      key: field,
+      width: Math.max(100, Math.min(160, field.length * 14 + 20)),
+      ellipsis: true,
+      sorter: (a: any, b: any) => {
+        const va = a[field], vb = b[field];
+        if (typeof va === 'number' && typeof vb === 'number') return va - vb;
+        return String(va ?? '').localeCompare(String(vb ?? ''));
+      },
+      render: (v: any) => {
+        if (v === undefined || v === null) return <span style={{ color: '#ccc' }}>—</span>;
+        if (typeof v === 'boolean') return v ? '✅' : '❌';
+        if (typeof v === 'object') return <span style={{ fontSize: 11 }}>{JSON.stringify(v).slice(0, 80)}</span>;
+        return <span style={{ fontSize: 12 }}>{String(v)}</span>;
+      },
+    })),
     {
-      title: '结果', dataIndex: 'is_correct', key: 'is_correct', width: 70,
+      title: '结果', dataIndex: 'is_correct', key: 'is_correct', width: 76,
       sorter: (a, b) => a.is_correct - b.is_correct,
       filters: resultFilters,
       onFilter: (value, record) => value === 'correct' ? record.is_correct === 1 : record.is_correct === 0,
@@ -163,6 +221,19 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
     { title: '得分', dataIndex: 'score', key: 'score', width: 60, sorter: (a, b) => (a.score || 0) - (b.score || 0), render: (v: number) => v?.toFixed(2) ?? '-' },
     { title: '耗时', dataIndex: 'runtime_ms', key: 'runtime', width: 80, sorter: (a, b) => (a.runtime_ms || 0) - (b.runtime_ms || 0), render: (v: number) => v ? `${v}ms` : '-' },
     { title: 'Token', dataIndex: 'token_count', key: 'token', width: 70, sorter: (a, b) => (a.token_count || 0) - (b.token_count || 0), render: (v: number) => v > 0 ? v.toLocaleString() : '-' },
+    {
+      title: 'AI评分', key: 'ai_scores', width: 130,
+      render: (_: unknown, record: EvaluationResult) => {
+        if (!record.ai_scores) return <span style={{ color: '#ccc' }}>—</span>;
+        return (
+          <span style={{ fontSize: 11 }}>
+            {Object.entries(record.ai_scores).map(([k, v]) => (
+              <Tag key={k} style={{ marginBottom: 2 }}>{k}: {typeof v === 'number' ? v.toFixed(2) : v}</Tag>
+            ))}
+          </span>
+        );
+      },
+    },
     {
       title: '标注', key: 'annotation', width: 150,
       render: (_: unknown, record: EvaluationResult) =>
@@ -226,14 +297,29 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
         ))}
       </Row>
 
+      {group.error_clusters && group.error_clusters.length > 0 && (
+        <Card title="🤖 AI 错误聚类分析" size="small" style={{ marginBottom: 16, borderRadius: 8 }}>
+          {group.error_clusters.map((c: any, i: number) => (
+            <Tag key={i} color={['red', 'orange', 'gold', 'purple', 'magenta'][i % 5]} style={{ marginBottom: 4 }}>
+              {c.name} ({c.count}条)
+            </Tag>
+          ))}
+          {group.error_clusters.map((c: any, i: number) => (
+            <div key={i} style={{ marginTop: 4, fontSize: 12, color: '#666' }}><strong>{c.name}</strong>：{c.description}</div>
+          ))}
+        </Card>
+      )}
+
       <Card title="📋 评测结果与答案对比" style={{ borderRadius: 8 }}
         extra={
           <span style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <Input size="small" placeholder="搜索..." prefix={<SearchOutlined />}
               value={filterText} onChange={(e) => setFilterText(e.target.value)} allowClear style={{ width: 180 }} />
+            <Tag>筛选 {displayCount}/{results.length} 条</Tag>
+            {selectedRowKeys.length > 0 && <Tag color="blue">已选 {selectedRowKeys.length} 条</Tag>}
             <Dropdown menu={{ items: [
-              { key: 'diagnose', label: `AI 诊断错误${selectedRowKeys.length > 0 ? ' (' + selectedRowKeys.length + '已选)' : ''}`, onClick: handleDiagnose },
-              { key: 'annotate', label: `AI 自动标注${selectedRowKeys.length > 0 ? ' (' + selectedRowKeys.length + '已选)' : ''}`, onClick: handleAutoAnnotate },
+              { key: 'diagnose', label: selectedRowKeys.length > 0 ? `AI 诊断错误 (${selectedRowKeys.length}已选)` : 'AI 诊断错误（请先勾选）', disabled: selectedRowKeys.length === 0, onClick: handleDiagnose },
+              { key: 'annotate', label: selectedRowKeys.length > 0 ? `AI 自动标注 (${selectedRowKeys.length}已选)` : 'AI 自动标注（请先勾选）', disabled: selectedRowKeys.length === 0, onClick: handleAutoAnnotate },
               { key: 'cluster', label: 'AI 错误聚类(全量)', onClick: handleClusterErrors },
             ] }}>
               <Button size="small" icon={<RobotOutlined />} loading={llmLoading}>AI 分析 <DownOutlined /></Button>
@@ -243,6 +329,7 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
         }
       >
         <Table columns={columns} dataSource={filtered} rowKey="id" pagination={{ pageSize: 20 }}
+          onChange={(_p, filters: any) => setColFilters(filters || {})}
           rowSelection={{
             selectedRowKeys,
             onChange: (keys) => setSelectedRowKeys(keys as string[]),

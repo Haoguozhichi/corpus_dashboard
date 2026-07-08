@@ -10,7 +10,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
 import { useData } from '../context/DataContext';
-import { createGroup, updateGroup, deleteGroup, generateReport } from '../api/endpoints';
+import { createGroup, updateGroup, deleteGroup, generateReport, updateExperiment } from '../api/endpoints';
 import GroupFormModal from '../components/GroupFormModal';
 import TrainingMetricsManager from '../components/TrainingMetricsManager';
 import TestCaseTable from '../components/TestCaseTable';
@@ -97,10 +97,20 @@ const DashboardPage: React.FC = () => {
   }, groups[0]);
 
   const handleGenerateReport = async () => {
+    // 已有报告直接展示
+    if (experiment?.ai_report) {
+      setReportText(experiment.ai_report);
+      setReportModal(true);
+      return;
+    }
+    // 生成新报告
     setReportLoading(true); setReportModal(true); setReportText('生成中...');
     try {
       const res = await generateReport({ experiment: { name: experiment?.name, type: experiment?.type, groups } });
       setReportText(res.result);
+      await updateExperiment(experiment!.id, { ai_report: res.result } as any).catch(() => {});
+      // 更新本地状态，下次点击直接展示
+      if (experiment) (experiment as any).ai_report = res.result;
     } catch { setReportText('报告生成失败'); }
     finally { setReportLoading(false); }
   };

@@ -83,34 +83,31 @@ ${expectedAnswer}
 ${modelResponse}
 
 评分标准：
-- correctness（正确性 0~1）：事实是否与标准答案一致
+- 正确性（0~1）：事实是否与标准答案一致
   1.0=完全一致  0.7-0.9=基本正确有轻微偏差  0.4-0.6=部分正确  0-0.3=错误
-- completeness（完整性 0~1）：是否覆盖标准答案的关键信息点
+- 完整性（0~1）：是否覆盖标准答案的关键信息点
   1.0=全部覆盖  0.5-0.9=覆盖主要信息  0-0.4=遗漏重要信息
-- conciseness（简洁性 0~1）：是否简洁无冗余
+- 简洁性（0~1）：是否简洁无冗余
   1.0=简洁精炼  0.5-0.9=稍有冗余  0-0.4=严重啰嗦或过度简略
-- format（格式规范 0~1）：输出格式是否符合题目要求
+- 规范性（0~1）：输出格式是否符合题目要求
   1.0=格式规范  0.5-0.9=基本规范  0-0.4=格式混乱
 
 请先给出一句话评语，然后严格按JSON格式输出评分：
-{"correctness":0.0,"completeness":0.0,"conciseness":0.0,"format":0.0}`;
+{"正确性":0.0,"完整性":0.0,"简洁性":0.0,"规范性":0.0}`;
 
   const text = await callLLM([{ role: 'user', content: prompt }], { temperature: 0.1, max_tokens: 400 });
   try {
-    // 从文本中提取 JSON 对象
-    const match = text.match(/\{[\s\S]*\}/);
-    if (match) return JSON.parse(match[0]);
-    return { error: 'parse_failed', raw: text };
+    return extractJSON(text);
   } catch {
-    return { error: 'parse_failed', raw: text };
+    return { error: 'parse_failed', raw: text.slice(0, 500) };
   }
 }
 
 // ====== 3. 错误聚类分析 ======
 async function clusterErrors(errorCases) {
   const casesText = errorCases.map((c, i) =>
-    `${i + 1}. 题目：${c.question}\n   模型回答：${c.model_response?.slice(0, 300)}`
-  ).join('\n\n');
+    `${i + 1}. 题目：${(c.question || '').slice(0, 80)}\n   回答：${(c.model_response || '').slice(0, 120)}`
+  ).join('\n');
 
   const count = errorCases.length;
   const prompt = `你是一个AI评测分析专家。以下是一个模型在评测中的全部 ${count} 条错误用例。请仔细阅读每一条，根据错误的本质原因进行自然聚类（聚类数量不作限制，完全由数据决定）。
@@ -126,14 +123,30 @@ ${casesText}
   "summary": "整体评价和改进方向（100字以内）"
 }`;
 
-  const text = await callLLM([{ role: 'user', content: prompt }], { temperature: 0.3, max_tokens: 3000 });
+  const text = await callLLM([{ role: 'user', content: prompt }], { temperature: 0.3, max_tokens: 4000 });
   try {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (match) return JSON.parse(match[0]);
-    return { error: 'parse_failed', raw: text };
+    return extractJSON(text);
   } catch {
-    return { error: 'parse_failed', raw: text };
+    return { error: 'parse_failed', raw: text.slice(0, 1000) };
   }
+}
+
+/** 从LLM返回文本中提取JSON对象 */
+function extractJSON(text) {
+  // 1. 尝试提取 ```json ... ``` 代码块
+  let match = text.match(/```json\s*([\s\S]*?)\s*```/);
+  if (match) return JSON.parse(match[1]);
+  // 2. 尝试提取 ``` ... ``` 代码块
+  match = text.match(/```\s*([\s\S]*?)\s*```/);
+  if (match) return JSON.parse(match[1]);
+  // 3. 找到第一个 { 和最后一个 }，尝试提取
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start >= 0 && end > start) {
+    return JSON.parse(text.slice(start, end + 1));
+  }
+  // 4. 直接尝试解析整个文本
+  return JSON.parse(text.trim());
 }
 
 // ====== 4. 对比评析 ======

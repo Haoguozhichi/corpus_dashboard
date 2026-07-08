@@ -65,12 +65,13 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   const exp = findExp(req.params.id);
   if (!exp) return res.status(404).json({ error: '实验不存在' });
-  const { name, description, type, date, owner } = req.body;
+  const { name, description, type, date, owner, ai_report } = req.body;
   if (name !== undefined) exp.name = name;
   if (description !== undefined) exp.description = description;
   if (type !== undefined) exp.type = type;
   if (date !== undefined) exp.date = date;
   if (owner !== undefined) exp.owner = owner;
+  if (ai_report !== undefined) exp.ai_report = ai_report;
   save();
   res.json(exp);
 });

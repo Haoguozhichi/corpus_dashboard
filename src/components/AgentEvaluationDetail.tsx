@@ -198,6 +198,7 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
         extra={
           <span style={{ display: 'flex', gap: 8 }}>
             <Input size="small" placeholder="筛选..." prefix={<SearchOutlined />} value={filterText} onChange={(e) => setFilterText(e.target.value)} allowClear style={{ width: 180 }} />
+            <Tag>筛选 {filtered.length}/{results.length} 条</Tag>
             <Button type="primary" size="small" icon={<UploadOutlined />} onClick={() => setUploadOpen(true)}>管理评测结果</Button>
           </span>
         }
