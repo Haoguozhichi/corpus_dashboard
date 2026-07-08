@@ -47,20 +47,20 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
     );
   })();
 
-  // 跟踪列筛选状态
-  const [colFilters, setColFilters] = useState<Record<string, string[] | null>>({});
+  // 跟踪 antd 列筛选状态
+  const [colFilters, setColFilters] = useState<Record<string, any>>({});
 
   // 综合文本搜索 + 列筛选后的最终条数
   const displayCount = (() => {
     let data = filtered;
-    for (const [key, vals] of Object.entries(colFilters)) {
-      if (!vals || vals.length === 0) continue;
-      data = data.filter((r) => {
-        if (key === 'is_correct') return vals.some((v: string) => v === 'correct' ? r.is_correct : !r.is_correct);
-        const rv = String((r as any)[key] ?? '');
-        return vals.some((v: string) => rv === v);
-      });
-    }
+    Object.entries(colFilters).forEach(([key, vals]) => {
+      if (!vals || (Array.isArray(vals) && vals.length === 0)) return;
+      const arr = Array.isArray(vals) ? vals : [vals];
+      data = data.filter((r) => arr.some((v: any) => {
+        if (key === 'is_correct') return v === 'correct' ? r.is_correct === 1 : r.is_correct === 0;
+        return String((r as any)[key] ?? '') === String(v);
+      }));
+    });
     return data.length;
   })();
   const correctCount = group.correctCount || results.filter((r) => r.is_correct).length;

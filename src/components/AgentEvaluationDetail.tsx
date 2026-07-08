@@ -4,11 +4,10 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined,
   ThunderboltOutlined, ToolOutlined, WarningOutlined, UploadOutlined, SearchOutlined, EditOutlined,
-  BulbOutlined, EyeOutlined, RobotOutlined,
+  BulbOutlined, EyeOutlined, RobotOutlined, DownOutlined,
 } from '@ant-design/icons';
 import type { ExperimentGroup, TestCase, EvaluationResult, TrajectoryStep } from '../types';
-import { fetchResults, updateResult, diagnoseTrajectory } from '../api/endpoints';
-import { diagnoseError as llmDiagnose } from '../api/endpoints';
+import { fetchResults, updateResult, updateGroup, diagnoseTrajectory, diagnoseError, autoAnnotate, clusterErrors } from '../api/endpoints';
 import ResultsUploader from './ResultsUploader';
 import TrajectoryViewer from './TrajectoryViewer';
 import CustomScoresChart from './CustomScoresChart';
@@ -56,6 +55,21 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
   const filtered = filterText.trim()
     ? results.filter((r) => (r.question || '').includes(filterText) || (r.model_response || '').includes(filterText))
     : results;
+
+  const [colFilters, setColFilters] = useState<Record<string, any>>({});
+  const displayCount = (() => {
+    let data = filtered;
+    Object.entries(colFilters).forEach(([key, vals]) => {
+      if (!vals || (Array.isArray(vals) && vals.length === 0)) return;
+      const arr = Array.isArray(vals) ? vals : [vals];
+      data = data.filter((r) => arr.some((v: any) => {
+        if (key === 'is_correct') return v === 'correct' ? r.is_correct === 1 : r.is_correct === 0;
+        return String((r as any)[key] ?? '') === String(v);
+      }));
+    });
+    return data.length;
+  })();
+
   const correctCount = group.correctCount || results.filter((r) => r.is_correct).length;
   const totalCount = group.resultCount || results.length;
   const accuracy = totalCount > 0 ? correctCount / totalCount : 0;
@@ -86,15 +100,94 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
   };
   const startEditAnno = (record: EvaluationResult) => { setEditingAnno(record.id); setAnnoText(record.annotation || ''); };
 
-  // LLM 轨迹诊断
-  const [trajDiagnosis, setTrajDiagnosis] = useState<string | null>(null);
+  // LLM 轨迹诊断（每个用例独立）
+  const [trajDiagnosis, setTrajDiagnosis] = useState<Record<string, string>>({});
+  const [trajDiagLoading, setTrajDiagLoading] = useState(false);
+
   const handleDiagnoseTraj = async () => {
     if (!trajModal) return;
-    setTrajDiagnosis('分析中...');
+    const rid = trajModal.id;
+    // 已有诊断直接显示
+    if (trajDiagnosis[rid] || trajModal.traj_diagnosis) {
+      setTrajDiagnosis((prev) => ({ ...prev, [rid]: prev[rid] || trajModal.traj_diagnosis || '' }));
+      return;
+    }
+    setTrajDiagLoading(true);
+    setTrajDiagnosis((prev) => ({ ...prev, [rid]: '分析中...' }));
     try {
       const res = await diagnoseTrajectory({ question: trajModal.question || '', trajectory: trajModal.trajectory, is_correct: !!trajModal.is_correct });
-      setTrajDiagnosis(res.result);
-    } catch { setTrajDiagnosis('诊断失败'); }
+      setTrajDiagnosis((prev) => ({ ...prev, [rid]: res.result }));
+      // 自动保存到数据库
+      await updateResult(rid, { traj_diagnosis: res.result }).catch(() => {});
+      setAllResults((prev) => prev.map((r) => (r.id === rid ? { ...r, traj_diagnosis: res.result } : r)));
+    } catch {
+      setTrajDiagnosis((prev) => ({ ...prev, [rid]: '诊断失败' }));
+    } finally { setTrajDiagLoading(false); }
+  };
+
+  // LLM 通用分析
+  const [llmLoading, setLlmLoading] = useState(false);
+  const [llmResult, setLlmResult] = useState<string | null>(null);
+  const [llmModalTitle, setLlmModalTitle] = useState('');
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
+  const getSelected = () => filtered.filter((r) => selectedRowKeys.includes(r.id));
+
+  const handleDiagnose = async () => {
+    if (selectedRowKeys.length === 0) { message.warning('请先勾选要诊断的用例'); return; }
+    const targets = getSelected();
+    const errors = targets.filter((r) => !r.is_correct);
+    if (errors.length === 0) { message.warning('所选用例中没有错误的'); return; }
+    setLlmLoading(true); setLlmModalTitle(`错误诊断 (${Math.min(errors.length, 10)}条)`);
+    const parts: string[] = [];
+    for (let i = 0; i < Math.min(errors.length, 10); i++) {
+      const r = errors[i];
+      try {
+        const res = await diagnoseError({ question: r.question || '', expected_answer: r.expected_answer || '', model_response: r.model_response || '' });
+        await updateResult(r.id, { reason: res.result }).catch(() => {});
+        setAllResults((prev) => prev.map((x) => (x.id === r.id ? { ...x, reason: res.result } : x)));
+        parts.push(`## ${i + 1}. ${r.question?.slice(0, 40)}...\n${res.result}\n`);
+      } catch (err: any) { parts.push(`## ${i + 1}. 诊断失败\n`); }
+    }
+    setLlmResult(parts.join('\n---\n'));
+    setLlmLoading(false);
+  };
+
+  const handleAutoAnnotate = async () => {
+    if (selectedRowKeys.length === 0) { message.warning('请先勾选要标注的用例'); return; }
+    const targets = getSelected();
+    setLlmLoading(true); setLlmModalTitle(`自动标注 (${Math.min(targets.length, 10)}条)`);
+    const sample = targets.slice(0, 10);
+    const parts: string[] = [];
+    for (const r of sample) {
+      try {
+        const scores = await autoAnnotate({ question: r.question || '', expected_answer: r.expected_answer || '', model_response: r.model_response || '' });
+        if (!(scores as any).error) {
+          await updateResult(r.id, { ai_scores: scores as any }).catch(() => {});
+          setAllResults((prev) => prev.map((x) => (x.id === r.id ? { ...x, ai_scores: scores as any } : x)));
+        }
+        parts.push(`- ${r.question?.slice(0, 30)}... | 正确性:${scores.正确性 || scores.correctness} 完整性:${scores.完整性 || scores.completeness} 简洁性:${scores.简洁性 || scores.conciseness} 规范性:${scores.规范性 || scores.format}`);
+      } catch { parts.push(`- 标注失败`); }
+    }
+    setLlmResult(parts.join('\n'));
+    setLlmLoading(false);
+  };
+
+  const handleClusterErrors = async () => {
+    const errors = results.filter((r) => !r.is_correct);
+    if (errors.length === 0) { message.warning('没有错误用例'); return; }
+    setLlmLoading(true); setLlmModalTitle(`错误聚类分析 (${errors.length}条)`);
+    try {
+      const res = await clusterErrors({ cases: errors.map((r) => ({ question: r.question || '', model_response: r.model_response || '' })) });
+      if ((res as any).clusters) {
+        await updateGroup(group.id, { error_clusters: (res as any).clusters }).catch(() => {});
+        onRefresh();
+        const text = (res as any).clusters.map((c: any) => `### ${c.name} (${c.count}条)\n${c.description}`).join('\n\n');
+        setLlmResult(text + ((res as any).summary ? `\n\n---\n**总结**: ${(res as any).summary}` : ''));
+      } else {
+        setLlmResult((res as any).raw || JSON.stringify(res));
+      }
+    } catch { setLlmResult('聚类分析失败'); }
+    setLlmLoading(false);
   };
 
   const questionFilters = [...new Set(results.map((r) => r.question || '').filter(Boolean))].slice(0, 200).map((q) => ({ text: q.length > 40 ? q.slice(0, 40) + '...' : q, value: q }));
@@ -126,7 +219,7 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
       ),
     },
     {
-      title: '结果', key: 'result', width: 68, sorter: (a, b) => a.is_correct - b.is_correct,
+      title: '结果', dataIndex: 'is_correct', key: 'is_correct', width: 68, sorter: (a, b) => a.is_correct - b.is_correct,
       filters: resultFilters, onFilter: (v, r) => v === 'correct' ? r.is_correct === 1 : r.is_correct === 0,
       render: (_: unknown, r: EvaluationResult) =>
         r.is_correct ? <Tag icon={<CheckCircleOutlined />} color="success">正确</Tag> : <Tag icon={<CloseCircleOutlined />} color="error">错误</Tag>,
@@ -137,11 +230,15 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
     ...(hasTrajectory ? [
       { title: '步骤', key: 'steps', width: 50, sorter: (a, b) => computeTrajectoryStats(a.trajectory).totalSteps - computeTrajectoryStats(b.trajectory).totalSteps, render: (_: unknown, r: EvaluationResult) => computeTrajectoryStats(r.trajectory).totalSteps || '-' },
       {
-        title: '工具', key: 'tools', width: 55, sorter: (a, b) => computeTrajectoryStats(a.trajectory).toolCalls - computeTrajectoryStats(b.trajectory).toolCalls,
+        title: '工具调用', key: 'tools', width: 62, sorter: (a, b) => computeTrajectoryStats(a.trajectory).toolCalls - computeTrajectoryStats(b.trajectory).toolCalls,
+        render: (_: unknown, r: EvaluationResult) => computeTrajectoryStats(r.trajectory).toolCalls || '-',
+      },
+      {
+        title: '工具错误', key: 'errTools', width: 62, sorter: (a, b) => computeTrajectoryStats(a.trajectory).errorTools - computeTrajectoryStats(b.trajectory).errorTools,
         render: (_: unknown, r: EvaluationResult) => {
-          const { toolCalls, errorTools } = computeTrajectoryStats(r.trajectory);
-          if (!toolCalls) return '-';
-          return <span>{toolCalls}{errorTools > 0 && <WarningOutlined style={{ color: '#ff4d4f', marginLeft: 4 }} />}</span>;
+          const n = computeTrajectoryStats(r.trajectory).errorTools;
+          if (!n) return <span style={{ color: '#52c41a' }}>0</span>;
+          return <span style={{ color: '#ff4d4f', fontWeight: 500 }}>{n}</span>;
         },
       },
     ] : []),
@@ -193,17 +290,41 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
       {/* 多维评分 */}
       {hasCustomScores && <CustomScoresChart results={results} />}
 
+      {/* AI 错误聚类结果 */}
+      {group.error_clusters && group.error_clusters.length > 0 && (
+        <Card title="🤖 AI 错误聚类分析" size="small" style={{ marginBottom: 16, borderRadius: 8 }}>
+          {group.error_clusters.map((c: any, i: number) => (
+            <Tag key={i} color={['red', 'orange', 'gold', 'purple', 'magenta'][i % 5]} style={{ marginBottom: 4 }}>
+              {c.name} ({c.count}条)
+            </Tag>
+          ))}
+          {group.error_clusters.map((c: any, i: number) => (
+            <div key={i} style={{ marginTop: 4, fontSize: 12, color: '#666' }}><strong>{c.name}</strong>：{c.description}</div>
+          ))}
+        </Card>
+      )}
+
       {/* 结果表格 */}
       <Card title="📋 Agent 评测结果" style={{ borderRadius: 8 }}
         extra={
           <span style={{ display: 'flex', gap: 8 }}>
             <Input size="small" placeholder="筛选..." prefix={<SearchOutlined />} value={filterText} onChange={(e) => setFilterText(e.target.value)} allowClear style={{ width: 180 }} />
-            <Tag>筛选 {filtered.length}/{results.length} 条</Tag>
+            <Tag>筛选 {displayCount}/{results.length} 条</Tag>
+            {selectedRowKeys.length > 0 && <Tag color="blue">已选 {selectedRowKeys.length} 条</Tag>}
+            <Dropdown menu={{ items: [
+              { key: 'diagnose', label: selectedRowKeys.length > 0 ? `AI 诊断错误 (${selectedRowKeys.length}已选)` : 'AI 诊断错误（请先勾选）', disabled: selectedRowKeys.length === 0, onClick: handleDiagnose },
+              { key: 'annotate', label: selectedRowKeys.length > 0 ? `AI 自动标注 (${selectedRowKeys.length}已选)` : 'AI 自动标注（请先勾选）', disabled: selectedRowKeys.length === 0, onClick: handleAutoAnnotate },
+              { key: 'cluster', label: 'AI 错误聚类(全量)', onClick: handleClusterErrors },
+            ] }}>
+              <Button size="small" icon={<RobotOutlined />} loading={llmLoading}>AI 分析 <DownOutlined /></Button>
+            </Dropdown>
             <Button type="primary" size="small" icon={<UploadOutlined />} onClick={() => setUploadOpen(true)}>管理评测结果</Button>
           </span>
         }
       >
         <Table columns={columns} dataSource={filtered} rowKey="id" pagination={{ pageSize: 20 }}
+          rowSelection={{ selectedRowKeys, onChange: (keys) => setSelectedRowKeys(keys as string[]) }}
+          onChange={(_p, filters: any) => setColFilters(filters || {})}
           size="small" bordered scroll={{ x: 1100 }} loading={resultsLoading}
           rowClassName={(record) => (record.is_correct ? '' : 'param-diff-row')} />
       </Card>
@@ -231,12 +352,12 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
             )}
             {/* AI 轨迹诊断 */}
             <div style={{ marginTop: 16, borderTop: '1px solid #f0f0f0', paddingTop: 12 }}>
-              <Button icon={<RobotOutlined />} onClick={handleDiagnoseTraj}>
+              <Button icon={<RobotOutlined />} onClick={handleDiagnoseTraj} loading={trajDiagLoading}>
                 AI 诊断轨迹
               </Button>
-              {trajDiagnosis && (
+              {(trajDiagnosis[trajModal.id] || trajModal.traj_diagnosis) && (
                 <div style={{ whiteSpace: 'pre-wrap', maxHeight: 300, overflow: 'auto', background: '#fafafa', padding: 12, borderRadius: 4, fontSize: 13, marginTop: 8 }}>
-                  {trajDiagnosis}
+                  {trajDiagnosis[trajModal.id] || trajModal.traj_diagnosis}
                 </div>
               )}
             </div>
@@ -244,6 +365,13 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
         ) : (
           <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>该用例没有轨迹数据</div>
         )}
+      </Modal>
+
+      {/* LLM 分析结果弹窗 */}
+      <Modal title={`AI 分析 - ${llmModalTitle}`} open={!!llmResult} onCancel={() => setLlmResult(null)} footer={null} width={700}>
+        <div style={{ whiteSpace: 'pre-wrap', maxHeight: 500, overflow: 'auto', background: '#fafafa', padding: 12, borderRadius: 4, fontSize: 13 }}>
+          {llmResult || '分析中...'}
+        </div>
       </Modal>
 
       <Modal title={`管理评测结果 — ${group.name}`} open={uploadOpen} onCancel={() => setUploadOpen(false)}

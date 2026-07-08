@@ -57,6 +57,7 @@ export interface EvaluationResult {
   annotation?: string;                     // 人工标注
   think?: string;                          // 模型思考过程
   ai_scores?: Record<string, number>;      // AI自动标注多维度评分
+  traj_diagnosis?: string;                  // AI轨迹诊断结果
   // 新增 Agent 评测字段
   trajectory?: TrajectoryStep[];           // Agent 执行轨迹
   custom_scores?: Record<string, number>;  // 多维自定义评分

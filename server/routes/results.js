@@ -131,7 +131,7 @@ router.put('/results/:id', (req, res) => {
   for (const c of data.categories) for (const e of c.experiments) for (const g of (e.groups || [])) {
     const er = (g.evaluation_results || []).find((r) => r.id === req.params.id);
     if (er) {
-      const { model_response, is_correct, score, runtime_ms, token_count, reason, annotation, think, ai_scores, trajectory, custom_scores, conversations } = req.body;
+      const { model_response, is_correct, score, runtime_ms, token_count, reason, annotation, think, ai_scores, traj_diagnosis, trajectory, custom_scores, conversations } = req.body;
       if (model_response !== undefined) er.model_response = model_response;
       if (is_correct !== undefined) er.is_correct = is_correct ? 1 : 0;
       if (score !== undefined) er.score = score;
@@ -141,6 +141,7 @@ router.put('/results/:id', (req, res) => {
       if (annotation !== undefined) er.annotation = annotation;
       if (think !== undefined) er.think = think;
       if (ai_scores !== undefined) er.ai_scores = ai_scores;
+      if (traj_diagnosis !== undefined) er.traj_diagnosis = traj_diagnosis;
       if (trajectory !== undefined) er.trajectory = trajectory;
       if (custom_scores !== undefined) er.custom_scores = custom_scores;
       if (conversations !== undefined) er.conversations = conversations;

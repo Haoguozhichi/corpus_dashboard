@@ -174,15 +174,21 @@ ${responseB}
 async function diagnoseTrajectory(question, trajectory, isCorrect) {
   const trajText = JSON.stringify(trajectory, null, 2);
 
-  const prompt = `你是一个Agent系统诊断专家。以下是一个Agent执行任务${isCorrect ? '成功' : '失败'}的完整轨迹。
+  const prompt = `你是一个Agent系统诊断专家。请仔细审查以下Agent执行任务的完整轨迹，重点分析每一步的合理性和工具执行情况。
 
 【任务】${question}
 【执行轨迹】
 ${trajText}
 
-${isCorrect ? '请分析这个Agent的成功因素（100字以内）。' : '请诊断失败原因（200字以内）：\n1. 失败步骤：哪一步出了问题\n2. 问题类型：（工具选择错误 / 参数错误 / 解析错误 / 超时 / 其他）\n3. 改进建议：如何避免此类问题'}`;
+请按以下格式诊断（${isCorrect ? '任务成功，分析关键成功因素' : '任务失败，诊断具体问题'}，300字以内）：
 
-  return callLLM([{ role: 'user', content: prompt }], { temperature: 0.2, max_tokens: 800 });
+1. 步数概览：共几步，每步分别做了什么
+2. 不合理步骤：哪些步骤存在逻辑问题（如重复操作、不必要的调用、顺序错误）
+3. 工具执行问题：哪些步骤的工具调用出错（如参数错误、返回异常、选择不当的工具）
+4. ${isCorrect ? '成功关键' : '根因诊断'}：${isCorrect ? '哪些关键步骤保证了任务成功' : '失败的根本原因是什么'}
+5. 优化建议：针对不合理步骤和工具问题给出具体改进方案`;
+
+  return callLLM([{ role: 'user', content: prompt }], { temperature: 0.2, max_tokens: 1000 });
 }
 
 // ====== 7. 实验报告生成 ======
