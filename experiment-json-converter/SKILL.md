@@ -1,164 +1,185 @@
 ---
 name: experiment-json-converter
 description: >
-  Convert user experiment data files (CSV, Excel, JSON, Markdown tables, or plain text descriptions)
-  into the JSON format required by the "实验数据展示平台" (Experiment Data Platform) for one-click import.
-  Use this skill whenever the user mentions importing experiments, converting experiment data, creating
-  experiment JSON, uploading results, or talks about their experiment results and wants to get them
-  into the platform. Supports all three experiment types: training (训练实验), evaluation (评测实验),
-  and agent evaluation (Agent评测).
+  Convert any experiment data (CSV, Excel, JSON, Markdown, folder of files) into the JSON format
+  required by the "实验数据展示平台" (Experiment Data Platform) for one-click import.
+  Automatically identifies experiment type, detects sub-categories within results, preserves custom
+  variables, and filters irrelevant columns. Use this skill whenever the user mentions importing
+  experiments, converting experiment data, creating experiment JSON, uploading results, or wants
+  to get their experiment data into the platform. Supports training, evaluation, and agent experiments.
 ---
 
 # Experiment JSON Converter
 
-Convert any experiment data into the platform's one-click import JSON format.
-Read the reference files in `references/` for the exact JSON schemas and field details.
+Convert experiment data into the platform's one-click import JSON format.
+Read `references/schemas.md` for exact field specifications.
+
+## Core Principles
+
+1. **Understand the experiment's purpose before converting** — skim all files to identify what's being measured
+2. **Preserve meaningful data** — keep all informative columns as custom fields
+3. **Filter noise** — strip IDs, timestamps, internal codes, and obviously irrelevant metadata
+4. **Detect natural groupings** — sub-categories in the data should become nested `results`
 
 ## Workflow
 
-### Step 1: Identify Experiment Type
+### Step 1: Understand the Experiment
 
-Ask the user or infer from context which experiment type they need:
+When given a folder or file set, first survey all files to answer:
+- What type of experiment? (training / evaluation / agent)
+- What's being compared? (different models? different prompts? different settings?)
+- What's the output metric? (accuracy? F1? pass rate?)
+- Are there natural sub-groupings? (by difficulty, task type, domain)
 
-| Type | Key Indicators |
-|------|---------------|
-| **training** | Keywords: 训练, 模型训练, 准确率, accuracy, precision, recall, F1, loss, epoch, learning rate, 超参 |
-| **evaluation** | Keywords: 评测, 测评, NL2SQL, NER, 问答, 翻译, 正确率, 题目, 标准答案, 模型回答 |
-| **agent_evaluation** | Keywords: Agent, 工具调用, 轨迹, trajectory, tool, 多步推理, ReAct, 网页导航 |
+**Experiment type detection:**
 
-If unclear, ask: "这是哪种类型的实验？训练实验 / 评测实验 / Agent评测？"
+| Type | Key Indicators in data |
+|------|----------------------|
+| **training** | accuracy, precision, recall, F1, loss, epoch, lr, batch_size, optimizer |
+| **evaluation** | question + answer/response + correct/incorrect, 题目, 标准答案, 模型回答 |
+| **agent_evaluation** | trajectory, tool_call, action/observation, multi-step, agent |
 
-### Step 2: Parse User's Data
+### Step 2: Parse All Files
 
-Accept data in any of these formats:
-- **CSV** (`.csv`) — most common for tabular results
-- **Excel** (`.xlsx`, `.xls`)
-- **JSON** (`.json`) — already structured
-- **Markdown table** — pasted inline
-- **Free text** — describe the experiment and I'll structure it
+Read every file in the folder. Common formats:
+- **CSV** — tabular results (most common)
+- **Excel** (`.xlsx`, `.xls`) — often contains multiple sheets
+- **JSON/JSONL** — structured data, trajectories
+- **TXT/MD** — logs, descriptions
 
-Read the file(s) and understand the column mapping.
+For each file, identify:
+- Column headers and their meanings
+- Which column identifies the group (model name, experiment name)
+- Which columns are results vs metadata
 
-### Step 3: Map Columns to Schema
+### Step 3: Classify Columns
 
-Map the user's column names to the platform's field names. Common mappings:
+For each column in the data, decide its role:
 
-| User's Column (may vary) | Platform Field | Required For |
-|--------------------------|----------------|--------------|
-| 实验组, 模型名, group, model_name | `group_name` | ALL |
-| 模型, model | `model` | ALL |
-| 准确率, accuracy, acc | `metrics.accuracy` | training |
-| 精确率, precision | `metrics.precision` | training |
-| 召回率, recall | `metrics.recall` | training |
-| F1, f1_score | `metrics.f1_score` | training |
-| 题目, 问题, question, prompt | `results[].question` | evaluation |
-| 标准答案, expected, answer, gold | `results[].expected_answer` | evaluation |
-| 模型回答, response, output, pred | `results[].model_response` | evaluation |
-| 是否正确, is_correct, correct | `results[].is_correct` | evaluation |
-| 得分, score | `results[].score` | evaluation |
-| 耗时, runtime, latency | `results[].runtime_ms` | evaluation |
-| Token, tokens | `results[].token_count` | evaluation |
-| 原因, reason | `results[].reason` | evaluation |
-| 轨迹, trajectory | `results[].trajectory` | agent |
-| 多维评分, custom_scores | `results[].custom_scores` | agent |
-| 负责人, owner | `owner` (experiment level) | ALL |
+| Role | Examples | Action |
+|------|----------|--------|
+| **Group identifier** | model, model_name, 实验组, group | Use as `group_name` |
+| **Sub-category marker** | difficulty, task_type, category, domain, 难度, 任务类型 | Detect and use for nested `results` |
+| **Standard field** | question, answer, response, correct, score, runtime | Map to platform field names |
+| **Informative variable** | table_count, prompt_version, temperature | Preserve in `results[]` as custom field |
+| **Noise** | row_id, timestamp, internal_id, uuid, path | Drop — not meaningful for analysis |
 
-**Other columns** not in the table above → treat as `variables` on each group or `custom_metrics` for training.
+**Sub-category detection**: If a column has a small set of distinct values (2-10 unique values) that categorize the test cases, it should be used to create nested results:
+```json
+"results": {
+  "单表查询": [...],
+  "多表查询": [...]
+}
+```
+If no such column exists, use the flat `results: [...]` format.
 
-### Step 4: Validate Required Fields
+### Step 4: Map Fields
 
-Check for missing required data and report to the user:
+Map columns to platform field names. See `references/schemas.md` for the complete field list.
 
-**Training** requires per group: `group_name`, at least one of `metrics.{accuracy, precision, recall, f1_score}`
+**Important**: columns that don't map to any standard field AND are not group/sub-category identifiers should be preserved in each result as custom fields. The platform will automatically display them as additional columns.
 
-**Evaluation** requires per result: `question`. Also recommend: `expected_answer`, `model_response`, `is_correct`
+### Step 5: Validate and Report
 
-**Agent** requires: same as evaluation + recommend `trajectory` for meaningful display
+Before generating output, check:
+- Each group has a `group_name`
+- Evaluation/Agent results each have at least `question`
+- Numeric fields are actual numbers (not strings like "85%")
+- Boolean fields are `true`/`false` (not "yes"/"no" or 1/0)
 
-If data is missing, say: "缺少以下必要字段：[list]. 请补充这些数据，或告诉我它们在哪里。"
+Report any issues found:
+- "缺少以下必要字段：... 请补充"
+- "以下列被识别为无关变量已过滤：..."
+- "检测到子分组：单表查询(12条), 多表查询(8条), 复杂查询(6条)"
 
-### Step 5: Handle Group Detection
+### Step 6: Generate JSON
 
-- If data has a column that clearly identifies groups (group, model_name, 实验组), use it
-- If all rows belong to one group, ask the user for the group name
-- If unclear, ask: "这些数据包含几个实验组？每个组的名称是什么？"
+Output a single JSON file with all groups.
 
-### Step 6: Generate and Output the JSON
+**Output:**
+1. Save as `experiment_import.json`
+2. Show a summary: N groups, M sub-categories (if any), K total results
+3. List preserved custom fields
+4. Tell user: "将此文件在实验平台中使用「一键导入」上传即可"
 
-Generate the JSON array according to the schema in `references/schemas.md`.
+## JSON Formats
 
-**Output format:**
-1. Save the JSON to a file (suggest a name like `experiment_import.json`)
-2. Display a preview of the structure
-3. Tell the user: "将此文件在实验平台中使用「一键导入」上传即可"
-
-## JSON Structure Overview
-
-### Training Experiment
+### Flat results (no sub-categories)
 ```json
 [{
-  "group_name": "string (required)",
-  "model": "string",
-  "variables": { "key": "value" },
-  "metrics": {
-    "accuracy": 0.0,
-    "precision": 0.0,
-    "recall": 0.0,
-    "f1_score": 0.0,
-    "token_count": 0,
-    "runtime": 0,
-    "loss_curve": [],
-    "accuracy_curve": [],
-    "custom_metrics": {}
+  "group_name": "GPT-4o",
+  "model": "gpt-4o",
+  "eval_dataset": "MyEval",
+  "variables": { "temperature": 0.7 },
+  "results": [
+    { "question": "...", "expected_answer": "...", "model_response": "...", "is_correct": true, "difficulty": "easy" }
+  ]
+}]
+```
+
+Any fields in `results[]` beyond the standard ones (`question`, `expected_answer`, `model_response`, `is_correct`, `score`, `runtime_ms`, `token_count`, `reason`) become custom columns in the platform.
+
+### Nested results (with sub-categories)
+```json
+[{
+  "group_name": "GPT-4o",
+  "model": "gpt-4o",
+  "eval_dataset": "NL2SQL-Bench",
+  "variables": { "temperature": 0.3 },
+  "results": {
+    "单表查询": [
+      { "question": "...", "is_correct": true }
+    ],
+    "多表查询": [
+      { "question": "...", "is_correct": false }
+    ]
   }
 }]
 ```
 
-### Evaluation Experiment
+### Training experiment
 ```json
 [{
-  "group_name": "string (required)",
-  "model": "string",
-  "eval_dataset": "string",
-  "variables": { "key": "value" },
-  "results": [{
-    "question": "string (required)",
-    "expected_answer": "string",
-    "model_response": "string",
-    "is_correct": true,
-    "score": 1.0,
-    "runtime_ms": 0,
-    "token_count": 0,
-    "reason": "string",
-    "annotation": "string",
-    "think": "string"
-  }]
+  "group_name": "ResNet-50",
+  "model": "resnet50",
+  "variables": { "lr": 0.1, "batch_size": 256 },
+  "metrics": {
+    "accuracy": 0.761,
+    "precision": 0.758,
+    "recall": 0.764,
+    "f1_score": 0.761,
+    "loss_curve": [2.8, 2.3, 1.9],
+    "accuracy_curve": [0.15, 0.32, 0.45],
+    "custom_metrics": { "top5_accuracy": 0.95 }
+  }
 }]
 ```
 
-### Agent Evaluation Experiment
-Same as evaluation, plus in each result:
-```json
-{
-  "trajectory": [{ "step": 1, "thought": "...", "action": "...", "observation": "..." }],
-  "custom_scores": { "tool_accuracy": 0.9, "reasoning": 0.8 }
-}
+## Noise Filtering Rules
+
+The following should NOT be included in the output:
+- Row numbers, auto-increment IDs, UUIDs
+- File paths, source filenames
+- Raw timestamps (unless they are the `date` field)
+- Internal tracking codes
+- Columns with all-null or all-same values
+- Columns with >50% missing values
+
+## Examples
+
+**Example: Folder with 3 CSV files**
 ```
+experiment/
+  gpt4o_results.csv    → columns: id, question, answer, model_response, correct, difficulty, time_ms
+  claude_results.csv   → columns: id, question, answer, model_response, correct, difficulty, time_ms
+  config.txt           → "temperature=0.7, max_tokens=4096"
+```
+→ Output: 2 groups (from filenames), `difficulty` preserved as custom field, `id` filtered, `time_ms` → `runtime_ms`, `config.txt` values → `variables`
 
-## Common Scenarios
-
-### Scenario A: CSV of model comparison results
-User has `results.csv` with columns: model, question, answer, correct
-→ Parse rows, group by `model`, generate evaluation JSON
-
-### Scenario B: Multiple CSV files per model
-User has `gpt4o.csv`, `claude.csv` each with question/answer/score
-→ Each file = one group, filename = group_name
-
-### Scenario C: Training metrics table
-User pastes a table: Model | Accuracy | F1 | Precision | Recall | Epochs
-→ Each row = one group, metrics from columns, epochs → variables
-
-### Scenario D: Agent trajectory logs
-User has JSONL files with agent execution traces
-→ Parse each trace into trajectory array, extract question from first step
+**Example: CSV with sub-category column**
+```
+model, question, sql_type, answer, response, correct
+GPT-4o, "查询所有用户", "单表", "SELECT *", "SELECT *", true
+GPT-4o, "JOIN查询", "多表", "SELECT ... JOIN", "SELECT ... JOIN", false
+```
+→ Detected `sql_type` has 2 unique values → nested results format

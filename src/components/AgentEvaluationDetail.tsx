@@ -196,6 +196,12 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
 
   const openTrajModal = (record: EvaluationResult) => { setTrajModal(record); setShowThink(false); };
 
+  // 收集 JSON 导入带来的自定义字段
+  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'score', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'category_tag', 'trajectory', 'custom_scores', 'conversations', 'traj_diagnosis', 'sub_category', 'key']);
+  const extraFields = [...new Set(results.flatMap((r) => Object.keys(r).filter((k) => !STD_FIELDS.has(k))))];
+  const hasSubCategory = results.some((r) => r.sub_category);
+  const subCatFilters = hasSubCategory ? [...new Set(results.map((r) => r.sub_category).filter(Boolean))].map((v) => ({ text: v, value: v })) : [];
+
   const columns: ColumnsType<EvaluationResult> = [
     {
       title: '题目', dataIndex: 'question', key: 'question', width: 200, ellipsis: true,
@@ -203,6 +209,13 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
       filters: questionFilters, onFilter: (v, r) => r.question === v, filterSearch: true,
       render: (t: string) => <span style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{t}</span>,
     },
+    // 子分组列（仅在有子分组时显示）
+    ...(hasSubCategory ? [{
+      title: '子分组', dataIndex: 'sub_category', key: 'sub_category', width: 100,
+      sorter: (a, b) => (a.sub_category || '').localeCompare(b.sub_category || ''),
+      filters: subCatFilters, onFilter: (v: any, r: EvaluationResult) => r.sub_category === v, filterSearch: true,
+      render: (t: string) => t ? <Tag>{t}</Tag> : <span style={{ color: '#ccc' }}>—</span>,
+    }] : []),
     {
       title: '正确答案', dataIndex: 'expected_answer', key: 'expected_answer', width: 160, ellipsis: true,
       sorter: (a, b) => (a.expected_answer || '').localeCompare(b.expected_answer || ''),
@@ -235,6 +248,25 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
         );
       },
     },
+    // JSON 导入的自定义字段
+    ...extraFields.map((field) => ({
+      title: field,
+      dataIndex: field,
+      key: field,
+      width: Math.max(100, Math.min(160, field.length * 14 + 20)),
+      ellipsis: true,
+      sorter: (a: any, b: any) => {
+        const va = a[field], vb = b[field];
+        if (typeof va === 'number' && typeof vb === 'number') return va - vb;
+        return String(va ?? '').localeCompare(String(vb ?? ''));
+      },
+      render: (v: any) => {
+        if (v === undefined || v === null) return <span style={{ color: '#ccc' }}>—</span>;
+        if (typeof v === 'boolean') return v ? '✅' : '❌';
+        if (typeof v === 'object') return <span style={{ fontSize: 11 }}>{JSON.stringify(v).slice(0, 80)}</span>;
+        return <span style={{ fontSize: 12 }}>{String(v)}</span>;
+      },
+    })),
     {
       title: '结果', dataIndex: 'is_correct', key: 'is_correct', width: 68, sorter: (a, b) => a.is_correct - b.is_correct,
       filters: resultFilters, onFilter: (v, r) => v === 'correct' ? r.is_correct === 1 : r.is_correct === 0,

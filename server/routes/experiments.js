@@ -159,6 +159,7 @@ router.post('/:expId/import', upload.single('file'), (req, res) => {
           if (!tcId && q) { tcId = uuidv4(); exp.test_cases.push({ id: tcId, experiment_id: exp.id, question: q, expected_answer: a }); }
           if (!tcId) continue;
           evalResults.push({
+            ...r,
             id: uuidv4(), group_id: gid, test_case_id: tcId,
             model_response: r.model_response || '', is_correct: r.is_correct ? 1 : 0,
             score: r.score ?? (r.is_correct ? 1 : 0), runtime_ms: r.runtime_ms || 0, token_count: r.token_count || 0,
@@ -178,6 +179,7 @@ router.post('/:expId/import', upload.single('file'), (req, res) => {
             if (!tcId && q) { tcId = uuidv4(); exp.test_cases.push({ id: tcId, experiment_id: exp.id, question: q, expected_answer: a }); }
             if (!tcId) continue;
             evalResults.push({
+              ...r,
               id: uuidv4(), group_id: gid, test_case_id: tcId,
               model_response: r.model_response || '', is_correct: r.is_correct ? 1 : 0,
               score: r.score ?? (r.is_correct ? 1 : 0), runtime_ms: r.runtime_ms || 0, token_count: r.token_count || 0,

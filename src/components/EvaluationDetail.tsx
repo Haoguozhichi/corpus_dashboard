@@ -165,8 +165,10 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   const reasonFilters = [...new Set(results.map((r) => r.reason || '').filter(Boolean))].slice(0, 50).map((v) => ({ text: v, value: v }));
 
   // 收集 JSON 导入带来的自定义字段（不在标准字段中的）
-  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'score', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'category_tag', 'trajectory', 'custom_scores', 'conversations', 'eval_dataset', 'experiment_id', 'name', 'model', 'parameters', 'created_at', 'key']);
+  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'score', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'category_tag', 'trajectory', 'custom_scores', 'conversations', 'eval_dataset', 'experiment_id', 'name', 'model', 'parameters', 'created_at', 'key', 'sub_category']);
   const extraFields = [...new Set(results.flatMap((r) => Object.keys(r).filter((k) => !STD_FIELDS.has(k))))];
+  const hasSubCategory = results.some((r) => r.sub_category);
+  const subCatFilters = hasSubCategory ? [...new Set(results.map((r) => r.sub_category).filter(Boolean))].map((v) => ({ text: v, value: v })) : [];
 
   const columns: ColumnsType<EvaluationResult> = [
     {
@@ -176,6 +178,13 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
       filterSearch: true,
       render: (t: string) => <span style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{t}</span>,
     },
+    // 子分组列（仅在有子分组时显示）
+    ...(hasSubCategory ? [{
+      title: '子分组', dataIndex: 'sub_category', key: 'sub_category', width: 100,
+      sorter: (a, b) => (a.sub_category || '').localeCompare(b.sub_category || ''),
+      filters: subCatFilters, onFilter: (v: any, r: EvaluationResult) => r.sub_category === v, filterSearch: true,
+      render: (t: string) => t ? <Tag>{t}</Tag> : <span style={{ color: '#ccc' }}>—</span>,
+    }] : []),
     {
       title: '标准答案', dataIndex: 'expected_answer', key: 'expected_answer', width: 160, ellipsis: true,
       sorter: (a, b) => (a.expected_answer || '').localeCompare(b.expected_answer || ''),

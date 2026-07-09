@@ -228,24 +228,63 @@ const DashboardPage: React.FC = () => {
     },
   ];
 
+  const hasSubCategories = subCatNames.length > 0;
+
   const evaluationColumns: ColumnsType<GroupRow> = [
     ...commonColumns,
-    {
-      title: '准确率', key: 'accuracy', width: 100,
-      sorter: (a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0),
-      render: (_: unknown, r: GroupRow) => {
-        const v = r.accuracy ?? 0;
-        const best = bestGroup?.accuracy ?? 0;
-        return <span style={{ color: v === best ? '#52c41a' : undefined }}>{(v * 100).toFixed(1)}%{v === best && <TrophyOutlined style={{ color: '#faad14', marginLeft: 4 }} />}</span>;
+    // 无子分组时显示总体统计
+    ...(!hasSubCategories ? [
+      {
+        title: '准确率', key: 'accuracy', width: 100,
+        sorter: (a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0),
+        render: (_: unknown, r: GroupRow) => {
+          const v = r.accuracy ?? 0;
+          const best = bestGroup?.accuracy ?? 0;
+          return <span style={{ color: v === best ? '#52c41a' : undefined }}>{(v * 100).toFixed(1)}%{v === best && <TrophyOutlined style={{ color: '#faad14', marginLeft: 4 }} />}</span>;
+        },
       },
-    },
+      {
+        title: '正确/总数', key: 'cnt', width: 100,
+        sorter: (a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0),
+        render: (_: unknown, r: GroupRow) => `${r.correctCount ?? 0}/${r.resultCount ?? 0}`,
+      },
+    ] : [
+      // 有子分组时：子分组准确率 + 正确数
+      ...subCatNames.flatMap((name) => [
+        {
+          title: `${name}准确率`,
+          key: `sub_${name}_acc`,
+          width: 100,
+          sorter: (a: GroupRow, b: GroupRow) => {
+            const sa = (a.subCategories || []).find((s) => s.name === name);
+            const sb = (b.subCategories || []).find((s) => s.name === name);
+            return (sa?.accuracy ?? 0) - (sb?.accuracy ?? 0);
+          },
+          render: (_: unknown, r: GroupRow) => {
+            const sc = (r.subCategories || []).find((s) => s.name === name);
+            if (!sc) return <span style={{ color: '#ccc' }}>—</span>;
+            return <span>{(sc.accuracy * 100).toFixed(1)}%</span>;
+          },
+        },
+        {
+          title: `${name}正确/总数`,
+          key: `sub_${name}_cnt`,
+          width: 100,
+          sorter: (a: GroupRow, b: GroupRow) => {
+            const sa = (a.subCategories || []).find((s) => s.name === name);
+            const sb = (b.subCategories || []).find((s) => s.name === name);
+            return (sa?.correct ?? 0) - (sb?.correct ?? 0);
+          },
+          render: (_: unknown, r: GroupRow) => {
+            const sc = (r.subCategories || []).find((s) => s.name === name);
+            if (!sc) return <span style={{ color: '#ccc' }}>—</span>;
+            return <span>{sc.correct}/{sc.total}</span>;
+          },
+        },
+      ]),
+    ]),
     {
-      title: '正确/总数', key: 'cnt', width: 100,
-      sorter: (a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0),
-      render: (_: unknown, r: GroupRow) => `${r.correctCount ?? 0}/${r.resultCount ?? 0}`,
-    },
-    {
-      title: '平均耗时', key: 'latency', width: 100,
+      title: hasSubCategories ? '总耗时' : '平均耗时', key: 'latency', width: 100,
       sorter: (a, b) => {
         const avgA = a.results?.length ? a.results.reduce((s, x) => s + (x.runtime_ms || 0), 0) / a.results.length : 0;
         const avgB = b.results?.length ? b.results.reduce((s, x) => s + (x.runtime_ms || 0), 0) / b.results.length : 0;
@@ -253,22 +292,6 @@ const DashboardPage: React.FC = () => {
       },
       render: (_: unknown, r: GroupRow) => r.results && r.results.length > 0 ? `${(r.results.reduce((s, x) => s + (x.runtime_ms || 0), 0) / r.results.length).toFixed(0)}ms` : '-',
     },
-    // 子分组准确率列
-    ...subCatNames.map((name) => ({
-      title: `${name}准确率`,
-      key: `sub_${name}_acc`,
-      width: 100,
-      sorter: (a: GroupRow, b: GroupRow) => {
-        const sa = (a.subCategories || []).find((s) => s.name === name);
-        const sb = (b.subCategories || []).find((s) => s.name === name);
-        return (sa?.accuracy ?? 0) - (sb?.accuracy ?? 0);
-      },
-      render: (_: unknown, r: GroupRow) => {
-        const sc = (r.subCategories || []).find((s) => s.name === name);
-        if (!sc) return <span style={{ color: '#ccc' }}>—</span>;
-        return <span>{(sc.accuracy * 100).toFixed(1)}%</span>;
-      },
-    })),
   ];
 
   const actionColumn: ColumnsType<GroupRow> = [

@@ -1,0 +1,2862 @@
+[
+  {
+    "group_name": "GPT-4o Agent",
+    "model": "gpt-4o-agent",
+    "eval_dataset": "AgentBench-v2",
+    "variables": {
+      "temperature": 0.5,
+      "max_steps": 10
+    },
+    "results": {
+      "网页搜索": [
+        {
+          "question": "搜索北京今日天气",
+          "expected_answer": "返回气温22度湿度45%",
+          "model_response": "搜索成功,气温22度,湿度45%",
+          "is_correct": true,
+          "score": 0.9193657387377325,
+          "runtime_ms": 1034,
+          "token_count": 408,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索人工智能最新进展",
+          "expected_answer": "返回3条相关新闻标题",
+          "model_response": "找到3条新闻,已总结标题",
+          "is_correct": true,
+          "score": 0.9303247353451173,
+          "runtime_ms": 1114,
+          "token_count": 558,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索Python 3.13新特性",
+          "expected_answer": "返回新特性列表",
+          "model_response": "搜索超时",
+          "is_correct": false,
+          "score": 0.13800510691108153,
+          "runtime_ms": 1693,
+          "token_count": 328,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "easy",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "在GitHub搜索star最多的Python项目",
+          "expected_answer": "返回项目名和star数",
+          "model_response": "anthropic/claude-code 15.2k stars",
+          "is_correct": true,
+          "score": 0.8306399448397807,
+          "runtime_ms": 2608,
+          "token_count": 411,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索今日科技新闻头条",
+          "expected_answer": "返回头条标题",
+          "model_response": "找到5条头条并总结",
+          "is_correct": true,
+          "score": 0.8567094299290148,
+          "runtime_ms": 3221,
+          "token_count": 178,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ],
+      "网页导航": [
+        {
+          "question": "打开GitHub trending页面",
+          "expected_answer": "成功加载trending",
+          "model_response": "加载成功,显示25个项目",
+          "is_correct": true,
+          "score": 0.8112543006203021,
+          "runtime_ms": 1250,
+          "token_count": 372,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "导航到天气网站查询上海天气",
+          "expected_answer": "返回上海天气数据",
+          "model_response": "22度,小雨",
+          "is_correct": true,
+          "score": 0.9972532068948057,
+          "runtime_ms": 4780,
+          "token_count": 322,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "打开购物网站搜索机械键盘",
+          "expected_answer": "搜索结果按价格排序",
+          "model_response": "解析页面失败",
+          "is_correct": false,
+          "score": 0.20418464546544624,
+          "runtime_ms": 2929,
+          "token_count": 254,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "hard",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "登录邮箱查看未读邮件",
+          "expected_answer": "显示3封未读邮件",
+          "model_response": "登录成功,3封未读",
+          "is_correct": true,
+          "score": 0.8101747206977034,
+          "runtime_ms": 1195,
+          "token_count": 280,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "导航到公司内部Wiki搜索部署文档",
+          "expected_answer": "返回文档链接",
+          "model_response": "找到2篇相关文档",
+          "is_correct": true,
+          "score": 0.9245351745005582,
+          "runtime_ms": 4341,
+          "token_count": 163,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ],
+      "多步任务": [
+        {
+          "question": "翻译中文段落到英文后搜索Wikipedia",
+          "expected_answer": "返回Wikipedia条目",
+          "model_response": "翻译完成,Wikipedia条目已找到",
+          "is_correct": true,
+          "score": 0.910588072321046,
+          "runtime_ms": 3771,
+          "token_count": 400,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "提取网页中的表格数据并转为CSV",
+          "expected_answer": "返回CSV数据",
+          "model_response": "提取成功,12行数据",
+          "is_correct": true,
+          "score": 0.9130481333916549,
+          "runtime_ms": 2044,
+          "token_count": 141,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "对比3个电商网站iPhone价格",
+          "expected_answer": "返回价格对比表",
+          "model_response": "只找到2个网站数据",
+          "is_correct": false,
+          "score": 0.04977848653380638,
+          "runtime_ms": 3373,
+          "token_count": 452,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "easy",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "发送邮件通知+创建日历事件",
+          "expected_answer": "邮件已发送,事件已创建",
+          "model_response": "邮件发送成功,日历事件创建",
+          "is_correct": true,
+          "score": 0.8646503900633722,
+          "runtime_ms": 1398,
+          "token_count": 547,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "生成数据报告并上传到云存储",
+          "expected_answer": "报告已上传",
+          "model_response": "报告生成但上传失败",
+          "is_correct": false,
+          "score": 0.13605536172955374,
+          "runtime_ms": 4647,
+          "token_count": 216,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "hard",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ]
+    }
+  },
+  {
+    "group_name": "Claude Agent",
+    "model": "claude-agent",
+    "eval_dataset": "AgentBench-v2",
+    "variables": {
+      "temperature": 0.5,
+      "max_steps": 10
+    },
+    "results": {
+      "网页搜索": [
+        {
+          "question": "搜索北京今日天气",
+          "expected_answer": "返回气温22度湿度45%",
+          "model_response": "搜索成功,气温22度,湿度45%",
+          "is_correct": true,
+          "score": 0.8405822017745599,
+          "runtime_ms": 2675,
+          "token_count": 396,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索人工智能最新进展",
+          "expected_answer": "返回3条相关新闻标题",
+          "model_response": "找到3条新闻,已总结标题",
+          "is_correct": true,
+          "score": 0.8896100168246576,
+          "runtime_ms": 3771,
+          "token_count": 316,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索Python 3.13新特性",
+          "expected_answer": "返回新特性列表",
+          "model_response": "搜索超时",
+          "is_correct": false,
+          "score": 0.2842580348716637,
+          "runtime_ms": 2877,
+          "token_count": 319,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "medium",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "在GitHub搜索star最多的Python项目",
+          "expected_answer": "返回项目名和star数",
+          "model_response": "anthropic/claude-code 15.2k stars",
+          "is_correct": true,
+          "score": 0.914800612836536,
+          "runtime_ms": 3856,
+          "token_count": 264,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索今日科技新闻头条",
+          "expected_answer": "返回头条标题",
+          "model_response": "找到5条头条并总结",
+          "is_correct": true,
+          "score": 0.946027933812713,
+          "runtime_ms": 2912,
+          "token_count": 199,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ],
+      "网页导航": [
+        {
+          "question": "打开GitHub trending页面",
+          "expected_answer": "成功加载trending",
+          "model_response": "加载成功,显示25个项目",
+          "is_correct": true,
+          "score": 0.9380132032991576,
+          "runtime_ms": 2253,
+          "token_count": 571,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "导航到天气网站查询上海天气",
+          "expected_answer": "返回上海天气数据",
+          "model_response": "22度,小雨",
+          "is_correct": false,
+          "score": 0.8955410888218498,
+          "runtime_ms": 1700,
+          "token_count": 484,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "打开购物网站搜索机械键盘",
+          "expected_answer": "搜索结果按价格排序",
+          "model_response": "解析页面失败",
+          "is_correct": false,
+          "score": 0.287874459659829,
+          "runtime_ms": 3685,
+          "token_count": 428,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "easy",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "登录邮箱查看未读邮件",
+          "expected_answer": "显示3封未读邮件",
+          "model_response": "登录成功,3封未读",
+          "is_correct": true,
+          "score": 0.8126309496716315,
+          "runtime_ms": 4610,
+          "token_count": 122,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "导航到公司内部Wiki搜索部署文档",
+          "expected_answer": "返回文档链接",
+          "model_response": "找到2篇相关文档",
+          "is_correct": true,
+          "score": 0.9987901557600265,
+          "runtime_ms": 2966,
+          "token_count": 444,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ],
+      "多步任务": [
+        {
+          "question": "翻译中文段落到英文后搜索Wikipedia",
+          "expected_answer": "返回Wikipedia条目",
+          "model_response": "翻译完成,Wikipedia条目已找到",
+          "is_correct": true,
+          "score": 0.9876365815005765,
+          "runtime_ms": 1692,
+          "token_count": 346,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "提取网页中的表格数据并转为CSV",
+          "expected_answer": "返回CSV数据",
+          "model_response": "提取成功,12行数据",
+          "is_correct": true,
+          "score": 0.9169647435816887,
+          "runtime_ms": 2697,
+          "token_count": 502,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "对比3个电商网站iPhone价格",
+          "expected_answer": "返回价格对比表",
+          "model_response": "只找到2个网站数据",
+          "is_correct": true,
+          "score": 0.037796245776431446,
+          "runtime_ms": 2480,
+          "token_count": 362,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "easy",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "发送邮件通知+创建日历事件",
+          "expected_answer": "邮件已发送,事件已创建",
+          "model_response": "邮件发送成功,日历事件创建",
+          "is_correct": true,
+          "score": 0.8912611608019866,
+          "runtime_ms": 1179,
+          "token_count": 560,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "生成数据报告并上传到云存储",
+          "expected_answer": "报告已上传",
+          "model_response": "报告生成但上传失败",
+          "is_correct": false,
+          "score": 0.29133987270703576,
+          "runtime_ms": 3096,
+          "token_count": 536,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "easy",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ]
+    }
+  },
+  {
+    "group_name": "Gemini Agent",
+    "model": "gemini-agent",
+    "eval_dataset": "AgentBench-v2",
+    "variables": {
+      "temperature": 0.5,
+      "max_steps": 10
+    },
+    "results": {
+      "网页搜索": [
+        {
+          "question": "搜索北京今日天气",
+          "expected_answer": "返回气温22度湿度45%",
+          "model_response": "搜索成功,气温22度,湿度45%",
+          "is_correct": true,
+          "score": 0.9464551514279166,
+          "runtime_ms": 3620,
+          "token_count": 516,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索人工智能最新进展",
+          "expected_answer": "返回3条相关新闻标题",
+          "model_response": "找到3条新闻,已总结标题",
+          "is_correct": true,
+          "score": 0.9471692869223005,
+          "runtime_ms": 2366,
+          "token_count": 142,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索Python 3.13新特性",
+          "expected_answer": "返回新特性列表",
+          "model_response": "搜索超时",
+          "is_correct": false,
+          "score": 0.1816077176056978,
+          "runtime_ms": 1911,
+          "token_count": 581,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "easy",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "在GitHub搜索star最多的Python项目",
+          "expected_answer": "返回项目名和star数",
+          "model_response": "anthropic/claude-code 15.2k stars",
+          "is_correct": true,
+          "score": 0.9965400862710643,
+          "runtime_ms": 2528,
+          "token_count": 562,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索今日科技新闻头条",
+          "expected_answer": "返回头条标题",
+          "model_response": "找到5条头条并总结",
+          "is_correct": true,
+          "score": 0.8152964612533724,
+          "runtime_ms": 2676,
+          "token_count": 566,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ],
+      "网页导航": [
+        {
+          "question": "打开GitHub trending页面",
+          "expected_answer": "成功加载trending",
+          "model_response": "加载成功,显示25个项目",
+          "is_correct": true,
+          "score": 0.8979891700632954,
+          "runtime_ms": 4254,
+          "token_count": 219,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "导航到天气网站查询上海天气",
+          "expected_answer": "返回上海天气数据",
+          "model_response": "22度,小雨",
+          "is_correct": true,
+          "score": 0.8135608287567945,
+          "runtime_ms": 4364,
+          "token_count": 514,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "打开购物网站搜索机械键盘",
+          "expected_answer": "搜索结果按价格排序",
+          "model_response": "解析页面失败",
+          "is_correct": true,
+          "score": 0.10033358071406985,
+          "runtime_ms": 4486,
+          "token_count": 523,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "easy",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "登录邮箱查看未读邮件",
+          "expected_answer": "显示3封未读邮件",
+          "model_response": "登录成功,3封未读",
+          "is_correct": false,
+          "score": 0.9501854393407422,
+          "runtime_ms": 2308,
+          "token_count": 325,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "导航到公司内部Wiki搜索部署文档",
+          "expected_answer": "返回文档链接",
+          "model_response": "找到2篇相关文档",
+          "is_correct": true,
+          "score": 0.8022167706012627,
+          "runtime_ms": 1917,
+          "token_count": 305,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ],
+      "多步任务": [
+        {
+          "question": "翻译中文段落到英文后搜索Wikipedia",
+          "expected_answer": "返回Wikipedia条目",
+          "model_response": "翻译完成,Wikipedia条目已找到",
+          "is_correct": true,
+          "score": 0.8987573054666554,
+          "runtime_ms": 3394,
+          "token_count": 325,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "提取网页中的表格数据并转为CSV",
+          "expected_answer": "返回CSV数据",
+          "model_response": "提取成功,12行数据",
+          "is_correct": false,
+          "score": 0.8273449239266067,
+          "runtime_ms": 2490,
+          "token_count": 255,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "对比3个电商网站iPhone价格",
+          "expected_answer": "返回价格对比表",
+          "model_response": "只找到2个网站数据",
+          "is_correct": false,
+          "score": 0.12426691530197348,
+          "runtime_ms": 3584,
+          "token_count": 394,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "hard",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "发送邮件通知+创建日历事件",
+          "expected_answer": "邮件已发送,事件已创建",
+          "model_response": "邮件发送成功,日历事件创建",
+          "is_correct": false,
+          "score": 0.9688469942112119,
+          "runtime_ms": 2173,
+          "token_count": 407,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "生成数据报告并上传到云存储",
+          "expected_answer": "报告已上传",
+          "model_response": "报告生成但上传失败",
+          "is_correct": false,
+          "score": 0.1815846801074316,
+          "runtime_ms": 851,
+          "token_count": 260,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "easy",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ]
+    }
+  },
+  {
+    "group_name": "LLaMA-3 Agent",
+    "model": "llama-3-agent",
+    "eval_dataset": "AgentBench-v2",
+    "variables": {
+      "temperature": 0.5,
+      "max_steps": 10
+    },
+    "results": {
+      "网页搜索": [
+        {
+          "question": "搜索北京今日天气",
+          "expected_answer": "返回气温22度湿度45%",
+          "model_response": "搜索成功,气温22度,湿度45%",
+          "is_correct": true,
+          "score": 0.9527109146313,
+          "runtime_ms": 3548,
+          "token_count": 183,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索人工智能最新进展",
+          "expected_answer": "返回3条相关新闻标题",
+          "model_response": "找到3条新闻,已总结标题",
+          "is_correct": false,
+          "score": 0.9241618288151687,
+          "runtime_ms": 3987,
+          "token_count": 147,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索Python 3.13新特性",
+          "expected_answer": "返回新特性列表",
+          "model_response": "搜索超时",
+          "is_correct": true,
+          "score": 0.18625027991783674,
+          "runtime_ms": 2393,
+          "token_count": 404,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "medium",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "在GitHub搜索star最多的Python项目",
+          "expected_answer": "返回项目名和star数",
+          "model_response": "anthropic/claude-code 15.2k stars",
+          "is_correct": true,
+          "score": 0.8525081670388941,
+          "runtime_ms": 3994,
+          "token_count": 111,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索今日科技新闻头条",
+          "expected_answer": "返回头条标题",
+          "model_response": "找到5条头条并总结",
+          "is_correct": true,
+          "score": 0.9815400224405273,
+          "runtime_ms": 3719,
+          "token_count": 436,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ],
+      "网页导航": [
+        {
+          "question": "打开GitHub trending页面",
+          "expected_answer": "成功加载trending",
+          "model_response": "加载成功,显示25个项目",
+          "is_correct": false,
+          "score": 0.9668324100001325,
+          "runtime_ms": 4354,
+          "token_count": 344,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "导航到天气网站查询上海天气",
+          "expected_answer": "返回上海天气数据",
+          "model_response": "22度,小雨",
+          "is_correct": true,
+          "score": 0.9359227300259741,
+          "runtime_ms": 854,
+          "token_count": 476,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "打开购物网站搜索机械键盘",
+          "expected_answer": "搜索结果按价格排序",
+          "model_response": "解析页面失败",
+          "is_correct": true,
+          "score": 0.2088071014724308,
+          "runtime_ms": 2441,
+          "token_count": 580,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "medium",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "登录邮箱查看未读邮件",
+          "expected_answer": "显示3封未读邮件",
+          "model_response": "登录成功,3封未读",
+          "is_correct": true,
+          "score": 0.9477324241388442,
+          "runtime_ms": 1056,
+          "token_count": 514,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "导航到公司内部Wiki搜索部署文档",
+          "expected_answer": "返回文档链接",
+          "model_response": "找到2篇相关文档",
+          "is_correct": false,
+          "score": 0.8592571103417338,
+          "runtime_ms": 1082,
+          "token_count": 350,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ],
+      "多步任务": [
+        {
+          "question": "翻译中文段落到英文后搜索Wikipedia",
+          "expected_answer": "返回Wikipedia条目",
+          "model_response": "翻译完成,Wikipedia条目已找到",
+          "is_correct": false,
+          "score": 0.9278485134279691,
+          "runtime_ms": 874,
+          "token_count": 447,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "提取网页中的表格数据并转为CSV",
+          "expected_answer": "返回CSV数据",
+          "model_response": "提取成功,12行数据",
+          "is_correct": true,
+          "score": 0.8654255617668922,
+          "runtime_ms": 4147,
+          "token_count": 234,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "对比3个电商网站iPhone价格",
+          "expected_answer": "返回价格对比表",
+          "model_response": "只找到2个网站数据",
+          "is_correct": true,
+          "score": 0.24543637348221875,
+          "runtime_ms": 3738,
+          "token_count": 441,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "hard",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "发送邮件通知+创建日历事件",
+          "expected_answer": "邮件已发送,事件已创建",
+          "model_response": "邮件发送成功,日历事件创建",
+          "is_correct": false,
+          "score": 0.9266725417652211,
+          "runtime_ms": 1275,
+          "token_count": 140,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "生成数据报告并上传到云存储",
+          "expected_answer": "报告已上传",
+          "model_response": "报告生成但上传失败",
+          "is_correct": true,
+          "score": 0.05483865561497895,
+          "runtime_ms": 4549,
+          "token_count": 133,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "hard",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ]
+    }
+  },
+  {
+    "group_name": "Qwen Agent",
+    "model": "qwen-agent",
+    "eval_dataset": "AgentBench-v2",
+    "variables": {
+      "temperature": 0.5,
+      "max_steps": 10
+    },
+    "results": {
+      "网页搜索": [
+        {
+          "question": "搜索北京今日天气",
+          "expected_answer": "返回气温22度湿度45%",
+          "model_response": "搜索成功,气温22度,湿度45%",
+          "is_correct": true,
+          "score": 0.825728699619786,
+          "runtime_ms": 869,
+          "token_count": 243,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索人工智能最新进展",
+          "expected_answer": "返回3条相关新闻标题",
+          "model_response": "找到3条新闻,已总结标题",
+          "is_correct": false,
+          "score": 0.8021300270651323,
+          "runtime_ms": 2892,
+          "token_count": 194,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索Python 3.13新特性",
+          "expected_answer": "返回新特性列表",
+          "model_response": "搜索超时",
+          "is_correct": false,
+          "score": 0.044669967985045286,
+          "runtime_ms": 1831,
+          "token_count": 510,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "medium",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "在GitHub搜索star最多的Python项目",
+          "expected_answer": "返回项目名和star数",
+          "model_response": "anthropic/claude-code 15.2k stars",
+          "is_correct": true,
+          "score": 0.8804881209695791,
+          "runtime_ms": 3370,
+          "token_count": 338,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "搜索今日科技新闻头条",
+          "expected_answer": "返回头条标题",
+          "model_response": "找到5条头条并总结",
+          "is_correct": true,
+          "score": 0.8002504726968536,
+          "runtime_ms": 4247,
+          "token_count": 185,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "search",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ],
+      "网页导航": [
+        {
+          "question": "打开GitHub trending页面",
+          "expected_answer": "成功加载trending",
+          "model_response": "加载成功,显示25个项目",
+          "is_correct": true,
+          "score": 0.8573114340710158,
+          "runtime_ms": 1376,
+          "token_count": 213,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "导航到天气网站查询上海天气",
+          "expected_answer": "返回上海天气数据",
+          "model_response": "22度,小雨",
+          "is_correct": true,
+          "score": 0.9048341885290869,
+          "runtime_ms": 1469,
+          "token_count": 444,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "打开购物网站搜索机械键盘",
+          "expected_answer": "搜索结果按价格排序",
+          "model_response": "解析页面失败",
+          "is_correct": true,
+          "score": 0.20538819042916975,
+          "runtime_ms": 3887,
+          "token_count": 501,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "medium",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "登录邮箱查看未读邮件",
+          "expected_answer": "显示3封未读邮件",
+          "model_response": "登录成功,3封未读",
+          "is_correct": false,
+          "score": 0.8009232861190999,
+          "runtime_ms": 3391,
+          "token_count": 531,
+          "reason": "",
+          "difficulty": "medium",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "导航到公司内部Wiki搜索部署文档",
+          "expected_answer": "返回文档链接",
+          "model_response": "找到2篇相关文档",
+          "is_correct": true,
+          "score": 0.9848985844370406,
+          "runtime_ms": 1858,
+          "token_count": 269,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "navigation",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ],
+      "多步任务": [
+        {
+          "question": "翻译中文段落到英文后搜索Wikipedia",
+          "expected_answer": "返回Wikipedia条目",
+          "model_response": "翻译完成,Wikipedia条目已找到",
+          "is_correct": true,
+          "score": 0.9612833235218324,
+          "runtime_ms": 1755,
+          "token_count": 586,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "提取网页中的表格数据并转为CSV",
+          "expected_answer": "返回CSV数据",
+          "model_response": "提取成功,12行数据",
+          "is_correct": false,
+          "score": 0.8470952662406207,
+          "runtime_ms": 1564,
+          "token_count": 489,
+          "reason": "",
+          "difficulty": "hard",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "对比3个电商网站iPhone价格",
+          "expected_answer": "返回价格对比表",
+          "model_response": "只找到2个网站数据",
+          "is_correct": true,
+          "score": 0.15552951055554717,
+          "runtime_ms": 1287,
+          "token_count": 493,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "medium",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "发送邮件通知+创建日历事件",
+          "expected_answer": "邮件已发送,事件已创建",
+          "model_response": "邮件发送成功,日历事件创建",
+          "is_correct": true,
+          "score": 0.9663359986259675,
+          "runtime_ms": 3831,
+          "token_count": 120,
+          "reason": "",
+          "difficulty": "easy",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_call",
+              "observation": "工具调用成功"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.9,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        },
+        {
+          "question": "生成数据报告并上传到云存储",
+          "expected_answer": "报告已上传",
+          "model_response": "报告生成但上传失败",
+          "is_correct": false,
+          "score": 0.2294386700222817,
+          "runtime_ms": 4224,
+          "token_count": 117,
+          "reason": "Tool call failed or wrong output",
+          "difficulty": "easy",
+          "task_type": "multi-step",
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析任务需求",
+              "action": "parse",
+              "observation": "任务类型已识别"
+            },
+            {
+              "step": 2,
+              "thought": "选择合适工具",
+              "action": "tool_lookup",
+              "observation": "Error: 工具超时"
+            },
+            {
+              "step": 3,
+              "thought": "整理结果",
+              "action": "format",
+              "observation": "结果已格式化"
+            }
+          ],
+          "custom_scores": {
+            "tool_accuracy": 0.3,
+            "reasoning": 0.8,
+            "efficiency": 0.7
+          }
+        }
+      ]
+    }
+  }
+]

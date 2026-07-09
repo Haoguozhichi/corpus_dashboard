@@ -88,6 +88,40 @@ Same as Evaluation experiment, with additional fields in each result.
 }
 ```
 
+## Custom Fields in Results
+
+Any field in `results[]` that is NOT in the standard field list is treated as a **custom variable** and automatically displayed as a column in the platform. Examples:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sub_category` | string | Sub-group identifier (set by platform during import) |
+| `difficulty` | string | Difficulty level (e.g., "easy", "medium", "hard") |
+| `table_count` | integer | Number of tables involved in SQL query |
+| `task_type` | string | Type of task (e.g., "search", "navigation", "multi-step") |
+
+These are preserved from the source data by including `...r` spread in the import endpoint. No schema changes needed in the platform.
+
+## Nested Results Format (Sub-categories)
+
+When test cases within a group have natural sub-groupings, use the nested format:
+
+```json
+"results": {
+  "单表查询": [
+    { "question": "...", "is_correct": true, "difficulty": "easy" }
+  ],
+  "多表查询": [
+    { "question": "...", "is_correct": false, "difficulty": "hard" }
+  ]
+}
+```
+
+The platform will:
+- Store `sub_category` on each result (the key name)
+- Compute per-sub-category accuracy and token stats
+- Display sub-category columns in the dashboard comparison table
+- Show a "子分组" filterable column in the detail table
+
 ## Important Notes
 
 1. **Same `group_name` rows are merged** into one group in the platform
