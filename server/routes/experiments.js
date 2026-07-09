@@ -41,7 +41,23 @@ router.get('/:id', (req, res) => {
         const tc = exp.test_cases?.find((t) => t.id === er.test_case_id);
         return { ...er, question: tc?.question || '', expected_answer: tc?.expected_answer || '', category_tag: tc?.category_tag || '' };
       });
-      return { ...g, parameters: g.parameters || {}, results: preview, resultCount: allResults.length, correctCount, accuracy: allResults.length > 0 ? correctCount / allResults.length : 0, totalTokens, avgRuntime };
+      // 子分组统计
+      const subCategories = {};
+      allResults.forEach((r) => {
+        if (r.sub_category) {
+          if (!subCategories[r.sub_category]) subCategories[r.sub_category] = { total: 0, correct: 0, tokens: 0 };
+          subCategories[r.sub_category].total++;
+          if (r.is_correct) subCategories[r.sub_category].correct++;
+          subCategories[r.sub_category].tokens += (r.token_count || 0);
+        }
+      });
+      const subStats = Object.entries(subCategories).map(([name, s]) => ({
+        name, total: s.total, correct: s.correct,
+        accuracy: s.total > 0 ? s.correct / s.total : 0,
+        tokens: s.tokens,
+      }));
+
+      return { ...g, parameters: g.parameters || {}, results: preview, resultCount: allResults.length, correctCount, accuracy: allResults.length > 0 ? correctCount / allResults.length : 0, totalTokens, avgRuntime, subCategories: subStats };
     }
     return { ...g, parameters: g.parameters || {} };
   });
@@ -132,20 +148,47 @@ router.post('/:expId/import', upload.single('file'), (req, res) => {
         model: gData.model || '', eval_dataset: gData.eval_dataset || '', parameters: gData.variables || {}, created_at: new Date().toISOString(),
       });
       const evalResults = [];
-      for (const r of (gData.results || [])) {
-        const q = r.question || '', a = r.expected_answer || '';
-        let tcId = (exp.test_cases || []).find((tc) => tc.question === q && tc.expected_answer === a)?.id;
-        if (!tcId && q) { tcId = uuidv4(); exp.test_cases.push({ id: tcId, experiment_id: exp.id, question: q, expected_answer: a }); }
-        if (!tcId) continue;
-        evalResults.push({
-          id: uuidv4(), group_id: gid, test_case_id: tcId,
-          model_response: r.model_response || '', is_correct: r.is_correct ? 1 : 0,
-          score: r.score ?? (r.is_correct ? 1 : 0), runtime_ms: r.runtime_ms || 0, token_count: r.token_count || 0,
-          reason: r.reason || undefined,
-          annotation: r.annotation || undefined,
-          think: r.think || undefined,
-          trajectory: r.trajectory || undefined, custom_scores: r.custom_scores || undefined,
-        });
+
+      // 支持 results 为数组（平铺）或对象（嵌套子分组）
+      const resultsData = gData.results;
+      if (Array.isArray(resultsData)) {
+        // 传统格式：results 是数组
+        for (const r of resultsData) {
+          const q = r.question || '', a = r.expected_answer || '';
+          let tcId = (exp.test_cases || []).find((tc) => tc.question === q && tc.expected_answer === a)?.id;
+          if (!tcId && q) { tcId = uuidv4(); exp.test_cases.push({ id: tcId, experiment_id: exp.id, question: q, expected_answer: a }); }
+          if (!tcId) continue;
+          evalResults.push({
+            id: uuidv4(), group_id: gid, test_case_id: tcId,
+            model_response: r.model_response || '', is_correct: r.is_correct ? 1 : 0,
+            score: r.score ?? (r.is_correct ? 1 : 0), runtime_ms: r.runtime_ms || 0, token_count: r.token_count || 0,
+            reason: r.reason || undefined,
+            annotation: r.annotation || undefined,
+            think: r.think || undefined,
+            trajectory: r.trajectory || undefined, custom_scores: r.custom_scores || undefined,
+          });
+        }
+      } else if (resultsData && typeof resultsData === 'object') {
+        // 嵌套格式：results = { "单表": [...], "多表": [...] }
+        for (const [subCat, items] of Object.entries(resultsData)) {
+          if (!Array.isArray(items)) continue;
+          for (const r of items) {
+            const q = r.question || '', a = r.expected_answer || '';
+            let tcId = (exp.test_cases || []).find((tc) => tc.question === q && tc.expected_answer === a)?.id;
+            if (!tcId && q) { tcId = uuidv4(); exp.test_cases.push({ id: tcId, experiment_id: exp.id, question: q, expected_answer: a }); }
+            if (!tcId) continue;
+            evalResults.push({
+              id: uuidv4(), group_id: gid, test_case_id: tcId,
+              model_response: r.model_response || '', is_correct: r.is_correct ? 1 : 0,
+              score: r.score ?? (r.is_correct ? 1 : 0), runtime_ms: r.runtime_ms || 0, token_count: r.token_count || 0,
+              reason: r.reason || undefined,
+              annotation: r.annotation || undefined,
+              think: r.think || undefined,
+              sub_category: subCat,
+              trajectory: r.trajectory || undefined, custom_scores: r.custom_scores || undefined,
+            });
+          }
+        }
       }
       exp.groups[exp.groups.length - 1].evaluation_results = evalResults;
       groupsCreated++;

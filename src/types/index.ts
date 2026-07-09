@@ -94,6 +94,7 @@ export interface ExperimentGroup {
   resultCount?: number;
   correctCount?: number;
   accuracy?: number;
+  subCategories?: { name: string; total: number; correct: number; accuracy: number; tokens: number }[];
   error_clusters?: { name: string; description: string; count: number; caseIndices: number[] }[];
   ai_report?: string;
 }

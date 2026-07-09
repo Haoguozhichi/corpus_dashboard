@@ -18,7 +18,21 @@ router.get('/experiments/:expId/groups', (req, res) => {
         return { ...er, question: tc?.question || '', expected_answer: tc?.expected_answer || '', category_tag: tc?.category_tag || '' };
       });
       const correct = results.filter((r) => r.is_correct).length;
-      return { ...g, parameters: g.parameters || {}, results, resultCount: results.length, correctCount: correct, accuracy: results.length > 0 ? correct / results.length : 0 };
+      const allResults = g.evaluation_results || [];
+      const subCategories = {};
+      allResults.forEach((r) => {
+        if (r.sub_category) {
+          if (!subCategories[r.sub_category]) subCategories[r.sub_category] = { total: 0, correct: 0, tokens: 0 };
+          subCategories[r.sub_category].total++;
+          if (r.is_correct) subCategories[r.sub_category].correct++;
+          subCategories[r.sub_category].tokens += (r.token_count || 0);
+        }
+      });
+      const subStats = Object.entries(subCategories).map(([name, s]) => ({
+        name, total: s.total, correct: s.correct,
+        accuracy: s.total > 0 ? s.correct / s.total : 0, tokens: s.tokens,
+      }));
+      return { ...g, parameters: g.parameters || {}, results, resultCount: results.length, correctCount: correct, accuracy: results.length > 0 ? correct / results.length : 0, subCategories: subStats };
     }
     return { ...g, parameters: g.parameters || {} };
   });

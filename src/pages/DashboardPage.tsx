@@ -68,6 +68,13 @@ const DashboardPage: React.FC = () => {
     );
   }, [tableData, search]);
 
+  // 收集子分组名
+  const subCatNames = React.useMemo(() => {
+    const names = new Set<string>();
+    groups.forEach((g) => (g.subCategories || []).forEach((s) => names.add(s.name)));
+    return Array.from(names);
+  }, [groups]);
+
   // 收集变量名
   const paramKeys = React.useMemo(() => {
     const keys = new Set<string>();
@@ -246,6 +253,22 @@ const DashboardPage: React.FC = () => {
       },
       render: (_: unknown, r: GroupRow) => r.results && r.results.length > 0 ? `${(r.results.reduce((s, x) => s + (x.runtime_ms || 0), 0) / r.results.length).toFixed(0)}ms` : '-',
     },
+    // 子分组准确率列
+    ...subCatNames.map((name) => ({
+      title: `${name}准确率`,
+      key: `sub_${name}_acc`,
+      width: 100,
+      sorter: (a: GroupRow, b: GroupRow) => {
+        const sa = (a.subCategories || []).find((s) => s.name === name);
+        const sb = (b.subCategories || []).find((s) => s.name === name);
+        return (sa?.accuracy ?? 0) - (sb?.accuracy ?? 0);
+      },
+      render: (_: unknown, r: GroupRow) => {
+        const sc = (r.subCategories || []).find((s) => s.name === name);
+        if (!sc) return <span style={{ color: '#ccc' }}>—</span>;
+        return <span>{(sc.accuracy * 100).toFixed(1)}%</span>;
+      },
+    })),
   ];
 
   const actionColumn: ColumnsType<GroupRow> = [

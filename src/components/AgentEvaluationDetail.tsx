@@ -34,6 +34,7 @@ function computeTrajectoryStats(trajectory?: TrajectoryStep[]) {
 
 const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId, testCases, onRefresh }) => {
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [expandedCells, setExpandedCells] = useState<Set<string>>(new Set());
   const [filterText, setFilterText] = useState('');
   const [allResults, setAllResults] = useState<EvaluationResult[]>([]);
   const [resultsLoading, setResultsLoading] = useState(false);
@@ -212,11 +213,27 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
     {
       title: 'Agent回答', dataIndex: 'model_response', key: 'model_response', width: 220,
       sorter: (a, b) => (a.model_response || '').localeCompare(b.model_response || ''),
-      render: (t: string) => (
-        <div style={{ whiteSpace: 'pre-wrap', maxHeight: 100, overflow: 'auto', background: '#fafafa', padding: 4, borderRadius: 4, fontSize: 12 }}>
-          {t || <span style={{ color: '#ccc' }}>无回答</span>}
-        </div>
-      ),
+      render: (t: string, record: EvaluationResult) => {
+        const expanded = expandedCells.has(record.id);
+        const long = t && t.length > 100;
+        return (
+          <div>
+            <div style={{
+              whiteSpace: 'pre-wrap', maxHeight: expanded ? 'none' : 100, overflow: expanded ? 'visible' : 'auto',
+              background: '#fafafa', padding: 4, borderRadius: 4, fontSize: 12,
+            }}>
+              {t || <span style={{ color: '#ccc' }}>无回答</span>}
+            </div>
+            {long && (
+              <Button type="link" size="small" onClick={() => {
+                setExpandedCells((prev) => { const next = new Set(prev); expanded ? next.delete(record.id) : next.add(record.id); return next; });
+              }}>
+                {expanded ? '收起' : '更多'}
+              </Button>
+            )}
+          </div>
+        );
+      },
     },
     {
       title: '结果', dataIndex: 'is_correct', key: 'is_correct', width: 68, sorter: (a, b) => a.is_correct - b.is_correct,

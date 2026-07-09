@@ -19,6 +19,7 @@ interface Props {
 
 const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId, testCases, onRefresh }) => {
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [expandedCells, setExpandedCells] = useState<Set<string>>(new Set());
   const [filterText, setFilterText] = useState('');
   const [allResults, setAllResults] = useState<EvaluationResult[]>([]);
   const [resultsLoading, setResultsLoading] = useState(false);
@@ -184,11 +185,27 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
     {
       title: '模型回答', dataIndex: 'model_response', key: 'model_response', width: 240,
       sorter: (a, b) => (a.model_response || '').localeCompare(b.model_response || ''),
-      render: (t: string) => (
-        <div style={{ whiteSpace: 'pre-wrap', maxHeight: 120, overflow: 'auto', background: '#fafafa', padding: 6, borderRadius: 4, fontSize: 12 }}>
-          {t || <span style={{ color: '#ccc' }}>无回答</span>}
-        </div>
-      ),
+      render: (t: string, record: EvaluationResult) => {
+        const expanded = expandedCells.has(record.id);
+        const long = t && t.length > 100;
+        return (
+          <div>
+            <div style={{
+              whiteSpace: 'pre-wrap', maxHeight: expanded ? 'none' : 120, overflow: expanded ? 'visible' : 'auto',
+              background: '#fafafa', padding: 6, borderRadius: 4, fontSize: 12,
+            }}>
+              {t || <span style={{ color: '#ccc' }}>无回答</span>}
+            </div>
+            {long && (
+              <Button type="link" size="small" onClick={() => {
+                setExpandedCells((prev) => { const next = new Set(prev); expanded ? next.delete(record.id) : next.add(record.id); return next; });
+              }}>
+                {expanded ? '收起' : '更多'}
+              </Button>
+            )}
+          </div>
+        );
+      },
     },
     // JSON 导入的自定义字段（插入在模型回答与结果之间）
     ...extraFields.map((field) => ({
@@ -296,6 +313,22 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
           </Col>
         ))}
       </Row>
+
+      {/* 子分组统计 */}
+      {group.subCategories && group.subCategories.length > 0 && (
+        <Card title="📂 子分组统计" size="small" style={{ marginBottom: 16, borderRadius: 8 }}>
+          <Row gutter={[16, 8]}>
+            {group.subCategories.map((sc) => (
+              <Col xs={12} sm={8} md={6} key={sc.name}>
+                <Card size="small" style={{ background: '#fafafa' }}>
+                  <Statistic title={sc.name} value={`${sc.correct}/${sc.total}`}
+                    suffix={<span style={{ fontSize: 12, color: '#888' }}>{(sc.accuracy * 100).toFixed(1)}%</span>} />
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </Card>
+      )}
 
       {group.error_clusters && group.error_clusters.length > 0 && (
         <Card title="🤖 AI 错误聚类分析" size="small" style={{ marginBottom: 16, borderRadius: 8 }}>
