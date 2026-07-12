@@ -86,6 +86,20 @@ const DashboardPage: React.FC = () => {
   const [reportText, setReportText] = useState('');
   const [reportLoading, setReportLoading] = useState(false);
   const [showSubCols, setShowSubCols] = useState(false);
+  const [editConclusion, setEditConclusion] = useState(false);
+  const [conclusionText, setConclusionText] = useState('');
+  const [savingConclusion, setSavingConclusion] = useState(false);
+
+  const handleSaveConclusion = async () => {
+    setSavingConclusion(true);
+    try {
+      await updateExperiment(experiment!.id, { conclusion: conclusionText } as any);
+      (experiment as any).conclusion = conclusionText;
+      message.success('已保存');
+      setEditConclusion(false);
+    } catch { message.error('保存失败'); }
+    finally { setSavingConclusion(false); }
+  };
 
   // 为筛选收集唯一值
   const nameFilters = useMemo(() => [...new Set(groups.map((g) => g.name))].map((v) => ({ text: v, value: v })), [groups]);
@@ -321,6 +335,39 @@ const DashboardPage: React.FC = () => {
           <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateGroup}>创建实验组</Button>
         </Space>
       </div>
+
+      {/* 实验结论卡片 */}
+      <Card
+        title="📝 实验结论与备注"
+        size="small"
+        style={{ marginBottom: 16, borderRadius: 8 }}
+        extra={
+          !editConclusion ? (
+            <Button size="small" icon={<EditOutlined />} onClick={() => { setConclusionText(experiment.conclusion || ''); setEditConclusion(true); }}>
+              编辑
+            </Button>
+          ) : null
+        }
+      >
+        {editConclusion ? (
+          <div>
+            <Input.TextArea
+              rows={4}
+              value={conclusionText}
+              onChange={(e) => setConclusionText(e.target.value)}
+              placeholder="记录实验结论、发现、备注..."
+            />
+            <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+              <Button type="primary" size="small" loading={savingConclusion} onClick={handleSaveConclusion}>保存</Button>
+              <Button size="small" onClick={() => setEditConclusion(false)}>取消</Button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ whiteSpace: 'pre-wrap', color: experiment.conclusion ? '#333' : '#ccc', minHeight: 40, fontSize: 13 }}>
+            {experiment.conclusion || '点击右上角「编辑」添加实验结论...'}
+          </div>
+        )}
+      </Card>
 
       {/* 概览卡片 */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>

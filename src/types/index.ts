@@ -107,6 +107,7 @@ export interface Experiment {
   type: ExperimentType;
   date: string;
   owner?: string;              // 实验负责人
+  conclusion?: string;         // 实验结论/备注
   groupCount?: number;
   groups?: ExperimentGroup[];
   testCases?: TestCase[];
