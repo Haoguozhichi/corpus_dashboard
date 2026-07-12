@@ -3,183 +3,201 @@ name: experiment-json-converter
 description: >
   Convert any experiment data (CSV, Excel, JSON, Markdown, folder of files) into the JSON format
   required by the "实验数据展示平台" (Experiment Data Platform) for one-click import.
-  Automatically identifies experiment type, detects sub-categories within results, preserves custom
-  variables, and filters irrelevant columns. Use this skill whenever the user mentions importing
-  experiments, converting experiment data, creating experiment JSON, uploading results, or wants
-  to get their experiment data into the platform. Supports training, evaluation, and agent experiments.
+  Use this skill whenever the user mentions importing experiments, converting experiment data,
+  creating experiment JSON, uploading results, or wants to get their experiment data into the platform.
+  Handles training experiments (训练实验) and evaluation experiments (评测实验, including those
+  with Agent trajectories). The platform auto-detects Agent experiments by checking if results
+  contain a `trajectory` field.
 ---
 
 # Experiment JSON Converter
 
-Convert experiment data into the platform's one-click import JSON format.
-Read `references/schemas.md` for exact field specifications.
+**Target model**: qwen3.6 27B (follow explicit rules, avoid open-ended reasoning).
+**Read `references/schemas.md` for the exact JSON schemas and field list.**
 
-## Core Principles
+## Before Starting: Context Interview
 
-1. **Understand the experiment's purpose before converting** — skim all files to identify what's being measured
-2. **Preserve meaningful data** — keep all informative columns as custom fields
-3. **Filter noise** — strip IDs, timestamps, internal codes, and obviously irrelevant metadata
-4. **Detect natural groupings** — sub-categories in the data should become nested `results`
+Always ask the experiment owner these 3 questions before converting:
 
-## Workflow
+1. "这是哪种实验？A)模型训练对比 B)模型评测（问答/NL2SQL/NER等） C)Agent评测（含工具调用轨迹）"
+2. "实验数据中有几个实验组？组名分别是什么？"（如果数据中有明确的分组列则跳过）
+3. "有没有特殊的评测指标需要保留？"（如BLEU、ROUGE等自定义指标）
 
-### Step 1: Understand the Experiment
+This ensures you understand the experimenter's intent before mapping fields.
 
-When given a folder or file set, first survey all files to answer:
-- What type of experiment? (training / evaluation / agent)
-- What's being compared? (different models? different prompts? different settings?)
-- What's the output metric? (accuracy? F1? pass rate?)
-- Are there natural sub-groupings? (by difficulty, task type, domain)
+## Conversion Workflow
 
-**Experiment type detection:**
+### 1. Determine Experiment Type
 
-| Type | Key Indicators in data |
-|------|----------------------|
-| **training** | accuracy, precision, recall, F1, loss, epoch, lr, batch_size, optimizer |
-| **evaluation** | question + answer/response + correct/incorrect, 题目, 标准答案, 模型回答 |
-| **agent_evaluation** | trajectory, tool_call, action/observation, multi-step, agent |
+Use this decision tree — do NOT infer:
 
-### Step 2: Parse All Files
+```
+Columns include accuracy/precision/recall/F1/loss?
+  → YES: training
+  → NO: evaluation
 
-Read every file in the folder. Common formats:
-- **CSV** — tabular results (most common)
-- **Excel** (`.xlsx`, `.xls`) — often contains multiple sheets
-- **JSON/JSONL** — structured data, trajectories
-- **TXT/MD** — logs, descriptions
+Results contain a `trajectory` field (array of steps)?
+  → include trajectory in each result
+  → NOTE: the platform auto-detects this; no separate experiment type needed
+```
 
-For each file, identify:
-- Column headers and their meanings
-- Which column identifies the group (model name, experiment name)
-- Which columns are results vs metadata
+### 2. Scan All Data Files
 
-### Step 3: Classify Columns
+Read every file provided. For each file, list:
+- File name → which model/group it represents
+- Column headers → potential field mapping
+- Row count → result count per group
 
-For each column in the data, decide its role:
+**File naming conventions**: If one file per model, the filename is the `group_name`.
 
-| Role | Examples | Action |
-|------|----------|--------|
-| **Group identifier** | model, model_name, 实验组, group | Use as `group_name` |
-| **Sub-category marker** | difficulty, task_type, category, domain, 难度, 任务类型 | Detect and use for nested `results` |
-| **Standard field** | question, answer, response, correct, score, runtime | Map to platform field names |
-| **Informative variable** | table_count, prompt_version, temperature | Preserve in `results[]` as custom field |
-| **Noise** | row_id, timestamp, internal_id, uuid, path | Drop — not meaningful for analysis |
+### 3. Build Field Mapping Table
 
-**Sub-category detection**: If a column has a small set of distinct values (2-10 unique values) that categorize the test cases, it should be used to create nested results:
+For every column found in the data, assign exactly one role from this table:
+
+| Column Name (常见) | Platform Field | Type | Rule |
+|---|---|---|---|
+| model, 模型, group, 实验组, model_name | `group_name` | string | Required. If missing, ask user. |
+| model (the model identifier itself) | `model` | string | The specific model version |
+| question, 题目, 问题, prompt, input, query | `results[].question` | string | **Required for evaluation** |
+| answer, 标准答案, expected, gold, ground_truth | `results[].expected_answer` | string | |
+| response, 模型回答, output, pred, prediction | `results[].model_response` | string | |
+| correct, 是否正确, is_correct, pass, 正确 | `results[].is_correct` | boolean | Convert: 1/0→true/false, "yes"/"no"→true/false, "对"/"错"→true/false |
+| score, 得分, 评分 | `results[].score` | number | 0~1 range |
+| runtime, 耗时, latency, time, time_ms, cost | `results[].runtime_ms` | integer | milliseconds |
+| tokens, token, token_count | `results[].token_count` | integer | |
+| reason, 原因, 错误原因, error_reason | `results[].reason` | string | |
+| trajectory, 轨迹, trace, steps | `results[].trajectory` | array | Array of TrajectoryStep objects |
+| temperature, lr, batch_size, epochs, etc | `variables` | key-value | Experiment parameters |
+
+### 4. Handle Sub-categories
+
+If any column has a small number of distinct values (2-10) that classify the test cases:
+
+**Common sub-category columns**: `difficulty`(简单/中等/困难), `task_type`(单表/多表/复杂), `category`, `domain`, `难度`, `任务类型`, `类别`
+
+If found → use nested `results` format:
 ```json
 "results": {
-  "单表查询": [...],
-  "多表查询": [...]
+  "单表查询": [{ "question": "...", "is_correct": true }],
+  "多表查询": [{ "question": "...", "is_correct": false }]
 }
 ```
-If no such column exists, use the flat `results: [...]` format.
 
-### Step 4: Map Fields
+Otherwise → use flat `results: [...]` format.
 
-Map columns to platform field names. See `references/schemas.md` for the complete field list.
+### 5. Handle Trajectory (Agent experiments)
 
-**Important**: columns that don't map to any standard field AND are not group/sub-category identifiers should be preserved in each result as custom fields. The platform will automatically display them as additional columns.
+If any result has a `trajectory` field, ensure each step has:
 
-### Step 5: Validate and Report
-
-Before generating output, check:
-- Each group has a `group_name`
-- Evaluation/Agent results each have at least `question`
-- Numeric fields are actual numbers (not strings like "85%")
-- Boolean fields are `true`/`false` (not "yes"/"no" or 1/0)
-
-Report any issues found:
-- "缺少以下必要字段：... 请补充"
-- "以下列被识别为无关变量已过滤：..."
-- "检测到子分组：单表查询(12条), 多表查询(8条), 复杂查询(6条)"
-
-### Step 6: Generate JSON
-
-Output a single JSON file with all groups.
-
-**Output:**
-1. Save as `experiment_import.json`
-2. Show a summary: N groups, M sub-categories (if any), K total results
-3. List preserved custom fields
-4. Tell user: "将此文件在实验平台中使用「一键导入」上传即可"
-
-## JSON Formats
-
-### Flat results (no sub-categories)
 ```json
-[{
-  "group_name": "GPT-4o",
-  "model": "gpt-4o",
-  "eval_dataset": "MyEval",
-  "variables": { "temperature": 0.7 },
-  "results": [
-    { "question": "...", "expected_answer": "...", "model_response": "...", "is_correct": true, "difficulty": "easy" }
-  ]
-}]
+{
+  "step": 1,
+  "think": "详细的推理链...",    // optional but recommended
+  "thought": "得出的结论",        // brief conclusion from thinking
+  "action": "执行的动作",
+  "observation": "观察到的结果",
+  "tool": "使用的工具名",        // optional
+  "tool_input": "工具输入",      // optional
+  "tool_output": "工具输出"      // optional
+}
 ```
 
-Any fields in `results[]` beyond the standard ones (`question`, `expected_answer`, `model_response`, `is_correct`, `score`, `runtime_ms`, `token_count`, `reason`) become custom columns in the platform.
+**Important**: `think` is the chain-of-thought (can be long), `thought` is the conclusion (should be short). Both are per-step, not per-result.
 
-### Nested results (with sub-categories)
-```json
-[{
-  "group_name": "GPT-4o",
-  "model": "gpt-4o",
-  "eval_dataset": "NL2SQL-Bench",
-  "variables": { "temperature": 0.3 },
-  "results": {
-    "单表查询": [
-      { "question": "...", "is_correct": true }
-    ],
-    "多表查询": [
-      { "question": "...", "is_correct": false }
-    ]
-  }
-}]
+### 6. Filter Noise Columns
+
+**MUST remove** these columns from output:
+- Row numbers (index, row_id, #, 序号)
+- UUIDs or internal IDs (uuid, id where values are random strings)
+- File paths (path, file, source)
+- Raw timestamps (unless used as experiment `date`)
+- Empty columns or columns where ALL values are the same
+- Columns where >50% of values are null/empty
+
+**MUST keep** all other columns as custom fields. They will appear as extra columns in the platform.
+
+### 7. Data Type Conversion
+
+Apply these conversions strictly:
+
+| Original | Convert To | Method |
+|----------|-----------|--------|
+| "85%" | 0.85 | Remove "%", parse as number, divide by 100 if >1 |
+| "yes"/"no" | true/false | String comparison, case-insensitive |
+| "对"/"错" | true/false | "对"→true, "错"→false |
+| 1/0 (int) | true/false | 1→true, 0→false |
+| "1,234" | 1234 | Remove commas, parse |
+| "3.2s" | 3200 | Parse number, multiply if unit is seconds |
+
+### 8. Validate Before Output
+
+Checklist before writing JSON:
+
+- [ ] Every group has `group_name` (not empty, not null)
+- [ ] Every result has `question` (not empty)
+- [ ] `is_correct` is boolean (true/false), not string, not number
+- [ ] `score` is number 0~1, not string
+- [ ] `runtime_ms` is integer, not string
+- [ ] No noise columns present (ID, uuid, path, etc.)
+- [ ] Sub-categories correctly nested (if applicable)
+- [ ] Trajectory steps numbered correctly (step: 1, 2, 3...)
+
+### 9. Generate Output
+
+Save as JSON file, then report:
+
+```
+✅ 转换完成: experiment_import.json
+   - 实验类型: 评测实验 (含Agent轨迹) 或 评测实验 或 训练实验
+   - 实验组: N 个 (GPT-4o, Claude, Gemini, ...)
+   - 子分组: M 个 (单表查询, 多表查询, ...) 或 无
+   - 总评测结果: K 条
+   - 保留的自定义字段: difficulty, table_count, ...
+   - 过滤的噪声列: row_id, uuid, file_path
+   
+   将此文件在实验平台中使用「一键导入」上传。
 ```
 
-### Training experiment
-```json
-[{
-  "group_name": "ResNet-50",
-  "model": "resnet50",
-  "variables": { "lr": 0.1, "batch_size": 256 },
-  "metrics": {
-    "accuracy": 0.761,
-    "precision": 0.758,
-    "recall": 0.764,
-    "f1_score": 0.761,
-    "loss_curve": [2.8, 2.3, 1.9],
-    "accuracy_curve": [0.15, 0.32, 0.45],
-    "custom_metrics": { "top5_accuracy": 0.95 }
-  }
-}]
+## Decision Trees (Follow Exactly)
+
+### Is it training or evaluation?
+```
+Data has accuracy+precision+recall+F1 columns? → training
+Data has question+answer+response columns? → evaluation
+Otherwise → ask user
 ```
 
-## Noise Filtering Rules
-
-The following should NOT be included in the output:
-- Row numbers, auto-increment IDs, UUIDs
-- File paths, source filenames
-- Raw timestamps (unless they are the `date` field)
-- Internal tracking codes
-- Columns with all-null or all-same values
-- Columns with >50% missing values
-
-## Examples
-
-**Example: Folder with 3 CSV files**
+### Does it use nested results?
 ```
-experiment/
-  gpt4o_results.csv    → columns: id, question, answer, model_response, correct, difficulty, time_ms
-  claude_results.csv   → columns: id, question, answer, model_response, correct, difficulty, time_ms
-  config.txt           → "temperature=0.7, max_tokens=4096"
+Data has a column with ≤10 distinct values that categorizes test cases? → YES, use nested
+Data has a column named difficulty/category/task_type/难度/任务类型? → YES, use nested
+Otherwise → NO, use flat results
 ```
-→ Output: 2 groups (from filenames), `difficulty` preserved as custom field, `id` filtered, `time_ms` → `runtime_ms`, `config.txt` values → `variables`
 
-**Example: CSV with sub-category column**
+### Does it need trajectory?
 ```
-model, question, sql_type, answer, response, correct
-GPT-4o, "查询所有用户", "单表", "SELECT *", "SELECT *", true
-GPT-4o, "JOIN查询", "多表", "SELECT ... JOIN", "SELECT ... JOIN", false
+Data has trajectory/steps/trace column containing arrays? → YES
+Data is from an Agent/ReAct experiment? → YES
+Otherwise → NO
 ```
-→ Detected `sql_type` has 2 unique values → nested results format
+
+## Common Pitfalls (Avoid These)
+
+1. **Don't put group-level values into individual results** — if `temperature` is the same for all results in a group, put it in `variables`, not in each `result`
+2. **Don't confuse `is_correct` with `score`** — `is_correct` is boolean, `score` is 0~1 float
+3. **Don't stringify numbers** — `"0.85"` is wrong, `0.85` is correct
+4. **Don't include the group name inside results** — it's already in `group_name`
+5. **Don't wrap trajectory in extra objects** — it should be a direct array: `[{step:1,...}]`, not `{steps: [{step:1,...}]}`
+
+## Reference Examples
+
+See `assets/` directory for complete example files:
+
+| File | Type | Key Features |
+|------|------|-------------|
+| `sample_training.json` | training | 6 groups, custom_metrics, loss/accuracy curves |
+| `sample_evaluation.json` | evaluation | 6 groups, flat results |
+| `sample_nl2sql.json` | evaluation | 5 groups, nested results with sub-categories, custom fields |
+| `sample_agent_v3.json` | evaluation | 6 groups, nested results, trajectory with per-step think |
+| `sample_eval_subcat.json` | evaluation | 5 groups, nested results with think |
+| `sample_eval_think.json` | evaluation | 5 groups, flat results with per-result think |

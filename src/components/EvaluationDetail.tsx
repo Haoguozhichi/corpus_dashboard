@@ -323,22 +323,6 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
         ))}
       </Row>
 
-      {/* 子分组统计 */}
-      {group.subCategories && group.subCategories.length > 0 && (
-        <Card title="📂 子分组统计" size="small" style={{ marginBottom: 16, borderRadius: 8 }}>
-          <Row gutter={[16, 8]}>
-            {group.subCategories.map((sc) => (
-              <Col xs={12} sm={8} md={6} key={sc.name}>
-                <Card size="small" style={{ background: '#fafafa' }}>
-                  <Statistic title={sc.name} value={`${sc.correct}/${sc.total}`}
-                    suffix={<span style={{ fontSize: 12, color: '#888' }}>{(sc.accuracy * 100).toFixed(1)}%</span>} />
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        </Card>
-      )}
-
       {group.error_clusters && group.error_clusters.length > 0 && (
         <Card title="🤖 AI 错误聚类分析" size="small" style={{ marginBottom: 16, borderRadius: 8 }}>
           {group.error_clusters.map((c: any, i: number) => (

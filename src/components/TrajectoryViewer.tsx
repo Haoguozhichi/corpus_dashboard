@@ -1,5 +1,5 @@
 import React from 'react';
-import { Timeline, Typography, Tag, Collapse } from 'antd';
+import { Timeline, Typography, Tag } from 'antd';
 import { BulbOutlined, ToolOutlined, EyeOutlined, RightCircleOutlined } from '@ant-design/icons';
 import type { TrajectoryStep } from '../types';
 
@@ -25,9 +25,17 @@ const TrajectoryViewer: React.FC<Props> = ({ trajectory }) => {
 
     const content = (
       <div style={{ fontSize: 13 }}>
+        {step.think && (
+          <div style={{ marginBottom: 4 }}>
+            <Text type="secondary" style={{ fontSize: 11 }}>🧠 Think（推理链）</Text>
+            <Paragraph style={{ margin: '2px 0', fontSize: 12, background: '#f0f5ff', padding: '4px 8px', borderRadius: 4, whiteSpace: 'pre-wrap', maxHeight: 200, overflow: 'auto' }}>
+              {step.think}
+            </Paragraph>
+          </div>
+        )}
         {step.thought && (
           <div style={{ marginBottom: 4 }}>
-            <Text type="secondary" style={{ fontSize: 11 }}>💭 思考</Text>
+            <Text type="secondary" style={{ fontSize: 11 }}>💭 结论</Text>
             <Paragraph style={{ margin: '2px 0', fontSize: 12, background: '#fffbe6', padding: '4px 8px', borderRadius: 4, whiteSpace: 'pre-wrap' }}>
               {step.thought}
             </Paragraph>

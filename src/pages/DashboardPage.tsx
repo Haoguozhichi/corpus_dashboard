@@ -85,6 +85,7 @@ const DashboardPage: React.FC = () => {
   const [reportModal, setReportModal] = useState(false);
   const [reportText, setReportText] = useState('');
   const [reportLoading, setReportLoading] = useState(false);
+  const [showSubCols, setShowSubCols] = useState(false);
 
   // 为筛选收集唯一值
   const nameFilters = useMemo(() => [...new Set(groups.map((g) => g.name))].map((v) => ({ text: v, value: v })), [groups]);
@@ -246,41 +247,8 @@ const DashboardPage: React.FC = () => {
       sorter: (a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0),
       render: (_: unknown, r: GroupRow) => `${r.correctCount ?? 0}/${r.resultCount ?? 0}`,
     },
-    // 子分组统计（额外列，不替换总体）
-    ...(hasSubCategories ? subCatNames.flatMap((name) => [
-      {
-        title: `${name}准确率`,
-        key: `sub_${name}_acc`,
-        width: 100,
-        sorter: (a: GroupRow, b: GroupRow) => {
-          const sa = (a.subCategories || []).find((s) => s.name === name);
-          const sb = (b.subCategories || []).find((s) => s.name === name);
-          return (sa?.accuracy ?? 0) - (sb?.accuracy ?? 0);
-        },
-        render: (_: unknown, r: GroupRow) => {
-          const sc = (r.subCategories || []).find((s) => s.name === name);
-          if (!sc) return <span style={{ color: '#ccc' }}>—</span>;
-          return <span>{(sc.accuracy * 100).toFixed(1)}%</span>;
-        },
-      },
-      {
-        title: `${name}正确/总数`,
-        key: `sub_${name}_cnt`,
-        width: 100,
-        sorter: (a: GroupRow, b: GroupRow) => {
-          const sa = (a.subCategories || []).find((s) => s.name === name);
-          const sb = (b.subCategories || []).find((s) => s.name === name);
-          return (sa?.correct ?? 0) - (sb?.correct ?? 0);
-        },
-        render: (_: unknown, r: GroupRow) => {
-          const sc = (r.subCategories || []).find((s) => s.name === name);
-          if (!sc) return <span style={{ color: '#ccc' }}>—</span>;
-          return <span>{sc.correct}/{sc.total}</span>;
-        },
-      },
-    ]) : []),
     {
-      title: hasSubCategories ? '总耗时' : '平均耗时', key: 'latency', width: 100,
+      title: '平均耗时', key: 'latency', width: 100,
       sorter: (a, b) => {
         const avgA = a.results?.length ? a.results.reduce((s, x) => s + (x.runtime_ms || 0), 0) / a.results.length : 0;
         const avgB = b.results?.length ? b.results.reduce((s, x) => s + (x.runtime_ms || 0), 0) / b.results.length : 0;
@@ -288,6 +256,22 @@ const DashboardPage: React.FC = () => {
       },
       render: (_: unknown, r: GroupRow) => r.results && r.results.length > 0 ? `${(r.results.reduce((s, x) => s + (x.runtime_ms || 0), 0) / r.results.length).toFixed(0)}ms` : '-',
     },
+    // 子分组统计列（默认折叠）
+    ...(hasSubCategories && showSubCols ? subCatNames.map((name) => ({
+      title: `${name}准确率`,
+      key: `sub_${name}_acc`,
+      width: 100,
+      sorter: (a: GroupRow, b: GroupRow) => {
+        const sa = (a.subCategories || []).find((s) => s.name === name);
+        const sb = (b.subCategories || []).find((s) => s.name === name);
+        return (sa?.accuracy ?? 0) - (sb?.accuracy ?? 0);
+      },
+      render: (_: unknown, r: GroupRow) => {
+        const sc = (r.subCategories || []).find((s) => s.name === name);
+        if (!sc) return <span style={{ color: '#ccc' }}>—</span>;
+        return <span style={{ fontWeight: 500 }}>{(sc.accuracy * 100).toFixed(1)}%</span>;
+      },
+    })) : []),
   ];
 
   const actionColumn: ColumnsType<GroupRow> = [
@@ -381,6 +365,11 @@ const DashboardPage: React.FC = () => {
               size="small"
             />
             <Tag color="blue">已选 {selectedRowKeys.length} 组</Tag>
+            {hasSubCategories && (
+              <Button size="small" onClick={() => setShowSubCols(!showSubCols)}>
+                {showSubCols ? '收起子分组' : '展开子分组'}
+              </Button>
+            )}
             <Button type="primary" icon={<BarChartOutlined />} disabled={selectedRowKeys.length < 2} onClick={handleCompare}>对比选中组</Button>
           </Space>
         }

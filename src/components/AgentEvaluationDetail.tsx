@@ -4,7 +4,7 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined,
   ThunderboltOutlined, ToolOutlined, WarningOutlined, UploadOutlined, SearchOutlined, EditOutlined,
-  BulbOutlined, EyeOutlined, RobotOutlined, DownOutlined,
+  EyeOutlined, RobotOutlined, DownOutlined,
 } from '@ant-design/icons';
 import type { ExperimentGroup, TestCase, EvaluationResult, TrajectoryStep } from '../types';
 import { fetchResults, updateResult, updateGroup, diagnoseTrajectory, diagnoseError, autoAnnotate, clusterErrors } from '../api/endpoints';
@@ -38,7 +38,6 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
   const [allResults, setAllResults] = useState<EvaluationResult[]>([]);
   const [resultsLoading, setResultsLoading] = useState(false);
   const [trajModal, setTrajModal] = useState<EvaluationResult | null>(null);
-  const [showThink, setShowThink] = useState(false);
   const [editingAnno, setEditingAnno] = useState<string | null>(null);
   const [annoText, setAnnoText] = useState('');
   const [savingAnno, setSavingAnno] = useState(false);
@@ -378,22 +377,6 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
         {trajModal?.trajectory ? (
           <div>
             <TrajectoryViewer trajectory={trajModal.trajectory} />
-            {trajModal.think && (
-              <div style={{ marginTop: 16, borderTop: '1px solid #f0f0f0', paddingTop: 12 }}>
-                <Button
-                  type={showThink ? 'default' : 'primary'}
-                  icon={<BulbOutlined />}
-                  onClick={() => setShowThink(!showThink)}
-                >
-                  {showThink ? '隐藏 Think 过程' : '查看 Think 过程'}
-                </Button>
-                {showThink && (
-                  <div style={{ whiteSpace: 'pre-wrap', maxHeight: 400, overflow: 'auto', background: '#fafafa', padding: 12, borderRadius: 4, fontSize: 13, marginTop: 8 }}>
-                    {trajModal.think}
-                  </div>
-                )}
-              </div>
-            )}
             {/* AI 轨迹诊断 */}
             <div style={{ marginTop: 16, borderTop: '1px solid #f0f0f0', paddingTop: 12 }}>
               <Button icon={<RobotOutlined />} onClick={handleDiagnoseTraj} loading={trajDiagLoading}>

@@ -42,15 +42,30 @@ const models = [
   ['Qwen Agent','qwen2.5-72b',0.18],
 ];
 
-function mkTrajectory(isCorrect) {
+function mkTrajectory(isCorrect, taskQ) {
   const traj = [
-    { step: 1, thought: '分析用户请求,确定任务目标和所需工具', action: 'parse_task', observation: '任务目标已明确' },
-    { step: 2, thought: '打开相关网页或应用', action: 'navigate', observation: '页面加载成功' },
-    { step: 3, thought: '执行核心操作', action: isCorrect ? 'execute' : 'retry_search', observation: isCorrect ? '操作完成' : 'Error: 操作超时,返回码500', tool: isCorrect ? 'api' : 'http' },
-    { step: 4, thought: '验证结果并格式化输出', action: 'format', observation: isCorrect ? '结果已格式化' : '无法获取有效结果' },
+    { step: 1,
+      think: '收到用户请求："'+taskQ.slice(0,30)+'..."，首先需要理解任务类型，判断需要调用哪些工具。从请求看，这涉及信息检索和网页操作。我需要先解析查询意图，然后规划执行步骤。',
+      thought: '分析用户请求，确定任务目标和所需工具',
+      action: 'parse_task', observation: '任务目标已明确' },
+    { step: 2,
+      think: '任务目标已确认，下一步需要访问目标网站或搜索引擎。选择合适的URL，设置请求头模拟浏览器访问，处理可能的302重定向。如果目标页面需要登录，还要处理认证流程。',
+      thought: '打开目标网站或搜索引擎',
+      action: 'navigate', observation: '页面加载成功' },
+    { step: 3,
+      think: isCorrect ? '页面加载完成，现在需要定位关键元素执行操作。如果是搜索任务，找到搜索框并输入关键词；如果是数据提取，定位目标表格或列表。需考虑页面异步加载的等待时间。' : '页面加载完成，但执行核心操作时遇到了问题。可能是目标元素被动态渲染，需要等待更长时间或重试。也可能是请求频率过高被限流。考虑换用更稳定的接口。',
+      thought: '执行核心操作',
+      action: isCorrect ? 'execute' : 'retry_search', observation: isCorrect ? '操作完成' : 'Error: 操作超时,返回码500', tool: isCorrect ? 'api' : 'http' },
+    { step: 4,
+      think: '得到原始数据后需要验证完整性。检查返回结果是否包含所有要求的字段，数值是否在合理范围内。如果数据不完整，需要补充查询或标记缺失。最后按照用户要求的格式整理输出。',
+      thought: '验证结果并格式化输出',
+      action: 'format', observation: isCorrect ? '结果已格式化' : '无法获取有效结果' },
   ];
   if (isCorrect) {
-    traj.push({ step: 5, thought: '任务完成', action: 'done', observation: '成功完成' });
+    traj.push({ step: 5,
+      think: '所有步骤已完成，结果已验证无误。现在可以结束任务并向用户返回最终结果。确认输出格式符合要求，包含所有必要信息。任务执行时间在预期范围内。',
+      thought: '任务完成',
+      action: 'done', observation: '成功完成' });
   }
   return traj;
 }
@@ -67,7 +82,7 @@ function mkResults(arr, noise) {
       reason: isCorrect ? '' : '工具调用失败或返回不完整',
       difficulty: Math.random() > 0.5 ? 'hard' : Math.random() > 0.3 ? 'medium' : 'easy',
       tool_count: isCorrect ? 4 + Math.floor(Math.random() * 2) : 3 + Math.floor(Math.random() * 3),
-      trajectory: mkTrajectory(isCorrect),
+      trajectory: mkTrajectory(isCorrect, q),
     };
   });
 }

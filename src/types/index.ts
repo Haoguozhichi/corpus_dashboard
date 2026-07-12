@@ -35,12 +35,13 @@ export interface TestCase {
 // ====== Agent 轨迹步骤 ======
 export interface TrajectoryStep {
   step: number;
-  thought?: string;
-  action?: string;
-  observation?: string;
-  tool?: string;
-  tool_input?: string;
-  tool_output?: string;
+  think?: string;           // 模型思考过程（详细推理链）
+  thought?: string;         // 模型得出的结论
+  action?: string;          // 执行动作
+  observation?: string;     // 观察结果
+  tool?: string;            // 使用的工具名
+  tool_input?: string;      // 工具输入
+  tool_output?: string;     // 工具输出
 }
 
 // ====== 评测结果 ======
