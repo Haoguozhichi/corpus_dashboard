@@ -98,8 +98,7 @@ const BulkImport: React.FC<Props> = ({ experimentId, experimentType, onSuccess }
   };
 
   const isTraining = experimentType === 'training';
-  const isAgent = experimentType === 'agent_evaluation';
-  const sample = isTraining ? trainingSample : isAgent ? agentSample : evalSample;
+  const sample = isTraining ? trainingSample : evalSample;
 
   return (
     <div>
@@ -133,7 +132,7 @@ const BulkImport: React.FC<Props> = ({ experimentId, experimentType, onSuccess }
                 <li><code>metrics</code> — 训练指标：accuracy, precision, recall, f1_score, token_count, runtime, loss_curve, accuracy_curve, custom_metrics</li>
               ) : (
                 <li><code>results</code> — 评测结果数组：question, expected_answer, model_response, is_correct, score, runtime_ms, token_count
-                  {isAgent && ' + trajectory, custom_scores'}
+                  (实验数据含轨迹时自动切换为Agent风格展示)
                 </li>
               )}
             </ul>
@@ -143,7 +142,7 @@ const BulkImport: React.FC<Props> = ({ experimentId, experimentType, onSuccess }
       />
 
       <div style={{ background: '#fafafa', borderRadius: 4, padding: 12 }}>
-        <div style={{ fontWeight: 500, marginBottom: 8 }}>JSON 示例（{isTraining ? '训练实验' : isAgent ? 'Agent评测' : '评测实验'}）</div>
+        <div style={{ fontWeight: 500, marginBottom: 8 }}>JSON 示例（{isTraining ? '训练实验' : '评测实验'}）</div>
         <pre style={{ fontSize: 11, maxHeight: 300, overflow: 'auto', margin: 0, background: '#fff', padding: 8, borderRadius: 4, border: '1px solid #f0f0f0' }}>{sample}</pre>
       </div>
     </div>

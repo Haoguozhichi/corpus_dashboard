@@ -45,8 +45,7 @@ const DashboardPage: React.FC = () => {
 
   const groups = experiment?.groups || [];
   const isTraining = experiment?.type === 'training';
-  const isAgent = experiment?.type === 'agent_evaluation';
-  const isEvaluation = experiment?.type === 'evaluation' || isAgent;
+  const isEvaluation = experiment?.type === 'evaluation' || experiment?.type === 'agent_evaluation';
 
   // 收集所有实验组的自定义指标名（必须在条件返回之前）
   const customMetricNames = React.useMemo(() => {
@@ -232,57 +231,54 @@ const DashboardPage: React.FC = () => {
 
   const evaluationColumns: ColumnsType<GroupRow> = [
     ...commonColumns,
-    // 无子分组时显示总体统计
-    ...(!hasSubCategories ? [
+    // 总体统计始终显示
+    {
+      title: '准确率', key: 'accuracy', width: 100,
+      sorter: (a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0),
+      render: (_: unknown, r: GroupRow) => {
+        const v = r.accuracy ?? 0;
+        const best = bestGroup?.accuracy ?? 0;
+        return <span style={{ color: v === best ? '#52c41a' : undefined }}>{(v * 100).toFixed(1)}%{v === best && <TrophyOutlined style={{ color: '#faad14', marginLeft: 4 }} />}</span>;
+      },
+    },
+    {
+      title: '正确/总数', key: 'cnt', width: 100,
+      sorter: (a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0),
+      render: (_: unknown, r: GroupRow) => `${r.correctCount ?? 0}/${r.resultCount ?? 0}`,
+    },
+    // 子分组统计（额外列，不替换总体）
+    ...(hasSubCategories ? subCatNames.flatMap((name) => [
       {
-        title: '准确率', key: 'accuracy', width: 100,
-        sorter: (a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0),
+        title: `${name}准确率`,
+        key: `sub_${name}_acc`,
+        width: 100,
+        sorter: (a: GroupRow, b: GroupRow) => {
+          const sa = (a.subCategories || []).find((s) => s.name === name);
+          const sb = (b.subCategories || []).find((s) => s.name === name);
+          return (sa?.accuracy ?? 0) - (sb?.accuracy ?? 0);
+        },
         render: (_: unknown, r: GroupRow) => {
-          const v = r.accuracy ?? 0;
-          const best = bestGroup?.accuracy ?? 0;
-          return <span style={{ color: v === best ? '#52c41a' : undefined }}>{(v * 100).toFixed(1)}%{v === best && <TrophyOutlined style={{ color: '#faad14', marginLeft: 4 }} />}</span>;
+          const sc = (r.subCategories || []).find((s) => s.name === name);
+          if (!sc) return <span style={{ color: '#ccc' }}>—</span>;
+          return <span>{(sc.accuracy * 100).toFixed(1)}%</span>;
         },
       },
       {
-        title: '正确/总数', key: 'cnt', width: 100,
-        sorter: (a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0),
-        render: (_: unknown, r: GroupRow) => `${r.correctCount ?? 0}/${r.resultCount ?? 0}`,
+        title: `${name}正确/总数`,
+        key: `sub_${name}_cnt`,
+        width: 100,
+        sorter: (a: GroupRow, b: GroupRow) => {
+          const sa = (a.subCategories || []).find((s) => s.name === name);
+          const sb = (b.subCategories || []).find((s) => s.name === name);
+          return (sa?.correct ?? 0) - (sb?.correct ?? 0);
+        },
+        render: (_: unknown, r: GroupRow) => {
+          const sc = (r.subCategories || []).find((s) => s.name === name);
+          if (!sc) return <span style={{ color: '#ccc' }}>—</span>;
+          return <span>{sc.correct}/{sc.total}</span>;
+        },
       },
-    ] : [
-      // 有子分组时：子分组准确率 + 正确数
-      ...subCatNames.flatMap((name) => [
-        {
-          title: `${name}准确率`,
-          key: `sub_${name}_acc`,
-          width: 100,
-          sorter: (a: GroupRow, b: GroupRow) => {
-            const sa = (a.subCategories || []).find((s) => s.name === name);
-            const sb = (b.subCategories || []).find((s) => s.name === name);
-            return (sa?.accuracy ?? 0) - (sb?.accuracy ?? 0);
-          },
-          render: (_: unknown, r: GroupRow) => {
-            const sc = (r.subCategories || []).find((s) => s.name === name);
-            if (!sc) return <span style={{ color: '#ccc' }}>—</span>;
-            return <span>{(sc.accuracy * 100).toFixed(1)}%</span>;
-          },
-        },
-        {
-          title: `${name}正确/总数`,
-          key: `sub_${name}_cnt`,
-          width: 100,
-          sorter: (a: GroupRow, b: GroupRow) => {
-            const sa = (a.subCategories || []).find((s) => s.name === name);
-            const sb = (b.subCategories || []).find((s) => s.name === name);
-            return (sa?.correct ?? 0) - (sb?.correct ?? 0);
-          },
-          render: (_: unknown, r: GroupRow) => {
-            const sc = (r.subCategories || []).find((s) => s.name === name);
-            if (!sc) return <span style={{ color: '#ccc' }}>—</span>;
-            return <span>{sc.correct}/{sc.total}</span>;
-          },
-        },
-      ]),
-    ]),
+    ]) : []),
     {
       title: hasSubCategories ? '总耗时' : '平均耗时', key: 'latency', width: 100,
       sorter: (a, b) => {

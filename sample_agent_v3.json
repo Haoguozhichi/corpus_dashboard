@@ -1,0 +1,6368 @@
+[
+  {
+    "group_name": "GPT-4o Agent",
+    "model": "gpt-4o",
+    "eval_dataset": "AgentBench-v3",
+    "variables": {
+      "temperature": 0.5,
+      "max_steps": 10,
+      "tools": "web_search,navigate,api_call"
+    },
+    "results": {
+      "网页搜索": [
+        {
+          "question": "搜索北京今日天气和空气质量",
+          "expected_answer": "返回气温、湿度、AQI指数",
+          "model_response": "搜索完成: 22°C, 湿度45%, AQI 85",
+          "is_correct": true,
+          "score": 0.8978582274176029,
+          "runtime_ms": 2839,
+          "token_count": 564,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索2024年AI领域十大突破",
+          "expected_answer": "返回10条相关新闻标题",
+          "model_response": "找到8条相关新闻并总结",
+          "is_correct": false,
+          "score": 0.01080962426533053,
+          "runtime_ms": 4064,
+          "token_count": 565,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索Python 3.13版本发布说明",
+          "expected_answer": "返回发布说明链接和摘要",
+          "model_response": "Python 3.13已发布,主要更新:GIL优化、JIT编译器",
+          "is_correct": true,
+          "score": 0.8034093836670358,
+          "runtime_ms": 6196,
+          "token_count": 380,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "在百度搜索机械键盘推荐",
+          "expected_answer": "返回前10条搜索结果标题",
+          "model_response": "搜索完成,返回10条结果",
+          "is_correct": true,
+          "score": 0.8066806007609197,
+          "runtime_ms": 5361,
+          "token_count": 682,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索附近评分最高的咖啡店",
+          "expected_answer": "返回3家咖啡店信息",
+          "model_response": "找到3家:星巴克4.3,瑞幸4.1,Tim Hortons 4.5",
+          "is_correct": true,
+          "score": 0.8090823468193502,
+          "runtime_ms": 4174,
+          "token_count": 540,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索如何部署Docker容器",
+          "expected_answer": "返回教程链接和步骤",
+          "model_response": "找到5篇教程,已提取关键步骤",
+          "is_correct": true,
+          "score": 0.9906559599613513,
+          "runtime_ms": 4085,
+          "token_count": 723,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索今天美股行情",
+          "expected_answer": "返回道指、纳指、标普500",
+          "model_response": "搜索超时,只获取到道指数据",
+          "is_correct": false,
+          "score": 0.2684372066687981,
+          "runtime_ms": 4758,
+          "token_count": 393,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索最受欢迎的JavaScript框架",
+          "expected_answer": "返回排名和简介",
+          "model_response": "React排名第一,其次是Vue和Angular",
+          "is_correct": true,
+          "score": 0.9257478095088417,
+          "runtime_ms": 3968,
+          "token_count": 555,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ],
+      "网页导航": [
+        {
+          "question": "打开GitHub并找到trending页面",
+          "expected_answer": "成功导航到trending",
+          "model_response": "导航成功,trending页面显示25个项目",
+          "is_correct": true,
+          "score": 0.8826706747668265,
+          "runtime_ms": 4230,
+          "token_count": 398,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "登录公司邮箱查看未读邮件",
+          "expected_answer": "显示3封未读邮件",
+          "model_response": "登录成功,3封未读邮件来自PM",
+          "is_correct": true,
+          "score": 0.9737097207980154,
+          "runtime_ms": 3627,
+          "token_count": 332,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "导航到天气网站查询未来7天天气",
+          "expected_answer": "返回7天天气预报",
+          "model_response": "加载成功,已提取7天数据",
+          "is_correct": true,
+          "score": 0.9438055600253066,
+          "runtime_ms": 2646,
+          "token_count": 328,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开购物网站并将商品加入购物车",
+          "expected_answer": "商品成功加入购物车",
+          "model_response": "点击购买按钮超时,商品已加入购物车但未购买",
+          "is_correct": false,
+          "score": 0.2757755339641546,
+          "runtime_ms": 4897,
+          "token_count": 711,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "easy",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "导航到公司Wiki搜索部署文档",
+          "expected_answer": "返回2篇相关文档",
+          "model_response": "找到2篇文档并打开",
+          "is_correct": true,
+          "score": 0.833684988586145,
+          "runtime_ms": 5905,
+          "token_count": 765,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开腾讯文档并创建新表格",
+          "expected_answer": "创建成功",
+          "model_response": "表格已创建,名称为月度报告",
+          "is_correct": true,
+          "score": 0.9019530244197542,
+          "runtime_ms": 5224,
+          "token_count": 383,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "导航到AWS控制台查看EC2实例状态",
+          "expected_answer": "返回实例列表",
+          "model_response": "3个实例正在运行,1个已停止",
+          "is_correct": true,
+          "score": 0.8485418766435723,
+          "runtime_ms": 3484,
+          "token_count": 510,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开Notion页面并添加今日待办",
+          "expected_answer": "添加成功",
+          "model_response": "已添加3条待办事项",
+          "is_correct": true,
+          "score": 0.8079844449881894,
+          "runtime_ms": 3605,
+          "token_count": 572,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ],
+      "多步任务": [
+        {
+          "question": "查询航班并预订机票",
+          "expected_answer": "返回航班信息和预订确认号",
+          "model_response": "找到3个航班,预订MU5101成功",
+          "is_correct": true,
+          "score": 0.895264076403977,
+          "runtime_ms": 1656,
+          "token_count": 722,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "对比3个电商平台的商品价格后发送邮件报告",
+          "expected_answer": "邮件已发送",
+          "model_response": "完成价格对比并发送报告给manager@test.com",
+          "is_correct": true,
+          "score": 0.9207149486578072,
+          "runtime_ms": 2927,
+          "token_count": 667,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "翻译中文文档到英文后上传到Google Drive",
+          "expected_answer": "上传成功",
+          "model_response": "翻译完成,文件已上传,链接已保存",
+          "is_correct": false,
+          "score": 0.060440952063946916,
+          "runtime_ms": 2084,
+          "token_count": 258,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "medium",
+          "tool_count": 3,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "抓取网页表格数据并生成CSV文件",
+          "expected_answer": "CSV文件已生成",
+          "model_response": "表格有12行5列,CSV已保存",
+          "is_correct": true,
+          "score": 0.9299583075137446,
+          "runtime_ms": 5703,
+          "token_count": 639,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "预订会议室并发送日历邀请",
+          "expected_answer": "邀请已发送",
+          "model_response": "预订了3号会议室,邀请已发送给5人",
+          "is_correct": true,
+          "score": 0.8977707144969403,
+          "runtime_ms": 2271,
+          "token_count": 564,
+          "reason": "",
+          "difficulty": "easy",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "计算上月销售额并生成图表",
+          "expected_answer": "图表已生成",
+          "model_response": "销售额为12.5万,环比增长8%",
+          "is_correct": true,
+          "score": 0.8161015935340902,
+          "runtime_ms": 4853,
+          "token_count": 455,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "从PDF中提取表格数据并导入数据库",
+          "expected_answer": "导入成功",
+          "model_response": "提取了3个表格共45行数据,已导入MySQL",
+          "is_correct": true,
+          "score": 0.8312690870484467,
+          "runtime_ms": 4347,
+          "token_count": 546,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "监控服务器状态发现异常并发送告警",
+          "expected_answer": "告警已发送",
+          "model_response": "检测到CPU使用率90%,已发送钉钉告警",
+          "is_correct": true,
+          "score": 0.8419108341726989,
+          "runtime_ms": 4969,
+          "token_count": 667,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "group_name": "Claude-Sonnet Agent",
+    "model": "claude-sonnet-5",
+    "eval_dataset": "AgentBench-v3",
+    "variables": {
+      "temperature": 0.5,
+      "max_steps": 10,
+      "tools": "web_search,navigate,api_call"
+    },
+    "results": {
+      "网页搜索": [
+        {
+          "question": "搜索北京今日天气和空气质量",
+          "expected_answer": "返回气温、湿度、AQI指数",
+          "model_response": "搜索完成: 22°C, 湿度45%, AQI 85",
+          "is_correct": true,
+          "score": 0.9055426513917999,
+          "runtime_ms": 3814,
+          "token_count": 291,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索2024年AI领域十大突破",
+          "expected_answer": "返回10条相关新闻标题",
+          "model_response": "找到8条相关新闻并总结",
+          "is_correct": false,
+          "score": 0.11717896003885897,
+          "runtime_ms": 3080,
+          "token_count": 369,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "medium",
+          "tool_count": 3,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索Python 3.13版本发布说明",
+          "expected_answer": "返回发布说明链接和摘要",
+          "model_response": "Python 3.13已发布,主要更新:GIL优化、JIT编译器",
+          "is_correct": true,
+          "score": 0.8109566438545655,
+          "runtime_ms": 2738,
+          "token_count": 294,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "在百度搜索机械键盘推荐",
+          "expected_answer": "返回前10条搜索结果标题",
+          "model_response": "搜索完成,返回10条结果",
+          "is_correct": true,
+          "score": 0.9934926593011177,
+          "runtime_ms": 2104,
+          "token_count": 459,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索附近评分最高的咖啡店",
+          "expected_answer": "返回3家咖啡店信息",
+          "model_response": "找到3家:星巴克4.3,瑞幸4.1,Tim Hortons 4.5",
+          "is_correct": true,
+          "score": 0.9469674390566261,
+          "runtime_ms": 4272,
+          "token_count": 664,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索如何部署Docker容器",
+          "expected_answer": "返回教程链接和步骤",
+          "model_response": "找到5篇教程,已提取关键步骤",
+          "is_correct": false,
+          "score": 0.2478682565614155,
+          "runtime_ms": 3195,
+          "token_count": 757,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索今天美股行情",
+          "expected_answer": "返回道指、纳指、标普500",
+          "model_response": "搜索超时,只获取到道指数据",
+          "is_correct": false,
+          "score": 0.26489450641874784,
+          "runtime_ms": 5255,
+          "token_count": 437,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索最受欢迎的JavaScript框架",
+          "expected_answer": "返回排名和简介",
+          "model_response": "React排名第一,其次是Vue和Angular",
+          "is_correct": true,
+          "score": 0.9358736847213498,
+          "runtime_ms": 1616,
+          "token_count": 279,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ],
+      "网页导航": [
+        {
+          "question": "打开GitHub并找到trending页面",
+          "expected_answer": "成功导航到trending",
+          "model_response": "导航成功,trending页面显示25个项目",
+          "is_correct": true,
+          "score": 0.9023220159556127,
+          "runtime_ms": 2460,
+          "token_count": 296,
+          "reason": "",
+          "difficulty": "easy",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "登录公司邮箱查看未读邮件",
+          "expected_answer": "显示3封未读邮件",
+          "model_response": "登录成功,3封未读邮件来自PM",
+          "is_correct": true,
+          "score": 0.9258605999445877,
+          "runtime_ms": 3957,
+          "token_count": 594,
+          "reason": "",
+          "difficulty": "easy",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "导航到天气网站查询未来7天天气",
+          "expected_answer": "返回7天天气预报",
+          "model_response": "加载成功,已提取7天数据",
+          "is_correct": true,
+          "score": 0.8268842441017149,
+          "runtime_ms": 4034,
+          "token_count": 192,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开购物网站并将商品加入购物车",
+          "expected_answer": "商品成功加入购物车",
+          "model_response": "点击购买按钮超时,商品已加入购物车但未购买",
+          "is_correct": false,
+          "score": 0.07627524169882371,
+          "runtime_ms": 5126,
+          "token_count": 764,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "导航到公司Wiki搜索部署文档",
+          "expected_answer": "返回2篇相关文档",
+          "model_response": "找到2篇文档并打开",
+          "is_correct": true,
+          "score": 0.9044705764161095,
+          "runtime_ms": 4614,
+          "token_count": 667,
+          "reason": "",
+          "difficulty": "easy",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开腾讯文档并创建新表格",
+          "expected_answer": "创建成功",
+          "model_response": "表格已创建,名称为月度报告",
+          "is_correct": true,
+          "score": 0.9385235250292578,
+          "runtime_ms": 1537,
+          "token_count": 629,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "导航到AWS控制台查看EC2实例状态",
+          "expected_answer": "返回实例列表",
+          "model_response": "3个实例正在运行,1个已停止",
+          "is_correct": true,
+          "score": 0.9444733446579597,
+          "runtime_ms": 4015,
+          "token_count": 297,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开Notion页面并添加今日待办",
+          "expected_answer": "添加成功",
+          "model_response": "已添加3条待办事项",
+          "is_correct": true,
+          "score": 0.9099177156970167,
+          "runtime_ms": 5243,
+          "token_count": 365,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ],
+      "多步任务": [
+        {
+          "question": "查询航班并预订机票",
+          "expected_answer": "返回航班信息和预订确认号",
+          "model_response": "找到3个航班,预订MU5101成功",
+          "is_correct": true,
+          "score": 0.9569603172084075,
+          "runtime_ms": 5671,
+          "token_count": 393,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "对比3个电商平台的商品价格后发送邮件报告",
+          "expected_answer": "邮件已发送",
+          "model_response": "完成价格对比并发送报告给manager@test.com",
+          "is_correct": true,
+          "score": 0.8361405081117779,
+          "runtime_ms": 5963,
+          "token_count": 288,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "翻译中文文档到英文后上传到Google Drive",
+          "expected_answer": "上传成功",
+          "model_response": "翻译完成,文件已上传,链接已保存",
+          "is_correct": true,
+          "score": 0.9309861754505144,
+          "runtime_ms": 1726,
+          "token_count": 770,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "抓取网页表格数据并生成CSV文件",
+          "expected_answer": "CSV文件已生成",
+          "model_response": "表格有12行5列,CSV已保存",
+          "is_correct": true,
+          "score": 0.8346157127008348,
+          "runtime_ms": 3970,
+          "token_count": 655,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "预订会议室并发送日历邀请",
+          "expected_answer": "邀请已发送",
+          "model_response": "预订了3号会议室,邀请已发送给5人",
+          "is_correct": false,
+          "score": 0.22089143600043595,
+          "runtime_ms": 2244,
+          "token_count": 616,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "计算上月销售额并生成图表",
+          "expected_answer": "图表已生成",
+          "model_response": "销售额为12.5万,环比增长8%",
+          "is_correct": true,
+          "score": 0.8833445834841667,
+          "runtime_ms": 3783,
+          "token_count": 474,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "从PDF中提取表格数据并导入数据库",
+          "expected_answer": "导入成功",
+          "model_response": "提取了3个表格共45行数据,已导入MySQL",
+          "is_correct": true,
+          "score": 0.9089099065997877,
+          "runtime_ms": 4251,
+          "token_count": 450,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "监控服务器状态发现异常并发送告警",
+          "expected_answer": "告警已发送",
+          "model_response": "检测到CPU使用率90%,已发送钉钉告警",
+          "is_correct": true,
+          "score": 0.9622544058558333,
+          "runtime_ms": 1226,
+          "token_count": 400,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "group_name": "Gemini Agent",
+    "model": "gemini-2.5-pro",
+    "eval_dataset": "AgentBench-v3",
+    "variables": {
+      "temperature": 0.5,
+      "max_steps": 10,
+      "tools": "web_search,navigate,api_call"
+    },
+    "results": {
+      "网页搜索": [
+        {
+          "question": "搜索北京今日天气和空气质量",
+          "expected_answer": "返回气温、湿度、AQI指数",
+          "model_response": "搜索完成: 22°C, 湿度45%, AQI 85",
+          "is_correct": true,
+          "score": 0.8626957556145328,
+          "runtime_ms": 1548,
+          "token_count": 417,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索2024年AI领域十大突破",
+          "expected_answer": "返回10条相关新闻标题",
+          "model_response": "找到8条相关新闻并总结",
+          "is_correct": false,
+          "score": 0.04117630593353577,
+          "runtime_ms": 5574,
+          "token_count": 493,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "easy",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索Python 3.13版本发布说明",
+          "expected_answer": "返回发布说明链接和摘要",
+          "model_response": "Python 3.13已发布,主要更新:GIL优化、JIT编译器",
+          "is_correct": true,
+          "score": 0.9768384953438459,
+          "runtime_ms": 5797,
+          "token_count": 319,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "在百度搜索机械键盘推荐",
+          "expected_answer": "返回前10条搜索结果标题",
+          "model_response": "搜索完成,返回10条结果",
+          "is_correct": true,
+          "score": 0.8061311845213674,
+          "runtime_ms": 2088,
+          "token_count": 618,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索附近评分最高的咖啡店",
+          "expected_answer": "返回3家咖啡店信息",
+          "model_response": "找到3家:星巴克4.3,瑞幸4.1,Tim Hortons 4.5",
+          "is_correct": true,
+          "score": 0.9910598802117502,
+          "runtime_ms": 5463,
+          "token_count": 531,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索如何部署Docker容器",
+          "expected_answer": "返回教程链接和步骤",
+          "model_response": "找到5篇教程,已提取关键步骤",
+          "is_correct": true,
+          "score": 0.80431110859937,
+          "runtime_ms": 5774,
+          "token_count": 341,
+          "reason": "",
+          "difficulty": "easy",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索今天美股行情",
+          "expected_answer": "返回道指、纳指、标普500",
+          "model_response": "搜索超时,只获取到道指数据",
+          "is_correct": false,
+          "score": 0.08517235468662569,
+          "runtime_ms": 6089,
+          "token_count": 616,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "medium",
+          "tool_count": 3,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索最受欢迎的JavaScript框架",
+          "expected_answer": "返回排名和简介",
+          "model_response": "React排名第一,其次是Vue和Angular",
+          "is_correct": true,
+          "score": 0.9765657080375262,
+          "runtime_ms": 2264,
+          "token_count": 339,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ],
+      "网页导航": [
+        {
+          "question": "打开GitHub并找到trending页面",
+          "expected_answer": "成功导航到trending",
+          "model_response": "导航成功,trending页面显示25个项目",
+          "is_correct": true,
+          "score": 0.9742142056966988,
+          "runtime_ms": 3660,
+          "token_count": 482,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "登录公司邮箱查看未读邮件",
+          "expected_answer": "显示3封未读邮件",
+          "model_response": "登录成功,3封未读邮件来自PM",
+          "is_correct": true,
+          "score": 0.8392025490918283,
+          "runtime_ms": 2637,
+          "token_count": 640,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "导航到天气网站查询未来7天天气",
+          "expected_answer": "返回7天天气预报",
+          "model_response": "加载成功,已提取7天数据",
+          "is_correct": true,
+          "score": 0.9642196976356063,
+          "runtime_ms": 1267,
+          "token_count": 424,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开购物网站并将商品加入购物车",
+          "expected_answer": "商品成功加入购物车",
+          "model_response": "点击购买按钮超时,商品已加入购物车但未购买",
+          "is_correct": false,
+          "score": 0.179570622032886,
+          "runtime_ms": 1844,
+          "token_count": 234,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "导航到公司Wiki搜索部署文档",
+          "expected_answer": "返回2篇相关文档",
+          "model_response": "找到2篇文档并打开",
+          "is_correct": true,
+          "score": 0.9712457136547945,
+          "runtime_ms": 5069,
+          "token_count": 767,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开腾讯文档并创建新表格",
+          "expected_answer": "创建成功",
+          "model_response": "表格已创建,名称为月度报告",
+          "is_correct": true,
+          "score": 0.8414950591160271,
+          "runtime_ms": 5107,
+          "token_count": 265,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "导航到AWS控制台查看EC2实例状态",
+          "expected_answer": "返回实例列表",
+          "model_response": "3个实例正在运行,1个已停止",
+          "is_correct": false,
+          "score": 0.11893466841924949,
+          "runtime_ms": 3174,
+          "token_count": 313,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 3,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "打开Notion页面并添加今日待办",
+          "expected_answer": "添加成功",
+          "model_response": "已添加3条待办事项",
+          "is_correct": true,
+          "score": 0.9090779088719538,
+          "runtime_ms": 3144,
+          "token_count": 377,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ],
+      "多步任务": [
+        {
+          "question": "查询航班并预订机票",
+          "expected_answer": "返回航班信息和预订确认号",
+          "model_response": "找到3个航班,预订MU5101成功",
+          "is_correct": true,
+          "score": 0.9304286804638662,
+          "runtime_ms": 1633,
+          "token_count": 357,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "对比3个电商平台的商品价格后发送邮件报告",
+          "expected_answer": "邮件已发送",
+          "model_response": "完成价格对比并发送报告给manager@test.com",
+          "is_correct": true,
+          "score": 0.8320044431057678,
+          "runtime_ms": 4867,
+          "token_count": 299,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "翻译中文文档到英文后上传到Google Drive",
+          "expected_answer": "上传成功",
+          "model_response": "翻译完成,文件已上传,链接已保存",
+          "is_correct": true,
+          "score": 0.8161244286190015,
+          "runtime_ms": 6071,
+          "token_count": 389,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "抓取网页表格数据并生成CSV文件",
+          "expected_answer": "CSV文件已生成",
+          "model_response": "表格有12行5列,CSV已保存",
+          "is_correct": true,
+          "score": 0.9270907564669405,
+          "runtime_ms": 4761,
+          "token_count": 677,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "预订会议室并发送日历邀请",
+          "expected_answer": "邀请已发送",
+          "model_response": "预订了3号会议室,邀请已发送给5人",
+          "is_correct": false,
+          "score": 0.28251812564473316,
+          "runtime_ms": 3824,
+          "token_count": 626,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "计算上月销售额并生成图表",
+          "expected_answer": "图表已生成",
+          "model_response": "销售额为12.5万,环比增长8%",
+          "is_correct": true,
+          "score": 0.9193837336652164,
+          "runtime_ms": 5215,
+          "token_count": 598,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "从PDF中提取表格数据并导入数据库",
+          "expected_answer": "导入成功",
+          "model_response": "提取了3个表格共45行数据,已导入MySQL",
+          "is_correct": true,
+          "score": 0.8435343509098135,
+          "runtime_ms": 4369,
+          "token_count": 576,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "监控服务器状态发现异常并发送告警",
+          "expected_answer": "告警已发送",
+          "model_response": "检测到CPU使用率90%,已发送钉钉告警",
+          "is_correct": true,
+          "score": 0.9704666388381211,
+          "runtime_ms": 2496,
+          "token_count": 706,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "group_name": "LLaMA-3 Agent",
+    "model": "llama-3-70b",
+    "eval_dataset": "AgentBench-v3",
+    "variables": {
+      "temperature": 0.5,
+      "max_steps": 10,
+      "tools": "web_search,navigate,api_call"
+    },
+    "results": {
+      "网页搜索": [
+        {
+          "question": "搜索北京今日天气和空气质量",
+          "expected_answer": "返回气温、湿度、AQI指数",
+          "model_response": "搜索完成: 22°C, 湿度45%, AQI 85",
+          "is_correct": false,
+          "score": 0.1693379777717265,
+          "runtime_ms": 1553,
+          "token_count": 246,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索2024年AI领域十大突破",
+          "expected_answer": "返回10条相关新闻标题",
+          "model_response": "找到8条相关新闻并总结",
+          "is_correct": false,
+          "score": 0.1967521991541087,
+          "runtime_ms": 2841,
+          "token_count": 330,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "easy",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索Python 3.13版本发布说明",
+          "expected_answer": "返回发布说明链接和摘要",
+          "model_response": "Python 3.13已发布,主要更新:GIL优化、JIT编译器",
+          "is_correct": true,
+          "score": 0.8709718366171108,
+          "runtime_ms": 4049,
+          "token_count": 378,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "在百度搜索机械键盘推荐",
+          "expected_answer": "返回前10条搜索结果标题",
+          "model_response": "搜索完成,返回10条结果",
+          "is_correct": false,
+          "score": 0.009185901494478588,
+          "runtime_ms": 2173,
+          "token_count": 303,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "easy",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索附近评分最高的咖啡店",
+          "expected_answer": "返回3家咖啡店信息",
+          "model_response": "找到3家:星巴克4.3,瑞幸4.1,Tim Hortons 4.5",
+          "is_correct": true,
+          "score": 0.8917634036476272,
+          "runtime_ms": 1244,
+          "token_count": 737,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索如何部署Docker容器",
+          "expected_answer": "返回教程链接和步骤",
+          "model_response": "找到5篇教程,已提取关键步骤",
+          "is_correct": true,
+          "score": 0.9809851951939708,
+          "runtime_ms": 1497,
+          "token_count": 737,
+          "reason": "",
+          "difficulty": "easy",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索今天美股行情",
+          "expected_answer": "返回道指、纳指、标普500",
+          "model_response": "搜索超时,只获取到道指数据",
+          "is_correct": false,
+          "score": 0.2095649836985472,
+          "runtime_ms": 4765,
+          "token_count": 521,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索最受欢迎的JavaScript框架",
+          "expected_answer": "返回排名和简介",
+          "model_response": "React排名第一,其次是Vue和Angular",
+          "is_correct": true,
+          "score": 0.9620123933841545,
+          "runtime_ms": 3152,
+          "token_count": 757,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ],
+      "网页导航": [
+        {
+          "question": "打开GitHub并找到trending页面",
+          "expected_answer": "成功导航到trending",
+          "model_response": "导航成功,trending页面显示25个项目",
+          "is_correct": true,
+          "score": 0.9657391948133134,
+          "runtime_ms": 2255,
+          "token_count": 711,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "登录公司邮箱查看未读邮件",
+          "expected_answer": "显示3封未读邮件",
+          "model_response": "登录成功,3封未读邮件来自PM",
+          "is_correct": true,
+          "score": 0.9046132514110601,
+          "runtime_ms": 1305,
+          "token_count": 227,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "导航到天气网站查询未来7天天气",
+          "expected_answer": "返回7天天气预报",
+          "model_response": "加载成功,已提取7天数据",
+          "is_correct": true,
+          "score": 0.8160091598093904,
+          "runtime_ms": 5748,
+          "token_count": 444,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开购物网站并将商品加入购物车",
+          "expected_answer": "商品成功加入购物车",
+          "model_response": "点击购买按钮超时,商品已加入购物车但未购买",
+          "is_correct": false,
+          "score": 0.28883792135278813,
+          "runtime_ms": 5561,
+          "token_count": 407,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "medium",
+          "tool_count": 3,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "导航到公司Wiki搜索部署文档",
+          "expected_answer": "返回2篇相关文档",
+          "model_response": "找到2篇文档并打开",
+          "is_correct": true,
+          "score": 0.9773875789758305,
+          "runtime_ms": 5573,
+          "token_count": 745,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开腾讯文档并创建新表格",
+          "expected_answer": "创建成功",
+          "model_response": "表格已创建,名称为月度报告",
+          "is_correct": true,
+          "score": 0.8246119757029591,
+          "runtime_ms": 1907,
+          "token_count": 391,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "导航到AWS控制台查看EC2实例状态",
+          "expected_answer": "返回实例列表",
+          "model_response": "3个实例正在运行,1个已停止",
+          "is_correct": false,
+          "score": 0.09397475554468439,
+          "runtime_ms": 2724,
+          "token_count": 465,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "打开Notion页面并添加今日待办",
+          "expected_answer": "添加成功",
+          "model_response": "已添加3条待办事项",
+          "is_correct": true,
+          "score": 0.8887687767995267,
+          "runtime_ms": 5749,
+          "token_count": 230,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ],
+      "多步任务": [
+        {
+          "question": "查询航班并预订机票",
+          "expected_answer": "返回航班信息和预订确认号",
+          "model_response": "找到3个航班,预订MU5101成功",
+          "is_correct": true,
+          "score": 0.8779237555330379,
+          "runtime_ms": 5256,
+          "token_count": 714,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "对比3个电商平台的商品价格后发送邮件报告",
+          "expected_answer": "邮件已发送",
+          "model_response": "完成价格对比并发送报告给manager@test.com",
+          "is_correct": true,
+          "score": 0.9094867546451453,
+          "runtime_ms": 2747,
+          "token_count": 616,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "翻译中文文档到英文后上传到Google Drive",
+          "expected_answer": "上传成功",
+          "model_response": "翻译完成,文件已上传,链接已保存",
+          "is_correct": true,
+          "score": 0.9101192491234313,
+          "runtime_ms": 2283,
+          "token_count": 212,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "抓取网页表格数据并生成CSV文件",
+          "expected_answer": "CSV文件已生成",
+          "model_response": "表格有12行5列,CSV已保存",
+          "is_correct": true,
+          "score": 0.8536359327558446,
+          "runtime_ms": 1995,
+          "token_count": 553,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "预订会议室并发送日历邀请",
+          "expected_answer": "邀请已发送",
+          "model_response": "预订了3号会议室,邀请已发送给5人",
+          "is_correct": true,
+          "score": 0.9478506974285571,
+          "runtime_ms": 1530,
+          "token_count": 581,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "计算上月销售额并生成图表",
+          "expected_answer": "图表已生成",
+          "model_response": "销售额为12.5万,环比增长8%",
+          "is_correct": true,
+          "score": 0.8747432312260679,
+          "runtime_ms": 4877,
+          "token_count": 355,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "从PDF中提取表格数据并导入数据库",
+          "expected_answer": "导入成功",
+          "model_response": "提取了3个表格共45行数据,已导入MySQL",
+          "is_correct": true,
+          "score": 0.8505873865528547,
+          "runtime_ms": 3913,
+          "token_count": 578,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "监控服务器状态发现异常并发送告警",
+          "expected_answer": "告警已发送",
+          "model_response": "检测到CPU使用率90%,已发送钉钉告警",
+          "is_correct": true,
+          "score": 0.8923083673009904,
+          "runtime_ms": 5995,
+          "token_count": 282,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "group_name": "DeepSeek Agent",
+    "model": "deepseek-chat",
+    "eval_dataset": "AgentBench-v3",
+    "variables": {
+      "temperature": 0.5,
+      "max_steps": 10,
+      "tools": "web_search,navigate,api_call"
+    },
+    "results": {
+      "网页搜索": [
+        {
+          "question": "搜索北京今日天气和空气质量",
+          "expected_answer": "返回气温、湿度、AQI指数",
+          "model_response": "搜索完成: 22°C, 湿度45%, AQI 85",
+          "is_correct": true,
+          "score": 0.8002726196038539,
+          "runtime_ms": 2980,
+          "token_count": 225,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索2024年AI领域十大突破",
+          "expected_answer": "返回10条相关新闻标题",
+          "model_response": "找到8条相关新闻并总结",
+          "is_correct": false,
+          "score": 0.12098481716474946,
+          "runtime_ms": 1582,
+          "token_count": 715,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索Python 3.13版本发布说明",
+          "expected_answer": "返回发布说明链接和摘要",
+          "model_response": "Python 3.13已发布,主要更新:GIL优化、JIT编译器",
+          "is_correct": true,
+          "score": 0.9524817178841836,
+          "runtime_ms": 3989,
+          "token_count": 381,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "在百度搜索机械键盘推荐",
+          "expected_answer": "返回前10条搜索结果标题",
+          "model_response": "搜索完成,返回10条结果",
+          "is_correct": true,
+          "score": 0.8385113813864337,
+          "runtime_ms": 1224,
+          "token_count": 667,
+          "reason": "",
+          "difficulty": "easy",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索附近评分最高的咖啡店",
+          "expected_answer": "返回3家咖啡店信息",
+          "model_response": "找到3家:星巴克4.3,瑞幸4.1,Tim Hortons 4.5",
+          "is_correct": false,
+          "score": 0.050942985513940386,
+          "runtime_ms": 2977,
+          "token_count": 384,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索如何部署Docker容器",
+          "expected_answer": "返回教程链接和步骤",
+          "model_response": "找到5篇教程,已提取关键步骤",
+          "is_correct": true,
+          "score": 0.8068427679197121,
+          "runtime_ms": 3498,
+          "token_count": 698,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索今天美股行情",
+          "expected_answer": "返回道指、纳指、标普500",
+          "model_response": "搜索超时,只获取到道指数据",
+          "is_correct": false,
+          "score": 0.25702596966579694,
+          "runtime_ms": 3376,
+          "token_count": 205,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索最受欢迎的JavaScript框架",
+          "expected_answer": "返回排名和简介",
+          "model_response": "React排名第一,其次是Vue和Angular",
+          "is_correct": true,
+          "score": 0.8813006113476456,
+          "runtime_ms": 1934,
+          "token_count": 637,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ],
+      "网页导航": [
+        {
+          "question": "打开GitHub并找到trending页面",
+          "expected_answer": "成功导航到trending",
+          "model_response": "导航成功,trending页面显示25个项目",
+          "is_correct": true,
+          "score": 0.9203967264401446,
+          "runtime_ms": 2878,
+          "token_count": 766,
+          "reason": "",
+          "difficulty": "easy",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "登录公司邮箱查看未读邮件",
+          "expected_answer": "显示3封未读邮件",
+          "model_response": "登录成功,3封未读邮件来自PM",
+          "is_correct": true,
+          "score": 0.8427938914932533,
+          "runtime_ms": 3683,
+          "token_count": 634,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "导航到天气网站查询未来7天天气",
+          "expected_answer": "返回7天天气预报",
+          "model_response": "加载成功,已提取7天数据",
+          "is_correct": true,
+          "score": 0.9541121161857226,
+          "runtime_ms": 3659,
+          "token_count": 487,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开购物网站并将商品加入购物车",
+          "expected_answer": "商品成功加入购物车",
+          "model_response": "点击购买按钮超时,商品已加入购物车但未购买",
+          "is_correct": false,
+          "score": 0.18725964476909054,
+          "runtime_ms": 2117,
+          "token_count": 573,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "导航到公司Wiki搜索部署文档",
+          "expected_answer": "返回2篇相关文档",
+          "model_response": "找到2篇文档并打开",
+          "is_correct": true,
+          "score": 0.8716261698019386,
+          "runtime_ms": 5943,
+          "token_count": 624,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开腾讯文档并创建新表格",
+          "expected_answer": "创建成功",
+          "model_response": "表格已创建,名称为月度报告",
+          "is_correct": true,
+          "score": 0.9954755919063711,
+          "runtime_ms": 2263,
+          "token_count": 403,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "导航到AWS控制台查看EC2实例状态",
+          "expected_answer": "返回实例列表",
+          "model_response": "3个实例正在运行,1个已停止",
+          "is_correct": true,
+          "score": 0.9390321028558046,
+          "runtime_ms": 1227,
+          "token_count": 450,
+          "reason": "",
+          "difficulty": "easy",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开Notion页面并添加今日待办",
+          "expected_answer": "添加成功",
+          "model_response": "已添加3条待办事项",
+          "is_correct": true,
+          "score": 0.8193470842467564,
+          "runtime_ms": 2118,
+          "token_count": 629,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ],
+      "多步任务": [
+        {
+          "question": "查询航班并预订机票",
+          "expected_answer": "返回航班信息和预订确认号",
+          "model_response": "找到3个航班,预订MU5101成功",
+          "is_correct": true,
+          "score": 0.9723808065024513,
+          "runtime_ms": 3860,
+          "token_count": 340,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "对比3个电商平台的商品价格后发送邮件报告",
+          "expected_answer": "邮件已发送",
+          "model_response": "完成价格对比并发送报告给manager@test.com",
+          "is_correct": true,
+          "score": 0.9134192753568825,
+          "runtime_ms": 2246,
+          "token_count": 545,
+          "reason": "",
+          "difficulty": "easy",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "翻译中文文档到英文后上传到Google Drive",
+          "expected_answer": "上传成功",
+          "model_response": "翻译完成,文件已上传,链接已保存",
+          "is_correct": true,
+          "score": 0.9016597778867359,
+          "runtime_ms": 2440,
+          "token_count": 692,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "抓取网页表格数据并生成CSV文件",
+          "expected_answer": "CSV文件已生成",
+          "model_response": "表格有12行5列,CSV已保存",
+          "is_correct": true,
+          "score": 0.8051810624702749,
+          "runtime_ms": 4430,
+          "token_count": 260,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "预订会议室并发送日历邀请",
+          "expected_answer": "邀请已发送",
+          "model_response": "预订了3号会议室,邀请已发送给5人",
+          "is_correct": false,
+          "score": 0.002446612001143,
+          "runtime_ms": 4486,
+          "token_count": 233,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "medium",
+          "tool_count": 3,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "计算上月销售额并生成图表",
+          "expected_answer": "图表已生成",
+          "model_response": "销售额为12.5万,环比增长8%",
+          "is_correct": true,
+          "score": 0.9303008175903544,
+          "runtime_ms": 1936,
+          "token_count": 259,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "从PDF中提取表格数据并导入数据库",
+          "expected_answer": "导入成功",
+          "model_response": "提取了3个表格共45行数据,已导入MySQL",
+          "is_correct": false,
+          "score": 0.04720873297496281,
+          "runtime_ms": 2707,
+          "token_count": 543,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "监控服务器状态发现异常并发送告警",
+          "expected_answer": "告警已发送",
+          "model_response": "检测到CPU使用率90%,已发送钉钉告警",
+          "is_correct": true,
+          "score": 0.9238168428623812,
+          "runtime_ms": 5796,
+          "token_count": 277,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "group_name": "Qwen Agent",
+    "model": "qwen2.5-72b",
+    "eval_dataset": "AgentBench-v3",
+    "variables": {
+      "temperature": 0.5,
+      "max_steps": 10,
+      "tools": "web_search,navigate,api_call"
+    },
+    "results": {
+      "网页搜索": [
+        {
+          "question": "搜索北京今日天气和空气质量",
+          "expected_answer": "返回气温、湿度、AQI指数",
+          "model_response": "搜索完成: 22°C, 湿度45%, AQI 85",
+          "is_correct": true,
+          "score": 0.8441886718941064,
+          "runtime_ms": 3850,
+          "token_count": 189,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索2024年AI领域十大突破",
+          "expected_answer": "返回10条相关新闻标题",
+          "model_response": "找到8条相关新闻并总结",
+          "is_correct": false,
+          "score": 0.010020256004765716,
+          "runtime_ms": 5443,
+          "token_count": 678,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 3,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索Python 3.13版本发布说明",
+          "expected_answer": "返回发布说明链接和摘要",
+          "model_response": "Python 3.13已发布,主要更新:GIL优化、JIT编译器",
+          "is_correct": true,
+          "score": 0.8468285039188013,
+          "runtime_ms": 2479,
+          "token_count": 473,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "在百度搜索机械键盘推荐",
+          "expected_answer": "返回前10条搜索结果标题",
+          "model_response": "搜索完成,返回10条结果",
+          "is_correct": true,
+          "score": 0.8801702659596312,
+          "runtime_ms": 4275,
+          "token_count": 368,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索附近评分最高的咖啡店",
+          "expected_answer": "返回3家咖啡店信息",
+          "model_response": "找到3家:星巴克4.3,瑞幸4.1,Tim Hortons 4.5",
+          "is_correct": false,
+          "score": 0.17465817218844476,
+          "runtime_ms": 4221,
+          "token_count": 327,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "medium",
+          "tool_count": 3,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索如何部署Docker容器",
+          "expected_answer": "返回教程链接和步骤",
+          "model_response": "找到5篇教程,已提取关键步骤",
+          "is_correct": true,
+          "score": 0.8217111341308154,
+          "runtime_ms": 3178,
+          "token_count": 608,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "搜索今天美股行情",
+          "expected_answer": "返回道指、纳指、标普500",
+          "model_response": "搜索超时,只获取到道指数据",
+          "is_correct": false,
+          "score": 0.20051173155637864,
+          "runtime_ms": 3419,
+          "token_count": 560,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "easy",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "搜索最受欢迎的JavaScript框架",
+          "expected_answer": "返回排名和简介",
+          "model_response": "React排名第一,其次是Vue和Angular",
+          "is_correct": true,
+          "score": 0.884150811033973,
+          "runtime_ms": 1660,
+          "token_count": 347,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ],
+      "网页导航": [
+        {
+          "question": "打开GitHub并找到trending页面",
+          "expected_answer": "成功导航到trending",
+          "model_response": "导航成功,trending页面显示25个项目",
+          "is_correct": true,
+          "score": 0.9914695792104432,
+          "runtime_ms": 5398,
+          "token_count": 648,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "登录公司邮箱查看未读邮件",
+          "expected_answer": "显示3封未读邮件",
+          "model_response": "登录成功,3封未读邮件来自PM",
+          "is_correct": false,
+          "score": 0.23281152419641182,
+          "runtime_ms": 5952,
+          "token_count": 557,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "导航到天气网站查询未来7天天气",
+          "expected_answer": "返回7天天气预报",
+          "model_response": "加载成功,已提取7天数据",
+          "is_correct": false,
+          "score": 0.20899204963453916,
+          "runtime_ms": 4797,
+          "token_count": 446,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "打开购物网站并将商品加入购物车",
+          "expected_answer": "商品成功加入购物车",
+          "model_response": "点击购买按钮超时,商品已加入购物车但未购买",
+          "is_correct": false,
+          "score": 0.010719111704468586,
+          "runtime_ms": 4935,
+          "token_count": 473,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "easy",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "导航到公司Wiki搜索部署文档",
+          "expected_answer": "返回2篇相关文档",
+          "model_response": "找到2篇文档并打开",
+          "is_correct": true,
+          "score": 0.9981436662274085,
+          "runtime_ms": 1372,
+          "token_count": 547,
+          "reason": "",
+          "difficulty": "easy",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开腾讯文档并创建新表格",
+          "expected_answer": "创建成功",
+          "model_response": "表格已创建,名称为月度报告",
+          "is_correct": false,
+          "score": 0.22273871423701153,
+          "runtime_ms": 3015,
+          "token_count": 586,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "导航到AWS控制台查看EC2实例状态",
+          "expected_answer": "返回实例列表",
+          "model_response": "3个实例正在运行,1个已停止",
+          "is_correct": true,
+          "score": 0.8673865702364203,
+          "runtime_ms": 1398,
+          "token_count": 495,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "打开Notion页面并添加今日待办",
+          "expected_answer": "添加成功",
+          "model_response": "已添加3条待办事项",
+          "is_correct": true,
+          "score": 0.8824719770793821,
+          "runtime_ms": 4757,
+          "token_count": 703,
+          "reason": "",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ],
+      "多步任务": [
+        {
+          "question": "查询航班并预订机票",
+          "expected_answer": "返回航班信息和预订确认号",
+          "model_response": "找到3个航班,预订MU5101成功",
+          "is_correct": false,
+          "score": 0.25606720829596114,
+          "runtime_ms": 4140,
+          "token_count": 758,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "对比3个电商平台的商品价格后发送邮件报告",
+          "expected_answer": "邮件已发送",
+          "model_response": "完成价格对比并发送报告给manager@test.com",
+          "is_correct": true,
+          "score": 0.8667384139443356,
+          "runtime_ms": 3964,
+          "token_count": 332,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "翻译中文文档到英文后上传到Google Drive",
+          "expected_answer": "上传成功",
+          "model_response": "翻译完成,文件已上传,链接已保存",
+          "is_correct": false,
+          "score": 0.004664031902907195,
+          "runtime_ms": 6078,
+          "token_count": 737,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "easy",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "抓取网页表格数据并生成CSV文件",
+          "expected_answer": "CSV文件已生成",
+          "model_response": "表格有12行5列,CSV已保存",
+          "is_correct": true,
+          "score": 0.8036210979851546,
+          "runtime_ms": 5244,
+          "token_count": 570,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "预订会议室并发送日历邀请",
+          "expected_answer": "邀请已发送",
+          "model_response": "预订了3号会议室,邀请已发送给5人",
+          "is_correct": false,
+          "score": 0.2270703813286229,
+          "runtime_ms": 5043,
+          "token_count": 578,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "计算上月销售额并生成图表",
+          "expected_answer": "图表已生成",
+          "model_response": "销售额为12.5万,环比增长8%",
+          "is_correct": true,
+          "score": 0.8066190049117868,
+          "runtime_ms": 5000,
+          "token_count": 453,
+          "reason": "",
+          "difficulty": "medium",
+          "tool_count": 5,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        },
+        {
+          "question": "从PDF中提取表格数据并导入数据库",
+          "expected_answer": "导入成功",
+          "model_response": "提取了3个表格共45行数据,已导入MySQL",
+          "is_correct": false,
+          "score": 0.07691448371831688,
+          "runtime_ms": 4480,
+          "token_count": 774,
+          "reason": "工具调用失败或返回不完整",
+          "difficulty": "hard",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "retry_search",
+              "observation": "Error: 操作超时,返回码500",
+              "tool": "http"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "无法获取有效结果"
+            }
+          ]
+        },
+        {
+          "question": "监控服务器状态发现异常并发送告警",
+          "expected_answer": "告警已发送",
+          "model_response": "检测到CPU使用率90%,已发送钉钉告警",
+          "is_correct": true,
+          "score": 0.892072145004531,
+          "runtime_ms": 3387,
+          "token_count": 750,
+          "reason": "",
+          "difficulty": "easy",
+          "tool_count": 4,
+          "trajectory": [
+            {
+              "step": 1,
+              "thought": "分析用户请求,确定任务目标和所需工具",
+              "action": "parse_task",
+              "observation": "任务目标已明确"
+            },
+            {
+              "step": 2,
+              "thought": "打开相关网页或应用",
+              "action": "navigate",
+              "observation": "页面加载成功"
+            },
+            {
+              "step": 3,
+              "thought": "执行核心操作",
+              "action": "execute",
+              "observation": "操作完成",
+              "tool": "api"
+            },
+            {
+              "step": 4,
+              "thought": "验证结果并格式化输出",
+              "action": "format",
+              "observation": "结果已格式化"
+            },
+            {
+              "step": 5,
+              "thought": "任务完成",
+              "action": "done",
+              "observation": "成功完成"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

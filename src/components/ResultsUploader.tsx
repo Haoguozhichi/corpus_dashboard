@@ -13,7 +13,7 @@ interface Props {
   testCases: TestCase[];
   existingResults: EvaluationResult[];
   onRefresh: () => void;
-  isAgent?: boolean; // agent评测时显示轨迹和多维评分别
+  isAgent?: boolean; // agent评测时显示轨迹列
 }
 
 interface ManualEntry {
@@ -27,7 +27,6 @@ interface ManualEntry {
   annotation: string;
   think: string;
   trajectory: string;
-  custom_scores: string;
 }
 
 let entryCounter = 0;
@@ -54,7 +53,6 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
         is_correct: false,
         reason: '',
         trajectory: '',
-        custom_scores: '',
       }));
     pending.push({
       key: `new-${++entryCounter}`,
@@ -63,7 +61,6 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
       model_response: '',
       is_correct: false,
       trajectory: '',
-      custom_scores: '',
     });
     return pending;
   };
@@ -79,7 +76,7 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
   };
 
   const addRow = () => {
-    setEntries((prev) => [...prev, { key: `new-${++entryCounter}`, question: '', expected_answer: '', model_response: '', is_correct: false, reason: '', annotation: '', think: '', trajectory: '', custom_scores: '' }]);
+    setEntries((prev) => [...prev, { key: `new-${++entryCounter}`, question: '', expected_answer: '', model_response: '', is_correct: false, reason: '', annotation: '', think: '', trajectory: '' }]);
   };
 
   const removeRow = (key: string) => {
@@ -106,30 +103,17 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
     for (const entry of valid) {
       try {
         // 解析 JSON 字段
-        let trajectory, custom_scores;
+        let trajectory;
         if (isAgent && entry.trajectory.trim()) {
           try { trajectory = JSON.parse(entry.trajectory); } catch {
             message.error(`轨迹JSON格式错误，请检查: ${entry.trajectory.slice(0, 50)}...`);
             continue;
           }
         }
-        if (isAgent && entry.custom_scores.trim()) {
-          try {
-            custom_scores = {};
-            entry.custom_scores.split(',').forEach((pair) => {
-              const [k, v] = pair.split(':').map((s) => s.trim());
-              if (k && v) custom_scores[k] = parseFloat(v) || 0;
-            });
-            if (Object.keys(custom_scores).length === 0) throw new Error('empty');
-          } catch {
-            message.error(`多维评分格式错误，请用 "key:value, key:value" 格式，如 "tool:0.9, reason:0.8"`);
-            continue;
-          }
-        }
         if (entry.test_case_id) {
-          await createResult(groupId, { test_case_id: entry.test_case_id, model_response: entry.model_response, is_correct: entry.is_correct, score: entry.is_correct ? 1 : 0, reason: entry.reason || undefined, trajectory, custom_scores });
+          await createResult(groupId, { test_case_id: entry.test_case_id, model_response: entry.model_response, is_correct: entry.is_correct, score: entry.is_correct ? 1 : 0, reason: entry.reason || undefined, trajectory });
         } else if (entry.question.trim()) {
-          await createResult(groupId, { question: entry.question.trim(), expected_answer: entry.expected_answer.trim(), model_response: entry.model_response, is_correct: entry.is_correct, score: entry.is_correct ? 1 : 0, reason: entry.reason || undefined, trajectory, custom_scores });
+          await createResult(groupId, { question: entry.question.trim(), expected_answer: entry.expected_answer.trim(), model_response: entry.model_response, is_correct: entry.is_correct, score: entry.is_correct ? 1 : 0, reason: entry.reason || undefined, trajectory });
         } else continue;
         count++;
       } catch { /* skip */ }
@@ -253,13 +237,6 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
       render: (_: unknown, record: ManualEntry) => (
         <Input.TextArea size="small" rows={2} placeholder='[{"step":1,"thought":"..."}]'
           value={record.trajectory} onChange={(e) => updateEntry(record.key, 'trajectory', e.target.value)} style={{ fontSize: 11 }} />
-      ),
-    }] : []),
-    ...(isAgent ? [{
-      title: '多维评分', key: 'custom_scores', width: 140,
-      render: (_: unknown, record: ManualEntry) => (
-        <Input size="small" placeholder="tool:0.9, reason:0.8"
-          value={record.custom_scores} onChange={(e) => updateEntry(record.key, 'custom_scores', e.target.value)} style={{ fontSize: 11 }} />
       ),
     }] : []),
     {

@@ -36,22 +36,22 @@ const DetailPage: React.FC = () => {
     return <Empty description="未找到该实验组" style={{ marginTop: 80 }} />;
   }
 
-  // ====== Evaluation 类型 ======
-  if (experiment.type === 'evaluation') {
+  // ====== Evaluation 类型（自动检测 Agent 特征） ======
+  if (experiment.type === 'evaluation' || experiment.type === 'agent_evaluation') {
+    const hasTrajectory = group.results?.some((r) => r.trajectory && r.trajectory.length > 0);
+    if (hasTrajectory) {
+      return (
+        <AgentEvaluationDetail
+          group={group}
+          experimentName={experiment.name}
+          experimentId={experiment.id!}
+          testCases={experiment.testCases || []}
+          onRefresh={refreshExperiment}
+        />
+      );
+    }
     return (
       <EvaluationDetail
-        group={group}
-        experimentName={experiment.name}
-        experimentId={experiment.id!}
-        testCases={experiment.testCases || []}
-        onRefresh={refreshExperiment}
-      />
-    );
-  }
-
-  if (experiment.type === 'agent_evaluation') {
-    return (
-      <AgentEvaluationDetail
         group={group}
         experimentName={experiment.name}
         experimentId={experiment.id!}

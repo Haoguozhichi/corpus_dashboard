@@ -206,21 +206,6 @@ const ComparePage: React.FC = () => {
     { metric: '准确率', ...Object.fromEntries(groups.map((g) => [g.name, +((g.accuracy ?? 0) * 100).toFixed(1)])) },
   ];
 
-  // 多维评分对比 (Agent only)
-  const csMap: Record<string, Record<string, number>> = {};
-  groups.forEach((g) => {
-    (g.results || []).forEach((r) => {
-      if (r.custom_scores) Object.entries(r.custom_scores).forEach(([k, v]) => {
-        if (!csMap[k]) csMap[k] = {};
-        csMap[k][g.name] = (csMap[k][g.name] || 0) + v;
-      });
-    });
-  });
-  const csData = Object.entries(csMap).map(([dim, vals]) => ({
-    dimension: dim,
-    ...Object.fromEntries(Object.entries(vals).map(([gName, total]) => [gName, +(total / ((groups.find((g) => g.name === gName)?.results?.length) || 1) * 100).toFixed(1)])),
-  }));
-
   // 工具调用对比 (Agent only)
   const toolData = isAgent ? groups.map((g) => {
     const results = g.results || [];
@@ -269,17 +254,6 @@ const ComparePage: React.FC = () => {
             <BarChart data={[{ metric: '平均工具调用', ...Object.fromEntries(toolData.map((t: any) => [t.name, +t.avgTools])) }]}>
               <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="metric" /><YAxis /><Tooltip /><Legend />
               {groups.map((g, i) => <Bar key={g.id} dataKey={g.name} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} />)}
-            </BarChart>
-          </ResponsiveContainer>
-        </>
-      )}
-
-      {csData.length > 0 && (
-        <>
-          <Title level={5} style={{ marginTop: 24, marginBottom: 16 }}>📐 多维评分对比</Title>
-          <ResponsiveContainer width="100%" height={Math.max(200, csData.length * 40)}>
-            <BarChart data={csData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="dimension" /><YAxis domain={[0, 100]} /><Tooltip /><Legend />
-              {groups.map((g, i) => <Bar key={g.id} dataKey={g.name} fill={COLORS[i % COLORS.length]} radius={[0, 4, 4, 0]} />)}
             </BarChart>
           </ResponsiveContainer>
         </>

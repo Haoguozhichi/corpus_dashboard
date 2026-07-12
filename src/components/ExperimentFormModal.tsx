@@ -15,7 +15,6 @@ interface Props {
 const TYPE_OPTIONS = [
   { label: '训练实验 (Training)', value: 'training' },
   { label: '评测实验 (Evaluation)', value: 'evaluation' },
-  { label: 'Agent评测 (Agent Evaluation)', value: 'agent_evaluation' },
   { label: '其他 (Other)', value: 'other' },
 ];
 

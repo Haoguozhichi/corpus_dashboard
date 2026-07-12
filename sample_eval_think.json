@@ -1,0 +1,877 @@
+[
+  {
+    "group_name": "GPT-4o",
+    "model": "gpt-4o",
+    "eval_dataset": "GeneralQA",
+    "variables": {
+      "temperature": 0.7
+    },
+    "results": [
+      {
+        "question": "法国首都是哪里？",
+        "expected_answer": "巴黎",
+        "model_response": "巴黎是法国的首都。",
+        "is_correct": true,
+        "score": 0.9389722569753097,
+        "runtime_ms": 150,
+        "token_count": 38,
+        "reason": "",
+        "think": "这是一道基础地理知识题，法国首都是巴黎，直接给出答案即可。"
+      },
+      {
+        "question": "计算 123 * 456",
+        "expected_answer": "56088",
+        "model_response": "123 * 456 = 56088",
+        "is_correct": true,
+        "score": 0.8575234584301115,
+        "runtime_ms": 222,
+        "token_count": 55,
+        "reason": "",
+        "think": "这是一道乘法计算题，竖式计算：123*456 = 56088。先算123*400=49200, 再算123*56=6888, 合计56088。"
+      },
+      {
+        "question": "将Hello翻译成中文",
+        "expected_answer": "你好",
+        "model_response": "Hello的中文是你好。",
+        "is_correct": true,
+        "score": 0.8961094736628068,
+        "runtime_ms": 273,
+        "token_count": 52,
+        "reason": "",
+        "think": "Hello是英文最常用的问候语，对应的中文是\"你好\"。"
+      },
+      {
+        "question": "水的沸点是多少？",
+        "expected_answer": "100°C",
+        "model_response": "水的沸点是100摄氏度。",
+        "is_correct": true,
+        "score": 0.9206772136285056,
+        "runtime_ms": 210,
+        "token_count": 41,
+        "reason": "",
+        "think": "在标准大气压下水的沸点为100°C，这是基本物理常识。"
+      },
+      {
+        "question": "解释什么是光合作用",
+        "expected_answer": "植物利用阳光将二氧化碳和水转化为有机物和氧气的过程",
+        "model_response": "光合作用是植物、藻类等利用光能将CO2和H2O转化为葡萄糖和O2的过程。",
+        "is_correct": true,
+        "score": 0.9967681329304667,
+        "runtime_ms": 311,
+        "token_count": 50,
+        "reason": "",
+        "think": "光合作用核心概念：光能→化学能，6CO2+6H2O→C6H12O6+6O2。"
+      },
+      {
+        "question": "写一个Python函数计算斐波那契数列第n项",
+        "expected_answer": "def fib(n): if n<=1: return n; return fib(n-1)+fib(n-2)",
+        "model_response": "def fib(n): return n if n<=1 else fib(n-1)+fib(n-2)",
+        "is_correct": true,
+        "score": 0.8199253164336323,
+        "runtime_ms": 204,
+        "token_count": 19,
+        "reason": "",
+        "think": "使用递归或迭代计算斐波那契数列，这是经典的算法题。"
+      },
+      {
+        "question": "太阳系中最大的行星是什么？",
+        "expected_answer": "木星",
+        "model_response": "木星是太阳系中最大的行星。",
+        "is_correct": true,
+        "score": 0.9196511837145878,
+        "runtime_ms": 314,
+        "token_count": 14,
+        "reason": "",
+        "think": "木星体积是地球的1300倍，质量是其他行星总和的2.5倍。"
+      },
+      {
+        "question": "第二次世界大战在哪一年结束？",
+        "expected_answer": "1945",
+        "model_response": "二战于1945年结束。",
+        "is_correct": true,
+        "score": 0.9726506032092245,
+        "runtime_ms": 282,
+        "token_count": 58,
+        "reason": "",
+        "think": "1945年德国投降(5月)和日本投降(8月)标志着二战结束。"
+      },
+      {
+        "question": "光速是多少m/s？",
+        "expected_answer": "约3×10^8 m/s",
+        "model_response": "光速约为3×10^8 m/s。",
+        "is_correct": true,
+        "score": 0.9461861604099057,
+        "runtime_ms": 133,
+        "token_count": 56,
+        "reason": "",
+        "think": "真空中光速精确值为299792458 m/s。"
+      },
+      {
+        "question": "地球上最干燥的大洲是什么？",
+        "expected_answer": "南极洲",
+        "model_response": "南极洲是地球上最干燥的大洲。",
+        "is_correct": false,
+        "score": 0.2097853415668754,
+        "runtime_ms": 348,
+        "token_count": 47,
+        "reason": "回答有误",
+        "think": "这是一个常见的认知误区。虽然南极洲覆盖着冰层，但其降水量极低，大部分区域年降水量不足50mm，是地球上最干燥的大洲。所以这个回答是可能错误的。不，让我重新审视：这个问题正确答案确实是南极洲。等等，这个回答说对了。"
+      },
+      {
+        "question": "将Good morning翻译成法语",
+        "expected_answer": "Bonjour",
+        "model_response": "Good morning是Bonjour。",
+        "is_correct": true,
+        "score": 0.8683614340205081,
+        "runtime_ms": 136,
+        "token_count": 28,
+        "reason": "",
+        "think": "法语中Bonjour表示\"你好/早上好\"，是最基本的问候语。"
+      },
+      {
+        "question": "什么是机器学习的过拟合？",
+        "expected_answer": "模型在训练数据上表现好但测试数据上表现差",
+        "model_response": "过拟合指模型过度学习训练数据中的噪声，导致泛化能力下降。",
+        "is_correct": true,
+        "score": 0.910272362942057,
+        "runtime_ms": 310,
+        "token_count": 16,
+        "reason": "",
+        "think": "过拟合特征：训练准确率高、验证准确率低。解决方法：正则化、Dropout、数据增强、早停。"
+      },
+      {
+        "question": "一杯水在太空中会怎样？",
+        "expected_answer": "水会沸腾然后冻结",
+        "model_response": "水在真空中会同时沸腾和冻结。",
+        "is_correct": true,
+        "score": 0.8846506616664911,
+        "runtime_ms": 261,
+        "token_count": 17,
+        "reason": "",
+        "think": "真空中沸点降低，水迅速沸腾气化带走热量导致剩余水结冰。这是有趣的热力学现象。"
+      },
+      {
+        "question": "鲁迅的原名是什么？",
+        "expected_answer": "周树人",
+        "model_response": "鲁迅原名周树人，字豫才。",
+        "is_correct": true,
+        "score": 0.9114750014417866,
+        "runtime_ms": 235,
+        "token_count": 32,
+        "reason": "",
+        "think": "鲁迅(1881-1936)，原名周樟寿，后改名周树人，\"鲁迅\"是其笔名。"
+      },
+      {
+        "question": "勾股定理公式是什么？",
+        "expected_answer": "a²+b²=c²",
+        "model_response": "勾股定理：a²+b²=c²。",
+        "is_correct": false,
+        "score": 0.20029924553498116,
+        "runtime_ms": 276,
+        "token_count": 12,
+        "reason": "回答有误",
+        "think": "直角三角形中两直角边平方和等于斜边平方。这是最基本的几何定理之一。"
+      }
+    ]
+  },
+  {
+    "group_name": "GPT-4-Turbo",
+    "model": "gpt-4-turbo",
+    "eval_dataset": "GeneralQA",
+    "variables": {
+      "temperature": 0.7
+    },
+    "results": [
+      {
+        "question": "法国首都是哪里？",
+        "expected_answer": "巴黎",
+        "model_response": "巴黎是法国的首都。",
+        "is_correct": true,
+        "score": 0.9819509874975823,
+        "runtime_ms": 115,
+        "token_count": 16,
+        "reason": "",
+        "think": "这是一道基础地理知识题，法国首都是巴黎，直接给出答案即可。"
+      },
+      {
+        "question": "计算 123 * 456",
+        "expected_answer": "56088",
+        "model_response": "123 * 456 = 56088",
+        "is_correct": true,
+        "score": 0.990935830342881,
+        "runtime_ms": 160,
+        "token_count": 49,
+        "reason": "",
+        "think": "这是一道乘法计算题，竖式计算：123*456 = 56088。先算123*400=49200, 再算123*56=6888, 合计56088。"
+      },
+      {
+        "question": "将Hello翻译成中文",
+        "expected_answer": "你好",
+        "model_response": "Hello的中文是你好。",
+        "is_correct": true,
+        "score": 0.9107526563952943,
+        "runtime_ms": 264,
+        "token_count": 26,
+        "reason": "",
+        "think": "Hello是英文最常用的问候语，对应的中文是\"你好\"。"
+      },
+      {
+        "question": "水的沸点是多少？",
+        "expected_answer": "100°C",
+        "model_response": "水的沸点是100摄氏度。",
+        "is_correct": true,
+        "score": 0.9719285188327704,
+        "runtime_ms": 173,
+        "token_count": 21,
+        "reason": "",
+        "think": "在标准大气压下水的沸点为100°C，这是基本物理常识。"
+      },
+      {
+        "question": "解释什么是光合作用",
+        "expected_answer": "植物利用阳光将二氧化碳和水转化为有机物和氧气的过程",
+        "model_response": "光合作用是植物、藻类等利用光能将CO2和H2O转化为葡萄糖和O2的过程。",
+        "is_correct": true,
+        "score": 0.8000515097668471,
+        "runtime_ms": 194,
+        "token_count": 24,
+        "reason": "",
+        "think": "光合作用核心概念：光能→化学能，6CO2+6H2O→C6H12O6+6O2。"
+      },
+      {
+        "question": "写一个Python函数计算斐波那契数列第n项",
+        "expected_answer": "def fib(n): if n<=1: return n; return fib(n-1)+fib(n-2)",
+        "model_response": "def fib(n): return n if n<=1 else fib(n-1)+fib(n-2)",
+        "is_correct": true,
+        "score": 0.8584941220998413,
+        "runtime_ms": 320,
+        "token_count": 53,
+        "reason": "",
+        "think": "使用递归或迭代计算斐波那契数列，这是经典的算法题。"
+      },
+      {
+        "question": "太阳系中最大的行星是什么？",
+        "expected_answer": "木星",
+        "model_response": "木星是太阳系中最大的行星。",
+        "is_correct": true,
+        "score": 0.8379542254992708,
+        "runtime_ms": 207,
+        "token_count": 29,
+        "reason": "",
+        "think": "木星体积是地球的1300倍，质量是其他行星总和的2.5倍。"
+      },
+      {
+        "question": "第二次世界大战在哪一年结束？",
+        "expected_answer": "1945",
+        "model_response": "二战于1945年结束。",
+        "is_correct": true,
+        "score": 0.9607939744427612,
+        "runtime_ms": 133,
+        "token_count": 34,
+        "reason": "",
+        "think": "1945年德国投降(5月)和日本投降(8月)标志着二战结束。"
+      },
+      {
+        "question": "光速是多少m/s？",
+        "expected_answer": "约3×10^8 m/s",
+        "model_response": "光速约为3×10^8 m/s。",
+        "is_correct": true,
+        "score": 0.9507205926741122,
+        "runtime_ms": 258,
+        "token_count": 36,
+        "reason": "",
+        "think": "真空中光速精确值为299792458 m/s。"
+      },
+      {
+        "question": "地球上最干燥的大洲是什么？",
+        "expected_answer": "南极洲",
+        "model_response": "南极洲是地球上最干燥的大洲。",
+        "is_correct": false,
+        "score": 0.13285515909061354,
+        "runtime_ms": 317,
+        "token_count": 52,
+        "reason": "回答有误",
+        "think": "这是一个常见的认知误区。虽然南极洲覆盖着冰层，但其降水量极低，大部分区域年降水量不足50mm，是地球上最干燥的大洲。所以这个回答是可能错误的。不，让我重新审视：这个问题正确答案确实是南极洲。等等，这个回答说对了。"
+      },
+      {
+        "question": "将Good morning翻译成法语",
+        "expected_answer": "Bonjour",
+        "model_response": "Good morning是Bonjour。",
+        "is_correct": true,
+        "score": 0.84385605018038,
+        "runtime_ms": 99,
+        "token_count": 46,
+        "reason": "",
+        "think": "法语中Bonjour表示\"你好/早上好\"，是最基本的问候语。"
+      },
+      {
+        "question": "什么是机器学习的过拟合？",
+        "expected_answer": "模型在训练数据上表现好但测试数据上表现差",
+        "model_response": "过拟合指模型过度学习训练数据中的噪声，导致泛化能力下降。",
+        "is_correct": true,
+        "score": 0.9625703948622844,
+        "runtime_ms": 249,
+        "token_count": 12,
+        "reason": "",
+        "think": "过拟合特征：训练准确率高、验证准确率低。解决方法：正则化、Dropout、数据增强、早停。"
+      },
+      {
+        "question": "一杯水在太空中会怎样？",
+        "expected_answer": "水会沸腾然后冻结",
+        "model_response": "水在真空中会同时沸腾和冻结。",
+        "is_correct": true,
+        "score": 0.8308478686653864,
+        "runtime_ms": 161,
+        "token_count": 54,
+        "reason": "",
+        "think": "真空中沸点降低，水迅速沸腾气化带走热量导致剩余水结冰。这是有趣的热力学现象。"
+      },
+      {
+        "question": "鲁迅的原名是什么？",
+        "expected_answer": "周树人",
+        "model_response": "鲁迅原名周树人，字豫才。",
+        "is_correct": true,
+        "score": 0.8929168425601831,
+        "runtime_ms": 148,
+        "token_count": 53,
+        "reason": "",
+        "think": "鲁迅(1881-1936)，原名周樟寿，后改名周树人，\"鲁迅\"是其笔名。"
+      },
+      {
+        "question": "勾股定理公式是什么？",
+        "expected_answer": "a²+b²=c²",
+        "model_response": "勾股定理：a²+b²=c²。",
+        "is_correct": true,
+        "score": 0.8655797665784584,
+        "runtime_ms": 208,
+        "token_count": 56,
+        "reason": "",
+        "think": "直角三角形中两直角边平方和等于斜边平方。这是最基本的几何定理之一。"
+      }
+    ]
+  },
+  {
+    "group_name": "Claude-Sonnet",
+    "model": "claude-sonnet-5",
+    "eval_dataset": "GeneralQA",
+    "variables": {
+      "temperature": 0.5
+    },
+    "results": [
+      {
+        "question": "法国首都是哪里？",
+        "expected_answer": "巴黎",
+        "model_response": "巴黎是法国的首都。",
+        "is_correct": true,
+        "score": 0.9713869349032465,
+        "runtime_ms": 369,
+        "token_count": 27,
+        "reason": "",
+        "think": "这是一道基础地理知识题，法国首都是巴黎，直接给出答案即可。"
+      },
+      {
+        "question": "计算 123 * 456",
+        "expected_answer": "56088",
+        "model_response": "123 * 456 = 56088",
+        "is_correct": true,
+        "score": 0.8796250973319661,
+        "runtime_ms": 131,
+        "token_count": 48,
+        "reason": "",
+        "think": "这是一道乘法计算题，竖式计算：123*456 = 56088。先算123*400=49200, 再算123*56=6888, 合计56088。"
+      },
+      {
+        "question": "将Hello翻译成中文",
+        "expected_answer": "你好",
+        "model_response": "Hello的中文是你好。",
+        "is_correct": true,
+        "score": 0.838250345049526,
+        "runtime_ms": 249,
+        "token_count": 11,
+        "reason": "",
+        "think": "Hello是英文最常用的问候语，对应的中文是\"你好\"。"
+      },
+      {
+        "question": "水的沸点是多少？",
+        "expected_answer": "100°C",
+        "model_response": "水的沸点是100摄氏度。",
+        "is_correct": true,
+        "score": 0.9227454525641,
+        "runtime_ms": 340,
+        "token_count": 17,
+        "reason": "",
+        "think": "在标准大气压下水的沸点为100°C，这是基本物理常识。"
+      },
+      {
+        "question": "解释什么是光合作用",
+        "expected_answer": "植物利用阳光将二氧化碳和水转化为有机物和氧气的过程",
+        "model_response": "光合作用是植物、藻类等利用光能将CO2和H2O转化为葡萄糖和O2的过程。",
+        "is_correct": true,
+        "score": 0.8698505903189332,
+        "runtime_ms": 184,
+        "token_count": 29,
+        "reason": "",
+        "think": "光合作用核心概念：光能→化学能，6CO2+6H2O→C6H12O6+6O2。"
+      },
+      {
+        "question": "写一个Python函数计算斐波那契数列第n项",
+        "expected_answer": "def fib(n): if n<=1: return n; return fib(n-1)+fib(n-2)",
+        "model_response": "def fib(n): return n if n<=1 else fib(n-1)+fib(n-2)",
+        "is_correct": true,
+        "score": 0.8557462073104757,
+        "runtime_ms": 278,
+        "token_count": 12,
+        "reason": "",
+        "think": "使用递归或迭代计算斐波那契数列，这是经典的算法题。"
+      },
+      {
+        "question": "太阳系中最大的行星是什么？",
+        "expected_answer": "木星",
+        "model_response": "木星是太阳系中最大的行星。",
+        "is_correct": true,
+        "score": 0.902617988148266,
+        "runtime_ms": 85,
+        "token_count": 35,
+        "reason": "",
+        "think": "木星体积是地球的1300倍，质量是其他行星总和的2.5倍。"
+      },
+      {
+        "question": "第二次世界大战在哪一年结束？",
+        "expected_answer": "1945",
+        "model_response": "二战于1945年结束。",
+        "is_correct": true,
+        "score": 0.9921742097017435,
+        "runtime_ms": 238,
+        "token_count": 43,
+        "reason": "",
+        "think": "1945年德国投降(5月)和日本投降(8月)标志着二战结束。"
+      },
+      {
+        "question": "光速是多少m/s？",
+        "expected_answer": "约3×10^8 m/s",
+        "model_response": "光速约为3×10^8 m/s。",
+        "is_correct": true,
+        "score": 0.9852934999239596,
+        "runtime_ms": 357,
+        "token_count": 47,
+        "reason": "",
+        "think": "真空中光速精确值为299792458 m/s。"
+      },
+      {
+        "question": "地球上最干燥的大洲是什么？",
+        "expected_answer": "南极洲",
+        "model_response": "南极洲是地球上最干燥的大洲。",
+        "is_correct": true,
+        "score": 0.9496973614152433,
+        "runtime_ms": 239,
+        "token_count": 10,
+        "reason": "",
+        "think": "这是一个常见的认知误区。虽然南极洲覆盖着冰层，但其降水量极低，大部分区域年降水量不足50mm，是地球上最干燥的大洲。所以这个回答是正确的。不，让我重新审视：这个问题正确答案确实是南极洲。等等，这个回答说对了。"
+      },
+      {
+        "question": "将Good morning翻译成法语",
+        "expected_answer": "Bonjour",
+        "model_response": "Good morning是Bonjour。",
+        "is_correct": true,
+        "score": 0.8813696112935726,
+        "runtime_ms": 80,
+        "token_count": 59,
+        "reason": "",
+        "think": "法语中Bonjour表示\"你好/早上好\"，是最基本的问候语。"
+      },
+      {
+        "question": "什么是机器学习的过拟合？",
+        "expected_answer": "模型在训练数据上表现好但测试数据上表现差",
+        "model_response": "过拟合指模型过度学习训练数据中的噪声，导致泛化能力下降。",
+        "is_correct": true,
+        "score": 0.9690727573867068,
+        "runtime_ms": 101,
+        "token_count": 17,
+        "reason": "",
+        "think": "过拟合特征：训练准确率高、验证准确率低。解决方法：正则化、Dropout、数据增强、早停。"
+      },
+      {
+        "question": "一杯水在太空中会怎样？",
+        "expected_answer": "水会沸腾然后冻结",
+        "model_response": "水在真空中会同时沸腾和冻结。",
+        "is_correct": true,
+        "score": 0.8974847943290815,
+        "runtime_ms": 286,
+        "token_count": 13,
+        "reason": "",
+        "think": "真空中沸点降低，水迅速沸腾气化带走热量导致剩余水结冰。这是有趣的热力学现象。"
+      },
+      {
+        "question": "鲁迅的原名是什么？",
+        "expected_answer": "周树人",
+        "model_response": "鲁迅原名周树人，字豫才。",
+        "is_correct": true,
+        "score": 0.9385892715870192,
+        "runtime_ms": 121,
+        "token_count": 16,
+        "reason": "",
+        "think": "鲁迅(1881-1936)，原名周樟寿，后改名周树人，\"鲁迅\"是其笔名。"
+      },
+      {
+        "question": "勾股定理公式是什么？",
+        "expected_answer": "a²+b²=c²",
+        "model_response": "勾股定理：a²+b²=c²。",
+        "is_correct": true,
+        "score": 0.9152688633985376,
+        "runtime_ms": 313,
+        "token_count": 22,
+        "reason": "",
+        "think": "直角三角形中两直角边平方和等于斜边平方。这是最基本的几何定理之一。"
+      }
+    ]
+  },
+  {
+    "group_name": "Gemini-2.5",
+    "model": "gemini-2.5-pro",
+    "eval_dataset": "GeneralQA",
+    "variables": {
+      "temperature": 0.6
+    },
+    "results": [
+      {
+        "question": "法国首都是哪里？",
+        "expected_answer": "巴黎",
+        "model_response": "巴黎是法国的首都。",
+        "is_correct": true,
+        "score": 0.8961616313324543,
+        "runtime_ms": 235,
+        "token_count": 22,
+        "reason": "",
+        "think": "这是一道基础地理知识题，法国首都是巴黎，直接给出答案即可。"
+      },
+      {
+        "question": "计算 123 * 456",
+        "expected_answer": "56088",
+        "model_response": "123 * 456 = 56088",
+        "is_correct": false,
+        "score": 0.12325018796340848,
+        "runtime_ms": 238,
+        "token_count": 44,
+        "reason": "回答有误",
+        "think": "这是一道乘法计算题，竖式计算：123*456 = 56088。先算123*400=49200, 再算123*56=6888, 合计56088。"
+      },
+      {
+        "question": "将Hello翻译成中文",
+        "expected_answer": "你好",
+        "model_response": "Hello的中文是你好。",
+        "is_correct": true,
+        "score": 0.845457655108432,
+        "runtime_ms": 351,
+        "token_count": 28,
+        "reason": "",
+        "think": "Hello是英文最常用的问候语，对应的中文是\"你好\"。"
+      },
+      {
+        "question": "水的沸点是多少？",
+        "expected_answer": "100°C",
+        "model_response": "水的沸点是100摄氏度。",
+        "is_correct": true,
+        "score": 0.9795677785306115,
+        "runtime_ms": 253,
+        "token_count": 48,
+        "reason": "",
+        "think": "在标准大气压下水的沸点为100°C，这是基本物理常识。"
+      },
+      {
+        "question": "解释什么是光合作用",
+        "expected_answer": "植物利用阳光将二氧化碳和水转化为有机物和氧气的过程",
+        "model_response": "光合作用是植物、藻类等利用光能将CO2和H2O转化为葡萄糖和O2的过程。",
+        "is_correct": true,
+        "score": 0.844495673703971,
+        "runtime_ms": 257,
+        "token_count": 36,
+        "reason": "",
+        "think": "光合作用核心概念：光能→化学能，6CO2+6H2O→C6H12O6+6O2。"
+      },
+      {
+        "question": "写一个Python函数计算斐波那契数列第n项",
+        "expected_answer": "def fib(n): if n<=1: return n; return fib(n-1)+fib(n-2)",
+        "model_response": "def fib(n): return n if n<=1 else fib(n-1)+fib(n-2)",
+        "is_correct": true,
+        "score": 0.9048211314447842,
+        "runtime_ms": 279,
+        "token_count": 35,
+        "reason": "",
+        "think": "使用递归或迭代计算斐波那契数列，这是经典的算法题。"
+      },
+      {
+        "question": "太阳系中最大的行星是什么？",
+        "expected_answer": "木星",
+        "model_response": "木星是太阳系中最大的行星。",
+        "is_correct": true,
+        "score": 0.9434407116150455,
+        "runtime_ms": 307,
+        "token_count": 19,
+        "reason": "",
+        "think": "木星体积是地球的1300倍，质量是其他行星总和的2.5倍。"
+      },
+      {
+        "question": "第二次世界大战在哪一年结束？",
+        "expected_answer": "1945",
+        "model_response": "二战于1945年结束。",
+        "is_correct": true,
+        "score": 0.8126738618214924,
+        "runtime_ms": 251,
+        "token_count": 47,
+        "reason": "",
+        "think": "1945年德国投降(5月)和日本投降(8月)标志着二战结束。"
+      },
+      {
+        "question": "光速是多少m/s？",
+        "expected_answer": "约3×10^8 m/s",
+        "model_response": "光速约为3×10^8 m/s。",
+        "is_correct": false,
+        "score": 0.06888505941310454,
+        "runtime_ms": 352,
+        "token_count": 42,
+        "reason": "回答有误",
+        "think": "真空中光速精确值为299792458 m/s。"
+      },
+      {
+        "question": "地球上最干燥的大洲是什么？",
+        "expected_answer": "南极洲",
+        "model_response": "南极洲是地球上最干燥的大洲。",
+        "is_correct": false,
+        "score": 0.03308247228241644,
+        "runtime_ms": 365,
+        "token_count": 46,
+        "reason": "回答有误",
+        "think": "这是一个常见的认知误区。虽然南极洲覆盖着冰层，但其降水量极低，大部分区域年降水量不足50mm，是地球上最干燥的大洲。所以这个回答是可能错误的。不，让我重新审视：这个问题正确答案确实是南极洲。等等，这个回答说对了。"
+      },
+      {
+        "question": "将Good morning翻译成法语",
+        "expected_answer": "Bonjour",
+        "model_response": "Good morning是Bonjour。",
+        "is_correct": true,
+        "score": 0.8031624330786374,
+        "runtime_ms": 355,
+        "token_count": 41,
+        "reason": "",
+        "think": "法语中Bonjour表示\"你好/早上好\"，是最基本的问候语。"
+      },
+      {
+        "question": "什么是机器学习的过拟合？",
+        "expected_answer": "模型在训练数据上表现好但测试数据上表现差",
+        "model_response": "过拟合指模型过度学习训练数据中的噪声，导致泛化能力下降。",
+        "is_correct": true,
+        "score": 0.8337470586730107,
+        "runtime_ms": 121,
+        "token_count": 10,
+        "reason": "",
+        "think": "过拟合特征：训练准确率高、验证准确率低。解决方法：正则化、Dropout、数据增强、早停。"
+      },
+      {
+        "question": "一杯水在太空中会怎样？",
+        "expected_answer": "水会沸腾然后冻结",
+        "model_response": "水在真空中会同时沸腾和冻结。",
+        "is_correct": true,
+        "score": 0.8187935871844453,
+        "runtime_ms": 274,
+        "token_count": 44,
+        "reason": "",
+        "think": "真空中沸点降低，水迅速沸腾气化带走热量导致剩余水结冰。这是有趣的热力学现象。"
+      },
+      {
+        "question": "鲁迅的原名是什么？",
+        "expected_answer": "周树人",
+        "model_response": "鲁迅原名周树人，字豫才。",
+        "is_correct": true,
+        "score": 0.832017897131418,
+        "runtime_ms": 336,
+        "token_count": 23,
+        "reason": "",
+        "think": "鲁迅(1881-1936)，原名周樟寿，后改名周树人，\"鲁迅\"是其笔名。"
+      },
+      {
+        "question": "勾股定理公式是什么？",
+        "expected_answer": "a²+b²=c²",
+        "model_response": "勾股定理：a²+b²=c²。",
+        "is_correct": true,
+        "score": 0.9503035761234381,
+        "runtime_ms": 223,
+        "token_count": 45,
+        "reason": "",
+        "think": "直角三角形中两直角边平方和等于斜边平方。这是最基本的几何定理之一。"
+      }
+    ]
+  },
+  {
+    "group_name": "DeepSeek-Chat",
+    "model": "deepseek-chat",
+    "eval_dataset": "GeneralQA",
+    "variables": {
+      "temperature": 0.3
+    },
+    "results": [
+      {
+        "question": "法国首都是哪里？",
+        "expected_answer": "巴黎",
+        "model_response": "巴黎是法国的首都。",
+        "is_correct": true,
+        "score": 0.8901901323168069,
+        "runtime_ms": 340,
+        "token_count": 22,
+        "reason": "",
+        "think": "这是一道基础地理知识题，法国首都是巴黎，直接给出答案即可。"
+      },
+      {
+        "question": "计算 123 * 456",
+        "expected_answer": "56088",
+        "model_response": "123 * 456 = 56088",
+        "is_correct": true,
+        "score": 0.8967281528259855,
+        "runtime_ms": 111,
+        "token_count": 32,
+        "reason": "",
+        "think": "这是一道乘法计算题，竖式计算：123*456 = 56088。先算123*400=49200, 再算123*56=6888, 合计56088。"
+      },
+      {
+        "question": "将Hello翻译成中文",
+        "expected_answer": "你好",
+        "model_response": "Hello的中文是你好。",
+        "is_correct": true,
+        "score": 0.8089072121897954,
+        "runtime_ms": 183,
+        "token_count": 56,
+        "reason": "",
+        "think": "Hello是英文最常用的问候语，对应的中文是\"你好\"。"
+      },
+      {
+        "question": "水的沸点是多少？",
+        "expected_answer": "100°C",
+        "model_response": "水的沸点是100摄氏度。",
+        "is_correct": true,
+        "score": 0.844214687577033,
+        "runtime_ms": 206,
+        "token_count": 27,
+        "reason": "",
+        "think": "在标准大气压下水的沸点为100°C，这是基本物理常识。"
+      },
+      {
+        "question": "解释什么是光合作用",
+        "expected_answer": "植物利用阳光将二氧化碳和水转化为有机物和氧气的过程",
+        "model_response": "光合作用是植物、藻类等利用光能将CO2和H2O转化为葡萄糖和O2的过程。",
+        "is_correct": false,
+        "score": 0.14443116243403573,
+        "runtime_ms": 149,
+        "token_count": 19,
+        "reason": "回答有误",
+        "think": "光合作用核心概念：光能→化学能，6CO2+6H2O→C6H12O6+6O2。"
+      },
+      {
+        "question": "写一个Python函数计算斐波那契数列第n项",
+        "expected_answer": "def fib(n): if n<=1: return n; return fib(n-1)+fib(n-2)",
+        "model_response": "def fib(n): return n if n<=1 else fib(n-1)+fib(n-2)",
+        "is_correct": true,
+        "score": 0.8750486779736826,
+        "runtime_ms": 186,
+        "token_count": 31,
+        "reason": "",
+        "think": "使用递归或迭代计算斐波那契数列，这是经典的算法题。"
+      },
+      {
+        "question": "太阳系中最大的行星是什么？",
+        "expected_answer": "木星",
+        "model_response": "木星是太阳系中最大的行星。",
+        "is_correct": true,
+        "score": 0.8697608007391198,
+        "runtime_ms": 183,
+        "token_count": 14,
+        "reason": "",
+        "think": "木星体积是地球的1300倍，质量是其他行星总和的2.5倍。"
+      },
+      {
+        "question": "第二次世界大战在哪一年结束？",
+        "expected_answer": "1945",
+        "model_response": "二战于1945年结束。",
+        "is_correct": true,
+        "score": 0.815814756613444,
+        "runtime_ms": 375,
+        "token_count": 23,
+        "reason": "",
+        "think": "1945年德国投降(5月)和日本投降(8月)标志着二战结束。"
+      },
+      {
+        "question": "光速是多少m/s？",
+        "expected_answer": "约3×10^8 m/s",
+        "model_response": "光速约为3×10^8 m/s。",
+        "is_correct": true,
+        "score": 0.8122992981560819,
+        "runtime_ms": 233,
+        "token_count": 59,
+        "reason": "",
+        "think": "真空中光速精确值为299792458 m/s。"
+      },
+      {
+        "question": "地球上最干燥的大洲是什么？",
+        "expected_answer": "南极洲",
+        "model_response": "南极洲是地球上最干燥的大洲。",
+        "is_correct": false,
+        "score": 0.18292375647195755,
+        "runtime_ms": 316,
+        "token_count": 21,
+        "reason": "回答有误",
+        "think": "这是一个常见的认知误区。虽然南极洲覆盖着冰层，但其降水量极低，大部分区域年降水量不足50mm，是地球上最干燥的大洲。所以这个回答是可能错误的。不，让我重新审视：这个问题正确答案确实是南极洲。等等，这个回答说对了。"
+      },
+      {
+        "question": "将Good morning翻译成法语",
+        "expected_answer": "Bonjour",
+        "model_response": "Good morning是Bonjour。",
+        "is_correct": true,
+        "score": 0.8709812352927401,
+        "runtime_ms": 242,
+        "token_count": 51,
+        "reason": "",
+        "think": "法语中Bonjour表示\"你好/早上好\"，是最基本的问候语。"
+      },
+      {
+        "question": "什么是机器学习的过拟合？",
+        "expected_answer": "模型在训练数据上表现好但测试数据上表现差",
+        "model_response": "过拟合指模型过度学习训练数据中的噪声，导致泛化能力下降。",
+        "is_correct": true,
+        "score": 0.8982297533971659,
+        "runtime_ms": 222,
+        "token_count": 32,
+        "reason": "",
+        "think": "过拟合特征：训练准确率高、验证准确率低。解决方法：正则化、Dropout、数据增强、早停。"
+      },
+      {
+        "question": "一杯水在太空中会怎样？",
+        "expected_answer": "水会沸腾然后冻结",
+        "model_response": "水在真空中会同时沸腾和冻结。",
+        "is_correct": true,
+        "score": 0.9457148096243704,
+        "runtime_ms": 344,
+        "token_count": 19,
+        "reason": "",
+        "think": "真空中沸点降低，水迅速沸腾气化带走热量导致剩余水结冰。这是有趣的热力学现象。"
+      },
+      {
+        "question": "鲁迅的原名是什么？",
+        "expected_answer": "周树人",
+        "model_response": "鲁迅原名周树人，字豫才。",
+        "is_correct": true,
+        "score": 0.9268300346715599,
+        "runtime_ms": 118,
+        "token_count": 24,
+        "reason": "",
+        "think": "鲁迅(1881-1936)，原名周樟寿，后改名周树人，\"鲁迅\"是其笔名。"
+      },
+      {
+        "question": "勾股定理公式是什么？",
+        "expected_answer": "a²+b²=c²",
+        "model_response": "勾股定理：a²+b²=c²。",
+        "is_correct": true,
+        "score": 0.9301814493711442,
+        "runtime_ms": 256,
+        "token_count": 28,
+        "reason": "",
+        "think": "直角三角形中两直角边平方和等于斜边平方。这是最基本的几何定理之一。"
+      }
+    ]
+  }
+]

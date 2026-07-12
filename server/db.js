@@ -209,7 +209,7 @@ function seed() {
   const cat4Id = uuidv4();
   data.categories.push({
     id: cat4Id, name: 'Agent评测',
-    description: '评测AI Agent在复杂任务上的执行能力，包括工具调用、多步推理、错误恢复等维度。',
+    description: '评测AI Agent在复杂任务上的执行能力。导入含轨迹数据的评测结果将自动切换为Agent风格展示。',
     created_at: now(),
     experiments: [],
   });
@@ -217,7 +217,7 @@ function seed() {
   const agentExp = {
     id: uuidv4(), category_id: cat4Id, name: 'WebAgent 网页导航评测',
     description: '评测Agent在模拟网页环境中完成信息检索和操作任务的能力，记录每步执行轨迹。',
-    type: 'agent_evaluation', date: '2026-06-20', created_at: now(),
+    type: 'evaluation', date: '2026-06-20', created_at: now(),
     groups: [], test_cases: [],
   };
   data.categories[3].experiments.push(agentExp);

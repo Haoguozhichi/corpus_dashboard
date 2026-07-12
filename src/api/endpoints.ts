@@ -50,7 +50,7 @@ export const createResult = (groupId: string, data: { test_case_id?: string; que
   post<EvaluationResult>(`/groups/${groupId}/results`, data);
 export const uploadResultsJson = (groupId: string, file: File) =>
   uploadFile<{ imported: number }>(`/groups/${groupId}/results/upload`, file);
-export const updateResult = (id: string, data: { model_response?: string; is_correct?: boolean; score?: number; runtime_ms?: number; token_count?: number; reason?: string; annotation?: string; think?: string }) =>
+export const updateResult = (id: string, data: { model_response?: string; is_correct?: boolean; score?: number; runtime_ms?: number; token_count?: number; reason?: string; annotation?: string; think?: string; trajectory?: unknown; custom_scores?: Record<string, number> }) =>
   put<EvaluationResult>(`/results/${id}`, data);
 export const deleteResult = (id: string) => del<{ success: boolean }>(`/results/${id}`);
 

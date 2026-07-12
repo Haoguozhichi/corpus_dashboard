@@ -32,6 +32,7 @@ router.get('/:id', (req, res) => {
       const m = g.training_metrics;
       return { ...g, parameters: g.parameters || {}, metrics: m ? { ...m, loss_curve: m.loss_curve || [], accuracy_curve: m.accuracy_curve || [] } : null };
     } else if (exp.type === 'evaluation' || exp.type === 'agent_evaluation') {
+      // 统一为 evaluation 类型处理（agent_evaluation 向后兼容）
       const allResults = g.evaluation_results || [];
       const correctCount = allResults.filter((r) => r.is_correct).length;
       const totalTokens = allResults.reduce((s, r) => s + (r.token_count || 0), 0);
@@ -166,7 +167,7 @@ router.post('/:expId/import', upload.single('file'), (req, res) => {
             reason: r.reason || undefined,
             annotation: r.annotation || undefined,
             think: r.think || undefined,
-            trajectory: r.trajectory || undefined, custom_scores: r.custom_scores || undefined,
+            trajectory: r.trajectory || undefined,
           });
         }
       } else if (resultsData && typeof resultsData === 'object') {
@@ -187,7 +188,7 @@ router.post('/:expId/import', upload.single('file'), (req, res) => {
               annotation: r.annotation || undefined,
               think: r.think || undefined,
               sub_category: subCat,
-              trajectory: r.trajectory || undefined, custom_scores: r.custom_scores || undefined,
+              trajectory: r.trajectory || undefined,
             });
           }
         }

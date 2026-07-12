@@ -73,7 +73,6 @@ const ExperimentListPage: React.FC = () => {
   const typeLabel: Record<string, { color: string; text: string }> = {
     training: { color: 'green', text: '训练' },
     evaluation: { color: 'orange', text: '评测' },
-    agent_evaluation: { color: 'purple', text: 'Agent评测' },
     other: { color: 'default', text: '其他' },
   };
 
