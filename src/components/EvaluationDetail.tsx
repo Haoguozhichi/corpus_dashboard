@@ -165,7 +165,7 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   const reasonFilters = [...new Set(results.map((r) => r.reason || '').filter(Boolean))].slice(0, 50).map((v) => ({ text: v, value: v }));
 
   // 收集 JSON 导入带来的自定义字段（不在标准字段中的）
-  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'score', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'category_tag', 'trajectory', 'eval_dataset', 'experiment_id', 'name', 'model', 'parameters', 'created_at', 'key', 'sub_category', 'case_id']);
+  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'category_tag', 'trajectory', 'eval_dataset', 'experiment_id', 'name', 'model', 'parameters', 'created_at', 'key', 'sub_category', 'case_id']);
   const extraFields = [...new Set(results.flatMap((r) => Object.keys(r).filter((k) => !STD_FIELDS.has(k))))];
   const hasSubCategory = results.some((r) => r.sub_category);
   const subCatFilters = hasSubCategory ? [...new Set(results.map((r) => r.sub_category).filter(Boolean))].map((v) => ({ text: v, value: v })) : [];
@@ -248,7 +248,6 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
         v ? <Tag icon={<CheckCircleOutlined />} color="success">正确</Tag> : <Tag icon={<CloseCircleOutlined />} color="error">错误</Tag>,
     },
     { title: '原因', dataIndex: 'reason', key: 'reason', width: 130, ellipsis: true, filters: reasonFilters, onFilter: (v, r) => r.reason === v, filterSearch: true, sorter: (a, b) => (a.reason || '').localeCompare(b.reason || ''), render: (t: string) => t || '-' },
-    { title: '得分', dataIndex: 'score', key: 'score', width: 60, sorter: (a, b) => (a.score || 0) - (b.score || 0), render: (v: number) => v?.toFixed(2) ?? '-' },
     { title: '耗时', dataIndex: 'runtime_ms', key: 'runtime', width: 80, sorter: (a, b) => (a.runtime_ms || 0) - (b.runtime_ms || 0), render: (v: number) => v ? `${v}ms` : '-' },
     { title: 'Token', dataIndex: 'token_count', key: 'token', width: 70, sorter: (a, b) => (a.token_count || 0) - (b.token_count || 0), render: (v: number) => v > 0 ? v.toLocaleString() : '-' },
     {

@@ -50,12 +50,12 @@ const ExperimentListPage: React.FC = () => {
   const handleCreate = () => { setEditing(null); setModalOpen(true); };
   const handleEdit = (exp: Experiment) => { setEditing(exp); setModalOpen(true); };
 
-  const handleOk = async (values: { categoryId?: string; name: string; description: string; type: string; date: string; owner?: string }) => {
+  const handleOk = async (values: { name: string; description: string; date: string; owner?: string }) => {
     if (editing) {
       await updateExperiment(editing.id, values);
       message.success('实验已更新');
     } else {
-      await createExperiment({ ...values, categoryId: values.categoryId || categoryId! } as { categoryId: string; name: string; description?: string; type: string; date: string; owner?: string });
+      await createExperiment(values);
       message.success('实验已创建');
     }
     setModalOpen(false);

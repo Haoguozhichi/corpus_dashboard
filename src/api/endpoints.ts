@@ -13,9 +13,9 @@ export const fetchExperiments = (categoryId?: string) => {
   return get<Experiment[]>(`/experiments${query}`);
 };
 export const fetchExperimentDetail = (id: string) => get<Experiment>(`/experiments/${id}`);
-export const createExperiment = (data: { categoryId: string; name: string; description?: string; type: string; date: string; owner?: string }) =>
+export const createExperiment = (data: { name: string; description?: string; date: string; owner?: string }) =>
   post<Experiment>('/experiments', data);
-export const updateExperiment = (id: string, data: { name?: string; description?: string; type?: string; date?: string; owner?: string; ai_report?: string; conclusion?: string }) =>
+export const updateExperiment = (id: string, data: { name?: string; description?: string; date?: string; owner?: string; ai_report?: string; conclusion?: string }) =>
   put<Experiment>(`/experiments/${id}`, data);
 export const deleteExperiment = (id: string) => del<{ success: boolean }>(`/experiments/${id}`);
 export const importExperimentJson = (experimentId: string, file: File) =>

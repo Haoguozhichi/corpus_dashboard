@@ -62,7 +62,7 @@ For every column found in the data, assign exactly one role from this table:
 | answer, 标准答案, expected, gold, ground_truth | `results[].expected_answer` | string | |
 | response, 模型回答, output, pred, prediction | `results[].model_response` | string | |
 | correct, 是否正确, is_correct, pass, 正确 | `results[].is_correct` | boolean | Convert: 1/0→true/false, "yes"/"no"→true/false, "对"/"错"→true/false |
-| score, 得分, 评分 | `results[].score` | number | 0~1 range |
+| score, 得分, 评分 | `results[].score` | number(自定义) | 可选，有则显示为列，无则不显示 |
 | runtime, 耗时, latency, time, time_ms, cost | `results[].runtime_ms` | integer | milliseconds |
 | tokens, token, token_count | `results[].token_count` | integer | |
 | reason, 原因, 错误原因, error_reason | `results[].reason` | string | |
@@ -95,15 +95,20 @@ If any result has a `trajectory` field, ensure each step has:
   "step": 1,
   "think": "详细的推理链...",    // optional but recommended
   "thought": "得出的结论",        // brief conclusion from thinking
-  "action": "执行的动作",
+  "action": "执行的动作",         // what the agent DID (e.g., "搜索北京天气", "点击登录按钮")
   "observation": "观察到的结果",
-  "tool": "使用的工具名",        // optional
-  "tool_input": "工具输入",      // optional
-  "tool_output": "工具输出"      // optional
+  "tool": "使用的工具名",        // which TOOL was called (e.g., "web_search", "click", "api_call")
+  "tool_input": "工具输入",      // optional - parameters passed to the tool
+  "tool_output": "工具输出"      // optional - raw output from the tool
 }
 ```
 
-**Important**: `think` is the chain-of-thought (can be long), `thought` is the conclusion (should be short). Both are per-step, not per-result.
+**Important distinctions**:
+- `think` = detailed chain-of-thought reasoning (can be long), per-step
+- `thought` = brief conclusion after thinking (should be short), per-step
+- `action` = **what the agent did** in this step (e.g., "搜索关键词", "打开链接", "调用API查询")
+- `tool` = **which specific tool was used** for the action (e.g., "web_search", "api_call", "click")
+- `action` and `tool` are NOT the same: one step might use the `web_search` tool to perform the action "搜索北京天气"
 
 ### 6. Filter Noise Columns
 
