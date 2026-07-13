@@ -86,7 +86,7 @@ const ComparePage: React.FC = () => {
         <ResponsiveContainer width="100%" height={350}>
           <BarChart data={metricsBarData}>
             <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="metric" /><YAxis domain={[0, 100]} /><Tooltip /><Legend />
-            {groups.map((g, i) => <Bar key={g.id} dataKey={g.name} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} />)}
+            {groups.map((g, i) => <Bar key={g.id} dataKey={g.name} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} maxBarSize={60} />)}
           </BarChart>
         </ResponsiveContainer>
 
@@ -243,7 +243,7 @@ const ComparePage: React.FC = () => {
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={accData}>
           <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="metric" /><YAxis domain={[0, 100]} /><Tooltip /><Legend />
-          {groups.map((g, i) => <Bar key={g.id} dataKey={g.name} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} />)}
+          {groups.map((g, i) => <Bar key={g.id} dataKey={g.name} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} maxBarSize={60} />)}
         </BarChart>
       </ResponsiveContainer>
 
@@ -253,7 +253,7 @@ const ComparePage: React.FC = () => {
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={[{ metric: '平均工具调用', ...Object.fromEntries(toolData.map((t: any) => [t.name, +t.avgTools])) }]}>
               <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="metric" /><YAxis /><Tooltip /><Legend />
-              {groups.map((g, i) => <Bar key={g.id} dataKey={g.name} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} />)}
+              {groups.map((g, i) => <Bar key={g.id} dataKey={g.name} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} maxBarSize={60} />)}
             </BarChart>
           </ResponsiveContainer>
         </>
