@@ -1,7 +1,7 @@
 // ========== 实验数据平台 v2 - 类型定义 ==========
 
 /** 实验类型 */
-export type ExperimentType = 'evaluation' | 'other';
+export type ExperimentType = 'evaluation';
 
 /** 实验变量（键值对） */
 export interface ExperimentParameters {

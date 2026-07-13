@@ -1,17 +1,20 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, DatePicker } from 'antd';
+import { Modal, Form, Input, Select, DatePicker } from 'antd';
 import type { Experiment } from '../types';
 import dayjs from 'dayjs';
 
 interface Props {
   open: boolean;
   editing?: Experiment | null;
-  onOk: (values: { name: string; description: string; date: string; owner?: string }) => void;
+  categoryId?: string;
+  categories?: { id: string; name: string }[];
+  onOk: (values: { categoryId?: string; name: string; description: string; date: string; owner?: string }) => void;
   onCancel: () => void;
 }
 
-const ExperimentFormModal: React.FC<Props> = ({ open, editing, onOk, onCancel }) => {
+const ExperimentFormModal: React.FC<Props> = ({ open, editing, categoryId, categories, onOk, onCancel }) => {
   const [form] = Form.useForm();
+  const needCategorySelect = !categoryId && !editing;
 
   useEffect(() => {
     if (open) {
@@ -27,6 +30,7 @@ const ExperimentFormModal: React.FC<Props> = ({ open, editing, onOk, onCancel })
   const handleOk = async () => {
     const values = await form.validateFields();
     onOk({
+      categoryId: needCategorySelect ? values.category_id : (categoryId || editing?.category_id),
       name: values.name, description: values.description,
       date: values.date.format('YYYY-MM-DD'), owner: values.owner,
     });
@@ -42,6 +46,11 @@ const ExperimentFormModal: React.FC<Props> = ({ open, editing, onOk, onCancel })
         <Form.Item name="description" label="描述">
           <Input.TextArea rows={2} />
         </Form.Item>
+        {needCategorySelect && (
+          <Form.Item name="category_id" label="实验类别" rules={[{ required: true, message: '请选择实验类别' }]}>
+            <Select placeholder="选择实验类别..." options={categories?.map((c) => ({ label: c.name, value: c.id })) || []} showSearch optionFilterProp="label" />
+          </Form.Item>
+        )}
         <Form.Item name="owner" label="实验负责人">
           <Input placeholder="例如：张三" />
         </Form.Item>

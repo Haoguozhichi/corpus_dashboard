@@ -50,8 +50,8 @@ const HomePage: React.FC = () => {
   };
   useEffect(() => { load(); }, []);
 
-  const handleCreateExperiment = async (values: { name: string; description: string; date: string; owner?: string }) => {
-    await createExperiment(values);
+  const handleCreateExperiment = async (values: { categoryId?: string; name: string; description: string; date: string; owner?: string }) => {
+    await createExperiment(values as { categoryId: string; name: string; description?: string; date: string; owner?: string });
     message.success('实验已创建');
     setCreateOpen(false);
     load();
@@ -142,6 +142,7 @@ const HomePage: React.FC = () => {
           <Col>
             <Space>
               <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>创建实验</Button>
+              <Button icon={<ArrowRightOutlined />} onClick={() => navigate('/categories')}>实验类别管理</Button>
             </Space>
           </Col>
         </Row>
@@ -201,6 +202,7 @@ const HomePage: React.FC = () => {
 
       <ExperimentFormModal
         open={createOpen}
+        categories={categories.map((c) => ({ id: c.id, name: c.name }))}
         onOk={handleCreateExperiment}
         onCancel={() => setCreateOpen(false)}
       />

@@ -72,15 +72,11 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { name, description, date, owner } = req.body;
-  if (!name || !date) return res.status(400).json({ error: 'name, date 为必填' });
-  // 实验默认放在第一个类别下，或创建默认类别
-  let cat = data.categories[0];
-  if (!cat) {
-    cat = { id: uuidv4(), name: '默认类别', description: '', experiments: [], created_at: new Date().toISOString() };
-    data.categories.push(cat);
-  }
-  const exp = { id: uuidv4(), category_id: cat.id, name, description: description || '', type: 'evaluation', date, owner: owner || '', created_at: new Date().toISOString(), groups: [], test_cases: [] };
+  const { categoryId, name, description, date, owner } = req.body;
+  if (!categoryId || !name || !date) return res.status(400).json({ error: 'categoryId, name, date 为必填' });
+  const cat = findCat(categoryId);
+  if (!cat) return res.status(404).json({ error: '类别不存在' });
+  const exp = { id: uuidv4(), category_id: categoryId, name, description: description || '', type: 'evaluation', date, owner: owner || '', created_at: new Date().toISOString(), groups: [], test_cases: [] };
   cat.experiments.push(exp);
   save();
   res.status(201).json({ id: exp.id, category_id: exp.category_id, name: exp.name, description: exp.description, type: exp.type, date: exp.date, owner: exp.owner, created_at: exp.created_at, groupCount: 0 });
