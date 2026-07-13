@@ -1,6 +1,6 @@
 # 📊 实验数据展示平台
 
-一个用于管理和对比 AI 实验结果的 Web 平台，支持**训练实验**、**评测实验**和 **Agent 评测**三种实验类型。
+一个用于管理和对比 AI 实验结果的 Web 平台，支持**评测实验**和 **Agent 评测**（通过轨迹数据自动识别）。
 
 ## 技术栈
 
@@ -12,7 +12,7 @@
 | 路由 | React Router 7 |
 | 构建工具 | Vite 8 |
 | 后端 | Express 4 |
-| 数据存储 | JSON 文件 (`server/data.json`) |
+| 数据存储 | SQLite (`server/data.sqlite`, sql.js WASM) |
 
 ## 快速启动
 
@@ -32,8 +32,8 @@ npm run dev
 corpus_dashboard/
 ├── server/
 │   ├── index.js                 # Express 入口 (port 3001)
-│   ├── db.js                    # JSON 数据库 + Seed 数据
-│   ├── data.json                # 持久化数据（删除后重启自动重建 seed）
+│   ├── db.js                    # SQLite 数据库 + Seed 数据
+│   ├── data.sqlite              # 持久化数据库（删除后重启自动重建 seed）
 │   └── routes/
 │       ├── categories.js        # 实验类别 API
 │       ├── experiments.js       # 实验 API
@@ -76,29 +76,23 @@ corpus_dashboard/
 ```
 实验类别 (Category)
   └── 实验 (Experiment) × N
-        ├── 类型: training | evaluation | agent_evaluation | other
+        ├── 类型: evaluation
         │
         ├── 实验组 (ExperimentGroup) × N
-        │     ├── training_metrics — 仅 training 类型
-        │     └── evaluation_results × N — evaluation / agent_evaluation 类型
+        │     └── evaluation_results × N — evaluation 类型
         │
-        └── 测试用例 (TestCase) × N — evaluation / agent_evaluation 类型
+        └── 测试用例 (TestCase) × N — evaluation 类型
 ```
 
-### 三种实验类型
+### 实验类型（统一为 evaluation）
 
-| 特性 | 训练实验 | 评测实验 | Agent评测 |
-|------|---------|---------|-----------|
-| 类型值 | `training` | `evaluation` | `agent_evaluation` |
-| 典型场景 | 模型训练对比 | NL2SQL、NER 评测 | WebAgent、工具调用评测 |
-| 核心数据 | 准确率/精确率/召回率/F1/Loss曲线 | 题目→标准答案→模型回答→正确/错误 | 题目→正确率→轨迹→工具调用统计 |
-| 详情表格列 | — | 题目、标准答案、模型回答、结果、原因、得分、耗时、Token、AI评分、标注、Think | 题目、正确答案、Agent回答、结果、原因、Token、耗时、步骤、工具、标注 |
-| 可展开轨迹 | 否 | 否 | 是（弹窗展示） |
-| 多维评分 | 自定义指标 | 否 | 是 |
-| AI 分析 | — | 错误诊断/自动标注/聚类 | 错误诊断/自动标注/聚类/轨迹诊断 |
-| 自定义字段 | 参数展开为列 | JSON导入多余字段自动生成列 | JSON导入多余字段自动生成列 |
-| 实验负责人 | ✅ | ✅ | ✅ |
-| 评测集字段 | — | ✅ | ✅ |
+所有实验类型统一为 `evaluation`。平台根据数据特征自动识别展示模式：
+
+| 数据特征 | 展示模式 |
+|---------|---------|
+| 含 `trajectory` 字段 | Agent 风格（轨迹时间线 + 工具调用统计） |
+| 含 `training_metrics` | 训练风格（指标对比 + Loss/Accuracy 曲线） |
+| 无特殊字段 | 标准评测风格（题目→答案→正确性） |
 
 ### 核心类型定义
 
@@ -359,9 +353,9 @@ interface TrainingMetrics {
 
 ## 数据重置
 
-删除数据文件后重启即可恢复 seed 数据：
+删除数据库文件后重启即可恢复 seed 数据：
 
 ```bash
-rm server/data.json
+rm server/data.sqlite
 npm run dev
 ```

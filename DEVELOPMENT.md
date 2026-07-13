@@ -29,7 +29,7 @@ AI 研发团队在日常工作中会产生大量实验结果数据：模型训�
 | 路由 | React Router 7 | SPA 路由管理 |
 | 构建 | Vite 8 | 秒级热更新 |
 | 后端 | Express 4 | 轻量，适合本地/小团队 |
-| 存储 | JSON 文件 | 零依赖，可备份 |
+| 存储 | SQLite (sql.js WASM) | 零原生依赖，原子写入，Windows ARM64 兼容 |
 | LLM 集成 | OpenAI-compatible API | 可接入 DeepSeek / 本地模型 |
 
 ---
@@ -59,11 +59,11 @@ graph TB
     end
     
     subgraph Storage["存储"]
-        JSON["server/data.json"]
+        SQLite["server/data.sqlite"]
     end
     
     Browser -->|"/api (Vite Proxy)"| Backend
-    Backend -->|"file I/O"| Storage
+    Backend -->|"sql.js WASM"| Storage
 ```
 
 ### 3.2 数据模型 ER 图
@@ -85,17 +85,20 @@ erDiagram
         string id PK
         string category_id FK
         string name
-        string type "evaluation"
+        string type "evaluation (legacy: training, agent_evaluation)"
         string date
         string owner
         string conclusion
+        string ai_report
     }
     ExperimentGroup {
         string id PK
         string experiment_id FK
         string name
         string model
+        string eval_dataset
         json parameters
+        json error_clusters
         json subCategories
     }
     TestCase {
@@ -110,11 +113,18 @@ erDiagram
         string test_case_id FK
         string model_response
         boolean is_correct
+        float score
         integer runtime_ms
         integer token_count
         string reason
+        string annotation
+        string think
         json trajectory
         json ai_scores
+        json custom_scores
+        string traj_diagnosis
+        string sub_category
+        json extra_fields "自定义字段"
     }
 ```
 
@@ -125,31 +135,31 @@ sequenceDiagram
     actor User
     participant Frontend as 前端
     participant Backend as 后端
-    participant Storage as data.json
+    participant Storage as data.sqlite
     
     User->>Frontend: 创建实验
     Frontend->>Backend: POST /experiments
-    Backend->>Storage: write JSON
+    Backend->>Storage: SQL INSERT
     Backend-->>Frontend: 返回实验
     
     User->>Frontend: 一键导入 JSON
     Frontend->>Backend: POST /:id/import
     Backend->>Backend: parse JSON
     Backend->>Backend: create groups + results
-    Backend->>Storage: save
+    Backend->>Storage: SQL INSERT (transaction)
     Backend-->>Frontend: N groups, K results
     Frontend-->>User: 刷新仪表盘
     
     User->>Frontend: 查看实验组详情
     Frontend->>Backend: GET /:id
-    Backend->>Storage: read
+    Backend->>Storage: SQL SELECT
     Backend-->>Frontend: experiment + groups
     
     User->>Frontend: AI 错误诊断
     Frontend->>Backend: POST /llm/diagnose-error
     Backend->>Backend: call LLM API
     Backend->>Backend: save reason to result
-    Backend->>Storage: write
+    Backend->>Storage: SQL UPDATE + atomic write
     Backend-->>Frontend: 诊断结果
 ```
 
@@ -160,7 +170,7 @@ sequenceDiagram
     actor User
     participant Frontend as 前端 BulkImport
     participant Backend as 后端 /import
-    participant Storage as data.json
+    participant Storage as data.sqlite
     
     User->>Frontend: 上传 JSON 文件
     Frontend->>Backend: POST /:expId/import (multipart)
@@ -185,11 +195,11 @@ sequenceDiagram
         end
     end
     
-    Backend->>Storage: save()
+    Backend->>Storage: SQL INSERT (transaction)
     Backend-->>Frontend: { groupsCreated, resultsCreated }
     Frontend-->>User: 导入完成提示
 
----
+```
 
 ## 四、页面功能说明
 

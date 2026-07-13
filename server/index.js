@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const { init } = require('./db');
 
 const categoriesRouter = require('./routes/categories');
 const experimentsRouter = require('./routes/experiments');
@@ -31,6 +32,12 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 实验数据平台后端已启动: http://localhost:${PORT}`);
+// 初始化数据库（加载 SQLite WASM → 加载/迁移数据）→ 启动服务
+init().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 实验数据平台后端已启动: http://localhost:${PORT}`);
+  });
+}).catch((err) => {
+  console.error('❌ 数据库初始化失败:', err);
+  process.exit(1);
 });

@@ -27,16 +27,52 @@ const ComparePage: React.FC = () => {
     if (groupIds.length >= 2) setCompareGroups(groupIds);
   }, [searchParams.get('groups'), setCompareGroups]);
 
+  // 提前计算派生值（供下方 useMemo/useState 使用）
+  const groups = useMemo(() => {
+    if (!experimentDetail) return [];
+    return groupIds.map((id) => experimentDetail.groups?.find((g) => g.id === id)).filter(Boolean) as ExperimentGroup[];
+  }, [experimentDetail, groupIds]);
+
+  const isTraining = experimentDetail?.type === 'training';
+  const isAgent = experimentDetail?.type === 'agent_evaluation';
+
+  // ====== 评测对比 state（所有 hooks 必须在条件返回前） ======
+  const [llmResult, setLlmResult] = useState('');
+  const [llmOpen, setLlmOpen] = useState(false);
+  const [llmLoading, setLlmLoading] = useState(false);
+  const [evalFilter, setEvalFilter] = useState('');
+  const [resultFilter, setResultFilter] = useState<string | null>(null);
+
+  const allMetrics = useMemo(() => {
+    const metrics: { label: string; value: string }[] = [
+      { label: '准确率', value: 'accuracy' },
+    ];
+    groups.forEach((g) => (g.subCategories || []).forEach((s) => {
+      if (!metrics.find((m) => m.value === `sub_${s.name}`))
+        metrics.push({ label: `${s.name}准确率`, value: `sub_${s.name}` });
+    }));
+    metrics.push({ label: '平均耗时(ms)', value: 'avg_runtime' });
+    metrics.push({ label: '总Token', value: 'total_tokens' });
+    if (isAgent) metrics.push({ label: '平均工具调用', value: 'avg_tools' });
+    const allParamKeys = [...new Set(groups.flatMap((g) => Object.keys(g.parameters || {})))];
+    allParamKeys.forEach((k) => {
+      const isNumeric = groups.some((g) => typeof g.parameters?.[k] === 'number');
+      if (isNumeric) metrics.push({ label: `变量: ${k}`, value: `param_${k}` });
+    });
+    return metrics;
+  }, [groups, isAgent]);
+
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>(['accuracy']);
+
+  // ====== 条件返回（所有 hooks 必须在此之前） ======
   if (!experimentDetail) return <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />;
 
   const experiment = experimentDetail;
-  const groups = groupIds.map((id) => experiment?.groups?.find((g) => g.id === id)).filter(Boolean) as ExperimentGroup[];
 
   if (!experiment || groups.length < 2) {
     return <Empty description="请从仪表盘选择至少两个实验组" style={{ marginTop: 80 }} />;
   }
 
-  const isTraining = experiment.type === 'training';
   const names = groups.map((g) => g.name);
 
   // ====== Training 对比 ======
@@ -114,10 +150,6 @@ const ComparePage: React.FC = () => {
   }
 
   // ====== 评测 / Agent 对比 ======
-  const [llmResult, setLlmResult] = useState('');
-  const [llmOpen, setLlmOpen] = useState(false);
-  const [llmLoading, setLlmLoading] = useState(false);
-
   const handleCompareAnalysis = async () => {
     setLlmOpen(true); setLlmLoading(true); setLlmResult('分析中...');
     const parts: string[] = [];
@@ -143,10 +175,6 @@ const ComparePage: React.FC = () => {
     setLlmResult(parts.join('\n---\n'));
     setLlmLoading(false);
   };
-
-  const isAgent = experiment.type === 'agent_evaluation';
-  const [evalFilter, setEvalFilter] = useState('');
-  const [resultFilter, setResultFilter] = useState<string | null>(null); // 'correct' | 'incorrect' | null
 
   const allResults = groups.map((g) => g.results || []);
   const allIds = [...new Set(allResults.flat().map((r) => r.test_case_id))];
@@ -201,30 +229,6 @@ const ComparePage: React.FC = () => {
     ]),
   ];
 
-  // 收集所有可用指标（包括数值型变量）
-  const allMetrics = useMemo(() => {
-    const metrics: { label: string; value: string }[] = [
-      { label: '准确率', value: 'accuracy' },
-    ];
-    // 子分组准确率
-    groups.forEach((g) => (g.subCategories || []).forEach((s) => {
-      if (!metrics.find((m) => m.value === `sub_${s.name}`))
-        metrics.push({ label: `${s.name}准确率`, value: `sub_${s.name}` });
-    }));
-    metrics.push({ label: '平均耗时(ms)', value: 'avg_runtime' });
-    metrics.push({ label: '总Token', value: 'total_tokens' });
-    if (isAgent) metrics.push({ label: '平均工具调用', value: 'avg_tools' });
-    // 数值型变量
-    const allParamKeys = [...new Set(groups.flatMap((g) => Object.keys(g.parameters || {})))];
-    allParamKeys.forEach((k) => {
-      const isNumeric = groups.some((g) => typeof g.parameters?.[k] === 'number');
-      if (isNumeric) metrics.push({ label: `变量: ${k}`, value: `param_${k}` });
-    });
-    return metrics;
-  }, [groups, isAgent]);
-
-  const [selectedMetrics, setSelectedMetrics] = useState<string[]>(['accuracy']);
-
   // 获取某指标的组名→值映射
   const getMetricValue = (g: ExperimentGroup, key: string): number => {
     switch (key) {
@@ -255,12 +259,6 @@ const ComparePage: React.FC = () => {
         return 0;
     }
   };
-
-  // 合并图表数据：每行={group, 准确率, 平均耗时, ...}，每个选中的metric作为列
-  const combinedChartData = groups.map((g) => ({
-    name: g.name,
-    ...Object.fromEntries(selectedMetrics.map((m) => [m, getMetricValue(g, m)])),
-  }));
 
   // 工具调用对比 (Agent only)
   const toolData = isAgent ? groups.map((g) => {

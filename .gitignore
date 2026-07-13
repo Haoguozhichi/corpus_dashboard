@@ -1,5 +1,7 @@
 node_modules/
 dist/
 server/data.json
+server/data.sqlite
+server/data.backup.json
 *.log
 .DS_Store
