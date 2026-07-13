@@ -69,7 +69,7 @@ const AppLayout: React.FC = () => {
   const backBtn = useMemo(() => {
     if (isCompare && selectedExperiment) return { label: '返回仪表盘', path: `/experiment/${selectedExperiment.id}` };
     if (isDetail && selectedExperiment) return { label: '返回仪表盘', path: `/experiment/${selectedExperiment.id}` };
-    if (isExperiment && selectedCategory) return { label: '返回实验列表', path: `/category/${selectedCategory.id}` };
+    if (isExperiment) return { label: '返回首页', path: '/' };
     if (isCategory) return { label: '返回首页', path: '/' };
     if (isCategories) return { label: '返回首页', path: '/' };
     return null;
