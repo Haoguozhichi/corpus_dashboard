@@ -1,0 +1,510 @@
+[
+  {
+    "group_name": "GPT-4o",
+    "model": "gpt-4o",
+    "eval_dataset": "GeneralQA",
+    "results": [
+      {
+        "question": "法国首都是哪里？",
+        "expected_answer": "巴黎",
+        "model_response": "巴黎是法国的首都。",
+        "is_correct": true,
+        "runtime_ms": 108,
+        "token_count": 45
+      },
+      {
+        "question": "计算123*456",
+        "expected_answer": "56088",
+        "model_response": "123*456=56088",
+        "is_correct": true,
+        "runtime_ms": 118,
+        "token_count": 53
+      },
+      {
+        "question": "将Hello翻译成中文",
+        "expected_answer": "你好",
+        "model_response": "你好。",
+        "is_correct": true,
+        "runtime_ms": 267,
+        "token_count": 55
+      },
+      {
+        "question": "水的沸点是多少？",
+        "expected_answer": "100°C",
+        "model_response": "100摄氏度。",
+        "is_correct": true,
+        "runtime_ms": 190,
+        "token_count": 33
+      },
+      {
+        "question": "解释光合作用",
+        "expected_answer": "光能转化过程",
+        "model_response": "植物利用光能将CO2转化为有机物。",
+        "is_correct": true,
+        "runtime_ms": 169,
+        "token_count": 33
+      },
+      {
+        "question": "Python斐波那契函数",
+        "expected_answer": "递归函数",
+        "model_response": "def fib(n):return n if n<=1 else fib(n-1)+fib(n-2)",
+        "is_correct": true,
+        "runtime_ms": 148,
+        "token_count": 27
+      },
+      {
+        "question": "最大行星",
+        "expected_answer": "木星",
+        "model_response": "木星是最大的行星。",
+        "is_correct": true,
+        "runtime_ms": 361,
+        "token_count": 22
+      },
+      {
+        "question": "二战结束年份",
+        "expected_answer": "1945",
+        "model_response": "1945年。",
+        "is_correct": true,
+        "runtime_ms": 284,
+        "token_count": 15
+      },
+      {
+        "question": "光速",
+        "expected_answer": "约3e8 m/s",
+        "model_response": "约3e8 m/s。",
+        "is_correct": true,
+        "runtime_ms": 167,
+        "token_count": 27
+      },
+      {
+        "question": "最干燥大洲",
+        "expected_answer": "南极洲",
+        "model_response": "南极洲。",
+        "is_correct": true,
+        "runtime_ms": 373,
+        "token_count": 38
+      },
+      {
+        "question": "鲁迅原名",
+        "expected_answer": "周树人",
+        "model_response": "周树人。",
+        "is_correct": true,
+        "runtime_ms": 141,
+        "token_count": 48
+      },
+      {
+        "question": "Good morning翻法语",
+        "expected_answer": "Bonjour",
+        "model_response": "Bonjour。",
+        "is_correct": true,
+        "runtime_ms": 188,
+        "token_count": 52
+      },
+      {
+        "question": "过拟合是什么",
+        "expected_answer": "泛化能力差",
+        "model_response": "模型过度学习训练数据噪声导致泛化差。",
+        "is_correct": true,
+        "runtime_ms": 112,
+        "token_count": 20
+      },
+      {
+        "question": "水在太空中",
+        "expected_answer": "沸腾后冻结",
+        "model_response": "会同时沸腾和冻结。",
+        "is_correct": true,
+        "runtime_ms": 218,
+        "token_count": 32
+      },
+      {
+        "question": "勾股定理",
+        "expected_answer": "a^2+b^2=c^2",
+        "model_response": "a^2+b^2=c^2。",
+        "is_correct": true,
+        "runtime_ms": 230,
+        "token_count": 11
+      }
+    ]
+  },
+  {
+    "group_name": "Claude-Sonnet",
+    "model": "claude-sonnet-5",
+    "eval_dataset": "GeneralQA",
+    "results": [
+      {
+        "question": "法国首都是哪里？",
+        "expected_answer": "巴黎",
+        "model_response": "巴黎是法国的首都。",
+        "is_correct": true,
+        "runtime_ms": 293,
+        "token_count": 10
+      },
+      {
+        "question": "计算123*456",
+        "expected_answer": "56088",
+        "model_response": "123*456=56088",
+        "is_correct": false,
+        "runtime_ms": 203,
+        "token_count": 44
+      },
+      {
+        "question": "将Hello翻译成中文",
+        "expected_answer": "你好",
+        "model_response": "你好。",
+        "is_correct": true,
+        "runtime_ms": 152,
+        "token_count": 20
+      },
+      {
+        "question": "水的沸点是多少？",
+        "expected_answer": "100°C",
+        "model_response": "100摄氏度。",
+        "is_correct": true,
+        "runtime_ms": 295,
+        "token_count": 37
+      },
+      {
+        "question": "解释光合作用",
+        "expected_answer": "光能转化过程",
+        "model_response": "植物利用光能将CO2转化为有机物。",
+        "is_correct": true,
+        "runtime_ms": 211,
+        "token_count": 51
+      },
+      {
+        "question": "Python斐波那契函数",
+        "expected_answer": "递归函数",
+        "model_response": "def fib(n):return n if n<=1 else fib(n-1)+fib(n-2)",
+        "is_correct": true,
+        "runtime_ms": 377,
+        "token_count": 23
+      },
+      {
+        "question": "最大行星",
+        "expected_answer": "木星",
+        "model_response": "木星是最大的行星。",
+        "is_correct": true,
+        "runtime_ms": 88,
+        "token_count": 53
+      },
+      {
+        "question": "二战结束年份",
+        "expected_answer": "1945",
+        "model_response": "1945年。",
+        "is_correct": true,
+        "runtime_ms": 159,
+        "token_count": 32
+      },
+      {
+        "question": "光速",
+        "expected_answer": "约3e8 m/s",
+        "model_response": "约3e8 m/s。",
+        "is_correct": true,
+        "runtime_ms": 349,
+        "token_count": 45
+      },
+      {
+        "question": "最干燥大洲",
+        "expected_answer": "南极洲",
+        "model_response": "南极洲。",
+        "is_correct": true,
+        "runtime_ms": 81,
+        "token_count": 59
+      },
+      {
+        "question": "鲁迅原名",
+        "expected_answer": "周树人",
+        "model_response": "周树人。",
+        "is_correct": true,
+        "runtime_ms": 184,
+        "token_count": 10
+      },
+      {
+        "question": "Good morning翻法语",
+        "expected_answer": "Bonjour",
+        "model_response": "Bonjour。",
+        "is_correct": true,
+        "runtime_ms": 270,
+        "token_count": 35
+      },
+      {
+        "question": "过拟合是什么",
+        "expected_answer": "泛化能力差",
+        "model_response": "模型过度学习训练数据噪声导致泛化差。",
+        "is_correct": true,
+        "runtime_ms": 187,
+        "token_count": 21
+      },
+      {
+        "question": "水在太空中",
+        "expected_answer": "沸腾后冻结",
+        "model_response": "会同时沸腾和冻结。",
+        "is_correct": true,
+        "runtime_ms": 211,
+        "token_count": 34
+      },
+      {
+        "question": "勾股定理",
+        "expected_answer": "a^2+b^2=c^2",
+        "model_response": "a^2+b^2=c^2。",
+        "is_correct": true,
+        "runtime_ms": 106,
+        "token_count": 51
+      }
+    ]
+  },
+  {
+    "group_name": "Gemini-2.5",
+    "model": "gemini-2.5-pro",
+    "eval_dataset": "GeneralQA",
+    "results": [
+      {
+        "question": "法国首都是哪里？",
+        "expected_answer": "巴黎",
+        "model_response": "巴黎是法国的首都。",
+        "is_correct": true,
+        "runtime_ms": 160,
+        "token_count": 18
+      },
+      {
+        "question": "计算123*456",
+        "expected_answer": "56088",
+        "model_response": "123*456=56088",
+        "is_correct": true,
+        "runtime_ms": 101,
+        "token_count": 49
+      },
+      {
+        "question": "将Hello翻译成中文",
+        "expected_answer": "你好",
+        "model_response": "你好。",
+        "is_correct": true,
+        "runtime_ms": 266,
+        "token_count": 25
+      },
+      {
+        "question": "水的沸点是多少？",
+        "expected_answer": "100°C",
+        "model_response": "100摄氏度。",
+        "is_correct": true,
+        "runtime_ms": 106,
+        "token_count": 35
+      },
+      {
+        "question": "解释光合作用",
+        "expected_answer": "光能转化过程",
+        "model_response": "植物利用光能将CO2转化为有机物。",
+        "is_correct": true,
+        "runtime_ms": 127,
+        "token_count": 32
+      },
+      {
+        "question": "Python斐波那契函数",
+        "expected_answer": "递归函数",
+        "model_response": "def fib(n):return n if n<=1 else fib(n-1)+fib(n-2)",
+        "is_correct": true,
+        "runtime_ms": 338,
+        "token_count": 17
+      },
+      {
+        "question": "最大行星",
+        "expected_answer": "木星",
+        "model_response": "木星是最大的行星。",
+        "is_correct": false,
+        "runtime_ms": 87,
+        "token_count": 57
+      },
+      {
+        "question": "二战结束年份",
+        "expected_answer": "1945",
+        "model_response": "1945年。",
+        "is_correct": true,
+        "runtime_ms": 313,
+        "token_count": 22
+      },
+      {
+        "question": "光速",
+        "expected_answer": "约3e8 m/s",
+        "model_response": "约3e8 m/s。",
+        "is_correct": true,
+        "runtime_ms": 283,
+        "token_count": 17
+      },
+      {
+        "question": "最干燥大洲",
+        "expected_answer": "南极洲",
+        "model_response": "南极洲。",
+        "is_correct": true,
+        "runtime_ms": 332,
+        "token_count": 24
+      },
+      {
+        "question": "鲁迅原名",
+        "expected_answer": "周树人",
+        "model_response": "周树人。",
+        "is_correct": true,
+        "runtime_ms": 175,
+        "token_count": 24
+      },
+      {
+        "question": "Good morning翻法语",
+        "expected_answer": "Bonjour",
+        "model_response": "Bonjour。",
+        "is_correct": true,
+        "runtime_ms": 228,
+        "token_count": 45
+      },
+      {
+        "question": "过拟合是什么",
+        "expected_answer": "泛化能力差",
+        "model_response": "模型过度学习训练数据噪声导致泛化差。",
+        "is_correct": true,
+        "runtime_ms": 94,
+        "token_count": 11
+      },
+      {
+        "question": "水在太空中",
+        "expected_answer": "沸腾后冻结",
+        "model_response": "会同时沸腾和冻结。",
+        "is_correct": true,
+        "runtime_ms": 158,
+        "token_count": 22
+      },
+      {
+        "question": "勾股定理",
+        "expected_answer": "a^2+b^2=c^2",
+        "model_response": "a^2+b^2=c^2。",
+        "is_correct": false,
+        "runtime_ms": 282,
+        "token_count": 33
+      }
+    ]
+  },
+  {
+    "group_name": "DeepSeek-Chat",
+    "model": "deepseek-chat",
+    "eval_dataset": "GeneralQA",
+    "results": [
+      {
+        "question": "法国首都是哪里？",
+        "expected_answer": "巴黎",
+        "model_response": "巴黎是法国的首都。",
+        "is_correct": true,
+        "runtime_ms": 237,
+        "token_count": 44
+      },
+      {
+        "question": "计算123*456",
+        "expected_answer": "56088",
+        "model_response": "123*456=56088",
+        "is_correct": true,
+        "runtime_ms": 244,
+        "token_count": 11
+      },
+      {
+        "question": "将Hello翻译成中文",
+        "expected_answer": "你好",
+        "model_response": "你好。",
+        "is_correct": true,
+        "runtime_ms": 371,
+        "token_count": 40
+      },
+      {
+        "question": "水的沸点是多少？",
+        "expected_answer": "100°C",
+        "model_response": "100摄氏度。",
+        "is_correct": true,
+        "runtime_ms": 192,
+        "token_count": 52
+      },
+      {
+        "question": "解释光合作用",
+        "expected_answer": "光能转化过程",
+        "model_response": "植物利用光能将CO2转化为有机物。",
+        "is_correct": true,
+        "runtime_ms": 87,
+        "token_count": 26
+      },
+      {
+        "question": "Python斐波那契函数",
+        "expected_answer": "递归函数",
+        "model_response": "def fib(n):return n if n<=1 else fib(n-1)+fib(n-2)",
+        "is_correct": false,
+        "runtime_ms": 88,
+        "token_count": 57
+      },
+      {
+        "question": "最大行星",
+        "expected_answer": "木星",
+        "model_response": "木星是最大的行星。",
+        "is_correct": true,
+        "runtime_ms": 126,
+        "token_count": 27
+      },
+      {
+        "question": "二战结束年份",
+        "expected_answer": "1945",
+        "model_response": "1945年。",
+        "is_correct": true,
+        "runtime_ms": 205,
+        "token_count": 13
+      },
+      {
+        "question": "光速",
+        "expected_answer": "约3e8 m/s",
+        "model_response": "约3e8 m/s。",
+        "is_correct": true,
+        "runtime_ms": 336,
+        "token_count": 18
+      },
+      {
+        "question": "最干燥大洲",
+        "expected_answer": "南极洲",
+        "model_response": "南极洲。",
+        "is_correct": true,
+        "runtime_ms": 83,
+        "token_count": 10
+      },
+      {
+        "question": "鲁迅原名",
+        "expected_answer": "周树人",
+        "model_response": "周树人。",
+        "is_correct": true,
+        "runtime_ms": 146,
+        "token_count": 33
+      },
+      {
+        "question": "Good morning翻法语",
+        "expected_answer": "Bonjour",
+        "model_response": "Bonjour。",
+        "is_correct": false,
+        "runtime_ms": 152,
+        "token_count": 34
+      },
+      {
+        "question": "过拟合是什么",
+        "expected_answer": "泛化能力差",
+        "model_response": "模型过度学习训练数据噪声导致泛化差。",
+        "is_correct": true,
+        "runtime_ms": 313,
+        "token_count": 18
+      },
+      {
+        "question": "水在太空中",
+        "expected_answer": "沸腾后冻结",
+        "model_response": "会同时沸腾和冻结。",
+        "is_correct": true,
+        "runtime_ms": 374,
+        "token_count": 15
+      },
+      {
+        "question": "勾股定理",
+        "expected_answer": "a^2+b^2=c^2",
+        "model_response": "a^2+b^2=c^2。",
+        "is_correct": true,
+        "runtime_ms": 351,
+        "token_count": 25
+      }
+    ]
+  }
+]

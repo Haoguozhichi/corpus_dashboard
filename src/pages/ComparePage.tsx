@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import {
-  Card, Col, Row, Typography, Table, Statistic, Empty, Tag, Spin, Input, Button, Modal,
+  Card, Col, Row, Typography, Table, Statistic, Empty, Tag, Spin, Input, Button, Modal, Select,
 } from 'antd';
 import { CheckCircleOutlined, ClockCircleOutlined, ThunderboltOutlined, SearchOutlined, RobotOutlined } from '@ant-design/icons';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, Cell,
 } from 'recharts';
 import { useData } from '../context/DataContext';
 import { llmCompareAnalysis } from '../api/endpoints';
@@ -201,10 +201,66 @@ const ComparePage: React.FC = () => {
     ]),
   ];
 
-  // 准确率对比
-  const accData = [
-    { metric: '准确率', ...Object.fromEntries(groups.map((g) => [g.name, +((g.accuracy ?? 0) * 100).toFixed(1)])) },
-  ];
+  // 收集所有可用指标（包括数值型变量）
+  const allMetrics = useMemo(() => {
+    const metrics: { label: string; value: string }[] = [
+      { label: '准确率', value: 'accuracy' },
+    ];
+    // 子分组准确率
+    groups.forEach((g) => (g.subCategories || []).forEach((s) => {
+      if (!metrics.find((m) => m.value === `sub_${s.name}`))
+        metrics.push({ label: `${s.name}准确率`, value: `sub_${s.name}` });
+    }));
+    metrics.push({ label: '平均耗时(ms)', value: 'avg_runtime' });
+    metrics.push({ label: '总Token', value: 'total_tokens' });
+    if (isAgent) metrics.push({ label: '平均工具调用', value: 'avg_tools' });
+    // 数值型变量
+    const allParamKeys = [...new Set(groups.flatMap((g) => Object.keys(g.parameters || {})))];
+    allParamKeys.forEach((k) => {
+      const isNumeric = groups.some((g) => typeof g.parameters?.[k] === 'number');
+      if (isNumeric) metrics.push({ label: `变量: ${k}`, value: `param_${k}` });
+    });
+    return metrics;
+  }, [groups, isAgent]);
+
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>(['accuracy']);
+
+  // 获取某指标的组名→值映射
+  const getMetricValue = (g: ExperimentGroup, key: string): number => {
+    switch (key) {
+      case 'accuracy': return +((g.accuracy ?? 0) * 100).toFixed(1);
+      case 'avg_runtime': {
+        const r = g.results || [];
+        return r.length ? r.reduce((s, x) => s + (x.runtime_ms || 0), 0) / r.length : 0;
+      }
+      case 'total_tokens': return (g.results || []).reduce((s, r) => s + (r.token_count || 0), 0);
+      case 'avg_tools': {
+        const r = g.results || [];
+        const total = r.reduce((s, x) => {
+          if (!x.trajectory) return s;
+          return s + x.trajectory.filter((step: any) => step.tool || step.action).length;
+        }, 0);
+        return r.length ? total / r.length : 0;
+      }
+      default:
+        if (key.startsWith('sub_')) {
+          const sc = (g.subCategories || []).find((s) => s.name === key.slice(4));
+          return sc ? +(sc.accuracy * 100).toFixed(1) : 0;
+        }
+        if (key.startsWith('param_')) {
+          const pk = key.slice(6);
+          const v = g.parameters?.[pk];
+          return typeof v === 'number' ? v : 0;
+        }
+        return 0;
+    }
+  };
+
+  // 合并图表数据：每行={group, 准确率, 平均耗时, ...}，每个选中的metric作为列
+  const combinedChartData = groups.map((g) => ({
+    name: g.name,
+    ...Object.fromEntries(selectedMetrics.map((m) => [m, getMetricValue(g, m)])),
+  }));
 
   // 工具调用对比 (Agent only)
   const toolData = isAgent ? groups.map((g) => {
@@ -239,13 +295,49 @@ const ComparePage: React.FC = () => {
         AI 对比评析
       </Button>
 
-      <Title level={5} style={{ marginBottom: 16 }}>📊 准确率对比</Title>
-      <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={accData}>
-          <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="metric" /><YAxis domain={[0, 100]} /><Tooltip /><Legend />
-          {groups.map((g, i) => <Bar key={g.id} dataKey={g.name} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} maxBarSize={60} />)}
-        </BarChart>
-      </ResponsiveContainer>
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <span style={{ fontWeight: 500, marginRight: 8 }}>📊 指标对比：</span>
+        <Select
+          mode="multiple"
+          value={selectedMetrics}
+          onChange={(vals) => setSelectedMetrics(vals)}
+          options={allMetrics}
+          style={{ minWidth: 300 }}
+          placeholder="选择要对比的指标..."
+          maxTagCount={5}
+        />
+      </Card>
+
+      {selectedMetrics.length > 0 && (
+        <>
+          <Title level={5} style={{ marginBottom: 16 }}>📊 指标对比</Title>
+          <Row gutter={[16, 16]}>
+            {selectedMetrics.map((m) => {
+              const label = allMetrics.find((a) => a.value === m)?.label || m;
+              const data = groups.map((g) => ({ name: g.name, value: getMetricValue(g, m) }));
+              return (
+                <Col xs={24} sm={12} md={selectedMetrics.length <= 2 ? 12 : 8} key={m}>
+                  <Card size="small" title={label}>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart data={data} margin={{ top: 4, right: 12, bottom: 4, left: 12 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                        <YAxis tick={{ fontSize: 11 }} width={50} />
+                        <Tooltip />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={50}>
+                          {data.map((_, i) => (
+                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </Card>
+                </Col>
+              );
+            })}
+          </Row>
+        </>
+      )}
 
       {isAgent && toolData.length > 0 && (
         <>
