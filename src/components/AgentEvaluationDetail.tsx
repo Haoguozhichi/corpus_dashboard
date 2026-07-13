@@ -194,12 +194,16 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
   const openTrajModal = (record: EvaluationResult) => { setTrajModal(record); setShowThink(false); };
 
   // 收集 JSON 导入带来的自定义字段
-  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'score', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'category_tag', 'trajectory', 'traj_diagnosis', 'sub_category', 'key']);
+  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'score', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'category_tag', 'trajectory', 'traj_diagnosis', 'sub_category', 'key', 'case_id']);
   const extraFields = [...new Set(results.flatMap((r) => Object.keys(r).filter((k) => !STD_FIELDS.has(k))))];
   const hasSubCategory = results.some((r) => r.sub_category);
   const subCatFilters = hasSubCategory ? [...new Set(results.map((r) => r.sub_category).filter(Boolean))].map((v) => ({ text: v, value: v })) : [];
 
   const columns: ColumnsType<EvaluationResult> = [
+    {
+      title: '#', key: 'index', width: 44, align: 'center',
+      render: (_: any, _r: any, i: number) => <span style={{ color: '#999', fontSize: 12 }}>{i + 1}</span>,
+    },
     {
       title: '题目', dataIndex: 'question', key: 'question', width: 200, ellipsis: true,
       sorter: (a, b) => (a.question || '').localeCompare(b.question || ''),

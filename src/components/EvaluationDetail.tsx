@@ -165,12 +165,16 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   const reasonFilters = [...new Set(results.map((r) => r.reason || '').filter(Boolean))].slice(0, 50).map((v) => ({ text: v, value: v }));
 
   // 收集 JSON 导入带来的自定义字段（不在标准字段中的）
-  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'score', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'category_tag', 'trajectory', 'eval_dataset', 'experiment_id', 'name', 'model', 'parameters', 'created_at', 'key', 'sub_category']);
+  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'score', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'category_tag', 'trajectory', 'eval_dataset', 'experiment_id', 'name', 'model', 'parameters', 'created_at', 'key', 'sub_category', 'case_id']);
   const extraFields = [...new Set(results.flatMap((r) => Object.keys(r).filter((k) => !STD_FIELDS.has(k))))];
   const hasSubCategory = results.some((r) => r.sub_category);
   const subCatFilters = hasSubCategory ? [...new Set(results.map((r) => r.sub_category).filter(Boolean))].map((v) => ({ text: v, value: v })) : [];
 
   const columns: ColumnsType<EvaluationResult> = [
+    {
+      title: '#', key: 'index', width: 48, align: 'center',
+      render: (_: any, _r: any, i: number) => <span style={{ color: '#999', fontSize: 12 }}>{i + 1}</span>,
+    },
     {
       title: '题目', dataIndex: 'question', key: 'question', width: 200, ellipsis: true,
       sorter: (a, b) => (a.question || '').localeCompare(b.question || ''),

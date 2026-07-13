@@ -58,6 +58,7 @@ export interface EvaluationResult {
   annotation?: string;                     // 人工标注
   think?: string;                          // 模型思考过程
   ai_scores?: Record<string, number>;      // AI自动标注多维度评分
+  case_id?: string;                        // 用例编号
   traj_diagnosis?: string;                  // AI轨迹诊断结果
   trajectory?: TrajectoryStep[];           // Agent 执行轨迹
   // JOIN 字段

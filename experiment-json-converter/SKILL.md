@@ -66,6 +66,7 @@ For every column found in the data, assign exactly one role from this table:
 | runtime, 耗时, latency, time, time_ms, cost | `results[].runtime_ms` | integer | milliseconds |
 | tokens, token, token_count | `results[].token_count` | integer | |
 | reason, 原因, 错误原因, error_reason | `results[].reason` | string | |
+| case_id, 用例编号, sample_id, 序号, index, id, no | `results[].case_id` | string | Must preserve from source data |
 | trajectory, 轨迹, trace, steps | `results[].trajectory` | array | Array of TrajectoryStep objects |
 | temperature, lr, batch_size, epochs, etc | `variables` | key-value | Experiment parameters |
 
@@ -107,8 +108,14 @@ If any result has a `trajectory` field, ensure each step has:
 ### 6. Filter Noise Columns
 
 **MUST remove** these columns from output:
-- Row numbers (index, row_id, #, 序号)
-- UUIDs or internal IDs (uuid, id where values are random strings)
+- Random UUIDs (where id column contains random strings like "a1b2c3d4-...")
+- File paths (path, file, source)
+- Internal tracking codes that are not meaningful for analysis
+
+**MUST keep** these as `case_id`:
+- Sequential row numbers (1, 2, 3...) → convert to `case_id`
+- Meaningful sample IDs (NL2SQL-001, test_42, etc.) → preserve as `case_id`
+- If a column named `case_id`, `用例编号`, `序号`, `sample_id`, `no`, `index` exists with unique values → preserve as `case_id`
 - File paths (path, file, source)
 - Raw timestamps (unless used as experiment `date`)
 - Empty columns or columns where ALL values are the same
@@ -134,6 +141,7 @@ Apply these conversions strictly:
 Checklist before writing JSON:
 
 - [ ] Every group has `group_name` (not empty, not null)
+- [ ] Sequential results have `case_id` preserved (if source data had them)
 - [ ] Every result has `question` (not empty)
 - [ ] `is_correct` is boolean (true/false), not string, not number
 - [ ] `score` is number 0~1, not string
