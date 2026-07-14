@@ -8,6 +8,8 @@ import {
 } from '@ant-design/icons';
 import type { ExperimentGroup, TestCase, EvaluationResult, TrajectoryStep } from '../types';
 import { fetchResults, updateResult, updateGroup, diagnoseTrajectory, diagnoseError, clusterErrors } from '../api/endpoints';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import ResultsUploader from './ResultsUploader';
 import TrajectoryViewer from './TrajectoryViewer';
 
@@ -159,7 +161,10 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
       if ((res as any).clusters) {
         await updateGroup(group.id, { error_clusters: (res as any).clusters }).catch(() => {});
         onRefresh();
-        const text = (res as any).clusters.map((c: any) => `### ${c.name} (${c.count}条)\n${c.description}`).join('\n\n');
+        const text = (res as any).clusters.map((c: any) => {
+          const indices = (c.caseIndices || []).join('、');
+          return `### ${c.name} (${c.count}条)\n${c.description}${indices ? `\n\n**涉及题号**: ${indices}` : ''}`;
+        }).join('\n\n');
         setLlmResult(text + ((res as any).summary ? `\n\n---\n**总结**: ${(res as any).summary}` : ''));
       } else {
         setLlmResult((res as any).raw || JSON.stringify(res));
@@ -326,7 +331,12 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
             </Tag>
           ))}
           {group.error_clusters.map((c: any, i: number) => (
-            <div key={i} style={{ marginTop: 4, fontSize: 12, color: '#666' }}><strong>{c.name}</strong>：{c.description}</div>
+            <div key={i} style={{ marginTop: 4, fontSize: 12, color: '#666' }}>
+              <strong>{c.name}</strong>：{c.description}
+              {c.caseIndices && c.caseIndices.length > 0 && (
+                <span style={{ color: '#999', marginLeft: 4 }}>（题号: {c.caseIndices.join(', ')}）</span>
+              )}
+            </div>
           ))}
         </Card>
       )}
@@ -366,8 +376,8 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
                 AI 诊断轨迹
               </Button>
               {(trajDiagnosis[trajModal.id] || trajModal.traj_diagnosis) && (
-                <div style={{ whiteSpace: 'pre-wrap', maxHeight: 300, overflow: 'auto', background: '#fafafa', padding: 12, borderRadius: 4, fontSize: 13, marginTop: 8 }}>
-                  {trajDiagnosis[trajModal.id] || trajModal.traj_diagnosis}
+                <div className="markdown-content" style={{ maxHeight: 300, overflow: 'auto', background: '#fafafa', padding: 16, borderRadius: 4, fontSize: 13, marginTop: 8 }}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{trajDiagnosis[trajModal.id] || trajModal.traj_diagnosis}</ReactMarkdown>
                 </div>
               )}
             </div>
@@ -379,8 +389,8 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
 
       {/* LLM 分析结果弹窗 */}
       <Modal title={`AI 分析 - ${llmModalTitle}`} open={!!llmResult} onCancel={() => setLlmResult(null)} footer={null} width={700}>
-        <div style={{ whiteSpace: 'pre-wrap', maxHeight: 500, overflow: 'auto', background: '#fafafa', padding: 12, borderRadius: 4, fontSize: 13 }}>
-          {llmResult || '分析中...'}
+        <div className="markdown-content" style={{ maxHeight: 500, overflow: 'auto', background: '#fafafa', padding: 16, borderRadius: 4, fontSize: 13 }}>
+          {llmResult ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{llmResult}</ReactMarkdown> : '分析中...'}
         </div>
       </Modal>
 

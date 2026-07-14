@@ -127,6 +127,27 @@ body {
   border-radius: 4px;
 }
 
+/* ====== Markdown 表格 ====== */
+.markdown-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+}
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid #d9d9d9;
+  padding: 6px 12px;
+  text-align: left;
+  font-size: 13px;
+}
+.markdown-content th {
+  background: #fafafa;
+  font-weight: 600;
+}
+.markdown-content tr:nth-child(even) {
+  background: #fafafa;
+}
+
 /* ====== 响应式 ====== */
 @media (max-width: 768px) {
   .ant-card {

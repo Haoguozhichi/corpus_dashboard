@@ -9,6 +9,8 @@ import {
 } from 'recharts';
 import { useData } from '../context/DataContext';
 import { llmCompareAnalysis } from '../api/endpoints';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { ExperimentGroup } from '../types';
 
 const { Title, Paragraph } = Typography;
@@ -372,8 +374,8 @@ const ComparePage: React.FC = () => {
       )}
 
       <Modal title="AI 对比评析" open={llmOpen} onCancel={() => setLlmOpen(false)} footer={null} width={700}>
-        <div style={{ whiteSpace: 'pre-wrap', maxHeight: 500, overflow: 'auto', background: '#fafafa', padding: 12, borderRadius: 4, fontSize: 13 }}>
-          {llmResult || '分析中...'}
+        <div className="markdown-content" style={{ maxHeight: 500, overflow: 'auto', background: '#fafafa', padding: 16, borderRadius: 4, fontSize: 13 }}>
+          {llmResult ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{llmResult}</ReactMarkdown> : '分析中...'}
         </div>
       </Modal>
     </div>

@@ -14,6 +14,8 @@ import { createGroup, updateGroup, deleteGroup, generateReport, updateExperiment
 import GroupFormModal from '../components/GroupFormModal';
 import TrainingMetricsManager from '../components/TrainingMetricsManager';
 import BulkImport from '../components/BulkImport';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { ExperimentGroup } from '../types';
 
 const { Title, Paragraph } = Typography;
@@ -666,8 +668,8 @@ const DashboardPage: React.FC = () => {
       </Modal>
 
       <Modal title="AI 实验报告" open={reportModal} onCancel={() => setReportModal(false)} footer={null} width={700}>
-        <div style={{ whiteSpace: 'pre-wrap', maxHeight: 500, overflow: 'auto', background: '#fafafa', padding: 12, borderRadius: 4, fontSize: 13 }}>
-          {reportText || '正在生成...'}
+        <div className="markdown-content" style={{ maxHeight: 500, overflow: 'auto', background: '#fafafa', padding: 16, borderRadius: 4, fontSize: 13 }}>
+          {reportText ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{reportText}</ReactMarkdown> : '正在生成...'}
         </div>
       </Modal>
 
