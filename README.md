@@ -35,12 +35,11 @@ corpus_dashboard/
 │   ├── db.js                    # SQLite 数据库 + Seed 数据
 │   ├── data.sqlite              # 持久化数据库（删除后重启自动重建 seed）
 │   └── routes/
-│       ├── categories.js        # 实验类别 API
 │       ├── experiments.js       # 实验 API
 │       ├── groups.js            # 实验组 API
 │       ├── metrics.js           # 训练指标 API
-│       ├── testCases.js         # 测试用例 API (含 CSV 上传)
-│       └── results.js           # 评测结果 API (含 CSV 上传)
+│       ├── testCases.js         # 测试用例 API
+│       └── results.js           # 评测结果 API
 ├── src/
 │   ├── api/
 │   │   ├── client.ts            # fetch 封装
@@ -53,17 +52,15 @@ corpus_dashboard/
 │   │   ├── AgentEvaluationDetail.tsx # Agent评测详情
 │   │   ├── TrajectoryViewer.tsx  # 轨迹时间线
 │   │   ├── CustomScoresChart.tsx # 多维评分图
-│   │   ├── ResultsUploader.tsx   # 评测结果管理（上传+逐条+删除）
-│   │   ├── TrainingMetricsManager.tsx # 训练指标统一管理
-│   │   ├── TestCaseTable.tsx     # 测试用例可编辑表格
-│   │   ├── JsonUploader.tsx      # JSON 批量上传组件
-│   │   └── BulkImport.tsx        # 一键导入组件
+│   │   ├── ResultsUploader.tsx   # 评测结果管理（可编辑表格+JSON上传）
+│   │   ├── GroupFormModal.tsx     # 实验组表单
+│   │   ├── ExperimentFormModal.tsx # 实验表单
+│   │   ├── BulkImport.tsx        # 一键导入组件
 │   └── pages/
-│       ├── HomePage.tsx          # 首页 - 实验类别卡片
-│       ├── ExperimentListPage.tsx # 实验列表
-│       ├── DashboardPage.tsx     # 仪表盘 - 实验组对比表
-│       ├── DetailPage.tsx        # 实验组详情（类型自适应路由）
-│       └── ComparePage.tsx       # 对比分析
+│       ├── HomePage.tsx          # 首页 - 全实验列表+筛选+创建
+│       ├── DashboardPage.tsx     # 仪表盘 - 实验组对比表+管理
+│       ├── DetailPage.tsx        # 实验组详情
+│       └── ComparePage.tsx       # 多组对比分析
 ├── package.json
 ├── vite.config.ts
 └── index.html
@@ -74,14 +71,10 @@ corpus_dashboard/
 ### 层级关系
 
 ```
-实验类别 (Category)
-  └── 实验 (Experiment) × N
-        ├── 类型: evaluation
-        │
-        ├── 实验组 (ExperimentGroup) × N
-        │     └── evaluation_results × N — evaluation 类型
-        │
-        └── 测试用例 (TestCase) × N — evaluation 类型
+实验 (Experiment) × N
+  ├── 实验组 (ExperimentGroup) × N
+  │     └── evaluation_results × N
+  └── 测试用例 (TestCase) × N
 ```
 
 ### 实验类型（统一为 evaluation）
@@ -148,50 +141,34 @@ interface TrainingMetrics {
 
 ## 使用指南
 
-### 1. 创建实验类别
+### 1. 创建实验
 
-首页 → 点击「创建类别」→ 填写名称和描述
+首页 → 点击「创建实验」→ 填写名称、描述、负责人、日期
 
-### 2. 创建实验
+### 2. 管理实验数据
 
-进入一个类别 → 点击「创建实验」→ 选择实验类型
+进入实验 → 点击「管理实验组」→ 表格中直接编辑所有实验组的名称、模型、评测集和变量，支持添加/删除实验组和变量列
 
-### 3. 训练实验工作流
+### 3. 导入/导出
 
-1. 创建训练实验
-2. 创建实验组（如 Full Fine-Tune、LoRA r=8）
-3. 点击顶部「管理指标」→ 表格中直接编辑各组数值
-4. 可添加自定义指标（如 BLEU、ROUGE）
-5. 切换到「训练曲线」标签粘贴 Loss/Accuracy 数据
-6. 点击实验组行进入详情，查看训练曲线折线图
-7. 勾选两个组 → 对比分析 → 指标叠加对比
+- **一键导入 JSON**：上传含实验组、变量、评测结果的 JSON 文件
+- **导出 JSON**：点击「导出」按钮下载整个实验数据为 JSON 文件
 
-### 4. 评测实验工作流
+### 4. 评测详情
 
-1. 创建评测实验
-2. **一键导入 JSON**（推荐）：直接上传含实验组、变量、评测结果的 JSON 文件
-3. 或手动创建实验组 → 进入详情 → 「管理评测结果」逐条或 JSON 批量录入
-4. 详情页展示题目/标准答案/模型回答的对比表，支持列排序和筛选
-5. 可对每条结果添加人工标注（`annotation`）
-6. 错误行高亮显示
+点击实验组行进入详情页，查看题目/标准答案/模型回答对比表。
 
-### 5. Agent 评测工作流
+- 点击「管理评测结果」批量编辑结果，支持添加/删除行和自定义列
+- 支持列排序、筛选、文本搜索
+- Agent 实验支持轨迹时间线展示和 AI 轨迹诊断
 
-1. 创建 Agent 评测实验
-2. **一键导入 JSON**（推荐）：上传含轨迹和多维评分的 JSON 文件
-3. 详情页展示：题目、正确答案、Agent 回答、正确性、Token、耗时
-4. 点击行末尾 👁 按钮弹出轨迹弹窗，可展开 Think 过程
-5. 支持人工标注、列排序、题目和结果筛选
-
-### 6. 对比分析
+### 5. 对比分析
 
 仪表盘 → 勾选**多个**实验组 → 点击「对比选中组」
 
-- **训练实验**：指标柱状图 + 变量差异表 + Loss/Accuracy 曲线叠加
-- **评测实验**：准确率柱状图 + 变量差异表 + 共同用例回答对比（支持题目搜索和正确性筛选）
-- **Agent评测**：准确率 + 工具调用对比 + 多维评分柱状图 + 变量差异 + 共同用例回答对比
-
-对比分析支持任意数量的实验组同时对比，每组用不同颜色标识。
+- 动态指标选择器，每个指标一张小柱状图（按实验组颜色区分）
+- 变量差异表 + 共同用例回答对比
+- 支持 AI 对比评析
 
 ## JSON 批量导入格式
 
@@ -271,7 +248,6 @@ interface TrainingMetrics {
 | 功能 | 位置 | 说明 |
 |------|------|------|
 | **AI 错误诊断** | 评测详情 → AI 分析下拉 | 勾选错误用例，LLM 诊断原因，自动填入 `reason` 列 |
-| **AI 自动标注** | 评测详情 → AI 分析下拉 | 勾选用例，LLM 从正确性/完整性/简洁性/规范性四维度评分，存入 `ai_scores` |
 | **AI 错误聚类** | 评测详情 → AI 分析下拉 | 对所有错误用例聚类分析，结果保存到实验组并展示 |
 | **AI 对比评析** | 对比分析页 | 分析两组回答差异 |
 | **AI 轨迹诊断** | Agent 详情 → 轨迹弹窗 | 诊断 Agent 执行轨迹 |
@@ -301,18 +277,10 @@ interface TrainingMetrics {
 
 ## API 接口一览
 
-### 类别
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/categories` | 列表 |
-| POST | `/api/categories` | 创建 |
-| PUT | `/api/categories/:id` | 更新 |
-| DELETE | `/api/categories/:id` | 删除 |
-
 ### 实验
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/api/experiments?categoryId=` | 列表 |
+| GET | `/api/experiments` | 列表 |
 | GET | `/api/experiments/:id` | 详情(含实验组和结果) |
 | POST | `/api/experiments` | 创建 |
 | POST | `/api/experiments/:expId/import` | 一键导入 JSON |

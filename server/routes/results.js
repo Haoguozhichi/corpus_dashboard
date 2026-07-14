@@ -12,7 +12,7 @@ router.get('/groups/:groupId/results', (req, res) => {
 
   // 找到所属实验
   let exp = null;
-  for (const c of data.categories) for (const e of c.experiments) {
+  for (const e of data.experiments) {
     if ((e.groups || []).some((g) => g.id === group.id)) { exp = e; break; }
   }
 
@@ -38,7 +38,7 @@ router.post('/groups/:groupId/results', (req, res) => {
 
   // 找到所属实验
   let exp = null;
-  for (const c of data.categories) for (const e of c.experiments) {
+  for (const e of data.experiments) {
     if ((e.groups || []).some((g) => g.id === group.id)) { exp = e; break; }
   }
   if (!exp) return res.status(404).json({ error: '实验不存在' });
@@ -84,7 +84,7 @@ router.post('/groups/:groupId/results/upload', upload.single('file'), (req, res)
   if (!req.file) return res.status(400).json({ error: '请上传 JSON 文件' });
 
   let exp = null;
-  for (const c of data.categories) for (const e of c.experiments) {
+  for (const e of data.experiments) {
     if ((e.groups || []).some((g) => g.id === group.id)) { exp = e; break; }
   }
 
@@ -126,7 +126,7 @@ router.post('/groups/:groupId/results/upload', upload.single('file'), (req, res)
 });
 
 router.put('/results/:id', (req, res) => {
-  for (const c of data.categories) for (const e of c.experiments) for (const g of (e.groups || [])) {
+  for (const e of data.experiments) for (const g of (e.groups || [])) {
     const er = (g.evaluation_results || []).find((r) => r.id === req.params.id);
     if (er) {
       const { model_response, is_correct, score, runtime_ms, token_count, reason, annotation, think, ai_scores, traj_diagnosis, trajectory } = req.body;
@@ -152,7 +152,7 @@ router.put('/results/:id', (req, res) => {
 
 // DELETE 单条评测结果
 router.delete('/results/:id', (req, res) => {
-  for (const c of data.categories) for (const e of c.experiments) for (const g of (e.groups || [])) {
+  for (const e of data.experiments) for (const g of (e.groups || [])) {
     const idx = (g.evaluation_results || []).findIndex((r) => r.id === req.params.id);
     if (idx >= 0) { g.evaluation_results.splice(idx, 1); save(); return res.json({ success: true }); }
   }

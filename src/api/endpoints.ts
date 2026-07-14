@@ -1,19 +1,10 @@
 import { get, post, put, del, uploadFile } from './client';
-import type { Category, Experiment, ExperimentGroup, TrainingMetrics, TestCase, EvaluationSummary, EvaluationResult } from '../types';
-
-// ====== 类别 ======
-export const fetchCategories = () => get<Category[]>('/categories');
-export const createCategory = (data: { name: string; description?: string }) => post<Category>('/categories', data);
-export const updateCategory = (id: string, data: { name?: string; description?: string }) => put<Category>(`/categories/${id}`, data);
-export const deleteCategory = (id: string) => del<{ success: boolean }>(`/categories/${id}`);
+import type { Experiment, ExperimentGroup, TrainingMetrics, TestCase, EvaluationSummary, EvaluationResult } from '../types';
 
 // ====== 实验 ======
-export const fetchExperiments = (categoryId?: string) => {
-  const query = categoryId ? `?categoryId=${categoryId}` : '';
-  return get<Experiment[]>(`/experiments${query}`);
-};
+export const fetchExperiments = () => get<Experiment[]>('/experiments');
 export const fetchExperimentDetail = (id: string) => get<Experiment>(`/experiments/${id}`);
-export const createExperiment = (data: { categoryId: string; name: string; description?: string; date: string; owner?: string }) =>
+export const createExperiment = (data: { name: string; description?: string; date: string; owner?: string }) =>
   post<Experiment>('/experiments', data);
 export const updateExperiment = (id: string, data: { name?: string; description?: string; date?: string; owner?: string; ai_report?: string; conclusion?: string }) =>
   put<Experiment>(`/experiments/${id}`, data);

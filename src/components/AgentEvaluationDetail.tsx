@@ -7,7 +7,7 @@ import {
   EyeOutlined, RobotOutlined, DownOutlined,
 } from '@ant-design/icons';
 import type { ExperimentGroup, TestCase, EvaluationResult, TrajectoryStep } from '../types';
-import { fetchResults, updateResult, updateGroup, diagnoseTrajectory, diagnoseError, autoAnnotate, clusterErrors } from '../api/endpoints';
+import { fetchResults, updateResult, updateGroup, diagnoseTrajectory, diagnoseError, clusterErrors } from '../api/endpoints';
 import ResultsUploader from './ResultsUploader';
 import TrajectoryViewer from './TrajectoryViewer';
 
@@ -150,26 +150,6 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
     setLlmLoading(false);
   };
 
-  const handleAutoAnnotate = async () => {
-    if (selectedRowKeys.length === 0) { message.warning('请先勾选要标注的用例'); return; }
-    const targets = getSelected();
-    setLlmLoading(true); setLlmModalTitle(`自动标注 (${Math.min(targets.length, 10)}条)`);
-    const sample = targets.slice(0, 10);
-    const parts: string[] = [];
-    for (const r of sample) {
-      try {
-        const scores = await autoAnnotate({ question: r.question || '', expected_answer: r.expected_answer || '', model_response: r.model_response || '' });
-        if (!(scores as any).error) {
-          await updateResult(r.id, { ai_scores: scores as any }).catch(() => {});
-          setAllResults((prev) => prev.map((x) => (x.id === r.id ? { ...x, ai_scores: scores as any } : x)));
-        }
-        parts.push(`- ${r.question?.slice(0, 30)}... | 正确性:${scores.正确性 || scores.correctness} 完整性:${scores.完整性 || scores.completeness} 简洁性:${scores.简洁性 || scores.conciseness} 规范性:${scores.规范性 || scores.format}`);
-      } catch { parts.push(`- 标注失败`); }
-    }
-    setLlmResult(parts.join('\n'));
-    setLlmLoading(false);
-  };
-
   const handleClusterErrors = async () => {
     const errors = results.filter((r) => !r.is_correct);
     if (errors.length === 0) { message.warning('没有错误用例'); return; }
@@ -194,7 +174,7 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
   const openTrajModal = (record: EvaluationResult) => { setTrajModal(record); setShowThink(false); };
 
   // 收集 JSON 导入带来的自定义字段
-  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'category_tag', 'trajectory', 'traj_diagnosis', 'sub_category', 'key', 'case_id']);
+  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'category_tag', 'trajectory', 'traj_diagnosis', 'sub_category', 'key', 'case_id']);
   const extraFields = [...new Set(results.flatMap((r) => Object.keys(r).filter((k) => !STD_FIELDS.has(k))))];
   const hasSubCategory = results.some((r) => r.sub_category);
   const subCatFilters = hasSubCategory ? [...new Set(results.map((r) => r.sub_category).filter(Boolean))].map((v) => ({ text: v, value: v })) : [];
@@ -360,7 +340,6 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
             {selectedRowKeys.length > 0 && <Tag color="blue">已选 {selectedRowKeys.length} 条</Tag>}
             <Dropdown menu={{ items: [
               { key: 'diagnose', label: selectedRowKeys.length > 0 ? `AI 诊断错误 (${selectedRowKeys.length}已选)` : 'AI 诊断错误（请先勾选）', disabled: selectedRowKeys.length === 0, onClick: handleDiagnose },
-              { key: 'annotate', label: selectedRowKeys.length > 0 ? `AI 自动标注 (${selectedRowKeys.length}已选)` : 'AI 自动标注（请先勾选）', disabled: selectedRowKeys.length === 0, onClick: handleAutoAnnotate },
               { key: 'cluster', label: 'AI 错误聚类(全量)', onClick: handleClusterErrors },
             ] }}>
               <Button size="small" icon={<RobotOutlined />} loading={llmLoading}>AI 分析 <DownOutlined /></Button>

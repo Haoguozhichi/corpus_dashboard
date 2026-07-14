@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   Card, Col, Row, Typography, Table, Statistic, Tag, Button, Empty, Space,
-  Spin, Popconfirm, message, Tabs, Modal, Input,
+  Spin, Popconfirm, message, Modal, Input,
 } from 'antd';
 import {
   BarChartOutlined, TrophyOutlined, SearchOutlined, RobotOutlined,
-  PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined,
+  PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined, DownloadOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
@@ -13,8 +13,6 @@ import { useData } from '../context/DataContext';
 import { createGroup, updateGroup, deleteGroup, generateReport, updateExperiment } from '../api/endpoints';
 import GroupFormModal from '../components/GroupFormModal';
 import TrainingMetricsManager from '../components/TrainingMetricsManager';
-import TestCaseTable from '../components/TestCaseTable';
-import CsvUploader from '../components/CsvUploader';
 import BulkImport from '../components/BulkImport';
 import type { ExperimentGroup } from '../types';
 
@@ -33,7 +31,6 @@ const DashboardPage: React.FC = () => {
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<ExperimentGroup | null>(null);
   const [metricsModalOpen, setMetricsModalOpen] = useState(false);
-  const [testCasesTab, setTestCasesTab] = useState(false);
   const [importTab, setImportTab] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -106,6 +103,15 @@ const DashboardPage: React.FC = () => {
   const modelFilters = useMemo(() => [...new Set(groups.map((g) => g.model).filter(Boolean))].slice(0, 50).map((v) => ({ text: v, value: v })), [groups]);
   const datasetFilters = useMemo(() => [...new Set(groups.map((g) => g.eval_dataset).filter(Boolean))].map((v) => ({ text: v, value: v })), [groups]);
 
+  // ====== 管理实验组 state（所有 hooks 必须在条件返回之前） ======
+  const [bulkEditOpen, setBulkEditOpen] = useState(false);
+  const [bulkEditData, setBulkEditData] = useState<Record<string, Record<string, string>>>({});
+  const [bulkEditOrder, setBulkEditOrder] = useState<string[]>([]);
+  const [bulkEditDeleted, setBulkEditDeleted] = useState<Set<string>>(new Set());
+  const [newRowCounter, setNewRowCounter] = useState(0);
+  const [bulkParamKeys, setBulkParamKeys] = useState<string[]>([]);
+
+  // ====== 条件返回（所有 hooks 必须在之前） ======
   // 只在首次加载时显示 spinner，刷新时保持已有内容
   if (!experimentDetail) return <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />;
   if (!experiment) return <Empty description="未找到该实验" style={{ marginTop: 80 }} />;
@@ -149,6 +155,114 @@ const DashboardPage: React.FC = () => {
       message.success('实验组已创建');
     }
     setGroupModalOpen(false);
+    refreshExperiment();
+  };
+
+  // ====== 管理实验组 函数 ======
+  const openBulkEdit = () => {
+    const data: Record<string, Record<string, string>> = {};
+    const allKeys = new Set(paramKeys);
+    groups.forEach((g) => {
+      data[g.id] = {
+        name: g.name,
+        model: g.model || '',
+        eval_dataset: g.eval_dataset || '',
+        ...Object.fromEntries(Object.entries(g.parameters || {}).map(([k, v]) => [k, String(v ?? '')])),
+      };
+    });
+    setBulkEditData(data);
+    setBulkEditOrder(groups.map((g) => g.id));
+    setBulkEditDeleted(new Set());
+    setNewRowCounter(0);
+    setBulkParamKeys([...allKeys]);
+    setBulkEditOpen(true);
+  };
+
+  const addBulkRow = () => {
+    const newId = `__new_${newRowCounter}`;
+    setBulkEditData((prev) => ({ ...prev, [newId]: { name: '', model: '', eval_dataset: '' } }));
+    setBulkEditOrder((prev) => [...prev, newId]);
+    setNewRowCounter((c) => c + 1);
+  };
+
+  const deleteBulkRow = (id: string) => {
+    if (id.startsWith('__new_')) {
+      setBulkEditOrder((prev) => prev.filter((i) => i !== id));
+    } else {
+      setBulkEditDeleted((prev) => new Set(prev).add(id));
+    }
+  };
+
+  const setBulkCell = (id: string, key: string, value: string) => {
+    setBulkEditData((prev) => ({ ...prev, [id]: { ...prev[id], [key]: value } }));
+  };
+
+  const addBulkParamCol = () => {
+    setBulkParamKeys((prev) => [...prev, '']);
+  };
+
+  const updateBulkParamKey = (idx: number, newKey: string) => {
+    setBulkParamKeys((prev) => prev.map((k, i) => i === idx ? newKey : k));
+  };
+
+  const deleteBulkParamCol = (idx: number) => {
+    const oldKey = bulkParamKeys[idx];
+    setBulkParamKeys((prev) => prev.filter((_, i) => i !== idx));
+    // 删除所有行中该 key 的数据
+    if (oldKey) {
+      setBulkEditData((prev) => {
+        const next = { ...prev };
+        for (const id of Object.keys(next)) {
+          const row = { ...next[id] };
+          delete row[oldKey];
+          next[id] = row;
+        }
+        return next;
+      });
+    }
+  };
+
+  const handleBulkEditSave = async () => {
+    // 删除被标记的
+    for (const id of bulkEditDeleted) {
+      await deleteGroup(id);
+    }
+    // 更新已有组
+    for (const g of groups) {
+      if (bulkEditDeleted.has(g.id)) continue;
+      const vals = bulkEditData[g.id];
+      if (!vals) continue;
+      const name = vals.name;
+      const model = vals.model;
+      const eval_dataset = vals.eval_dataset;
+      const parameters: Record<string, string | number> = {};
+      for (const pk of bulkParamKeys) {
+        if (!pk.trim()) continue;
+        const v = vals[pk];
+        if (v === '' || v === undefined) continue;
+        parameters[pk.trim()] = isNaN(Number(v)) ? v : Number(v);
+      }
+      await updateGroup(g.id, { name, model, eval_dataset, parameters });
+    }
+    // 创建新组
+    for (const id of bulkEditOrder) {
+      if (!id.startsWith('__new_')) continue;
+      const vals = bulkEditData[id];
+      if (!vals || !vals.name?.trim()) continue;
+      const name = vals.name;
+      const model = vals.model;
+      const eval_dataset = vals.eval_dataset;
+      const parameters: Record<string, string | number> = {};
+      for (const pk of bulkParamKeys) {
+        if (!pk.trim()) continue;
+        const v = vals[pk];
+        if (v === '' || v === undefined) continue;
+        parameters[pk.trim()] = isNaN(Number(v)) ? v : Number(v);
+      }
+      await createGroup(experiment.id!, { name, model, eval_dataset, parameters });
+    }
+    message.success('已保存');
+    setBulkEditOpen(false);
     refreshExperiment();
   };
 
@@ -304,6 +418,31 @@ const DashboardPage: React.FC = () => {
 
   const columns = [...(isTraining ? trainingColumns : evaluationColumns), ...actionColumn];
 
+  const handleExport = () => {
+    const exportData = groups.map((g) => {
+      const rawResults = g.results || g.evaluation_results || [];
+      const results = rawResults.map((r: any) => {
+        const { id, group_id, test_case_id, category_tag, key, question, expected_answer, ...rest } = r;
+        return { question: question || '', expected_answer: expected_answer || '', ...rest };
+      });
+      return {
+        group_name: g.name,
+        model: g.model || '',
+        eval_dataset: g.eval_dataset || '',
+        variables: g.parameters || {},
+        results,
+      };
+    });
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${experiment.name || 'experiment'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    message.success('已导出');
+  };
+
   const handleCompare = () => {
     if (selectedRowKeys.length >= 2) {
       const ids = selectedRowKeys as string[];
@@ -329,10 +468,10 @@ const DashboardPage: React.FC = () => {
         </div>
         <Space wrap>
           {isTraining && <Button icon={<SettingOutlined />} onClick={handleOpenMetrics}>管理指标</Button>}
-          {isEvaluation && <Button onClick={() => setTestCasesTab(true)}>管理测试用例</Button>}
+          <Button icon={<DownloadOutlined />} onClick={handleExport}>导出</Button>
           <Button onClick={() => setImportTab(true)}>一键导入</Button>
           <Button icon={<RobotOutlined />} onClick={handleGenerateReport} loading={reportLoading}>AI 报告</Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateGroup}>创建实验组</Button>
+          <Button type="primary" onClick={openBulkEdit}>管理实验组</Button>
         </Space>
       </div>
 
@@ -371,10 +510,10 @@ const DashboardPage: React.FC = () => {
 
       {/* 概览卡片 */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={12} sm={6}>
+        <Col xs={12} sm={8}>
           <Card><Statistic title="实验组数" value={groups.length} /></Card>
         </Col>
-        <Col xs={12} sm={6}>
+        <Col xs={12} sm={8}>
           <Card>
             <Statistic
               title={isTraining ? '最佳准确率' : '最高正确率'}
@@ -384,16 +523,8 @@ const DashboardPage: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={12} sm={6}>
+        <Col xs={12} sm={8}>
           <Card><Statistic title="最佳组" value={bestGroup?.name || '-'} /></Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card>
-            <Statistic
-              title="实验类型"
-              value={experiment.type === 'training' ? '训练实验' : experiment.type === 'evaluation' ? '评测实验' : experiment.type === 'agent_evaluation' ? 'Agent评测' : '其他'}
-            />
-          </Card>
         </Col>
       </Row>
 
@@ -439,6 +570,97 @@ const DashboardPage: React.FC = () => {
       {/* Modals */}
       <GroupFormModal open={groupModalOpen} editing={editingGroup} onOk={handleGroupOk} onCancel={() => setGroupModalOpen(false)} />
 
+      {/* 管理实验组 Modal */}
+      <Modal
+        title="管理实验组"
+        open={bulkEditOpen}
+        onOk={handleBulkEditSave}
+        onCancel={() => setBulkEditOpen(false)}
+        width={Math.max(900, 260 + (Object.keys(bulkEditData[groups[0]?.id] || {}).length) * 150)}
+        destroyOnClose
+        okText="保存全部"
+      >
+        <Table
+          dataSource={bulkEditOrder.map((id, idx) => {
+            const g = groups.find((g) => g.id === id);
+            return { key: id, _id: id, _idx: idx, _isNew: id.startsWith('__new_'), _deleted: bulkEditDeleted.has(id), _name: g?.name || '' };
+          })}
+          pagination={false}
+          size="small"
+          scroll={{ x: 'max-content' }}
+          rowClassName={(r: any) => r._deleted ? 'ant-table-row-hidden' : ''}
+          locale={{ emptyText: '暂无实验组，点击下方按钮添加' }}
+          columns={[
+            {
+              title: '#', width: 40, align: 'center' as const,
+              render: (_: unknown, __: unknown, idx: number) => idx + 1,
+            },
+            { title: '实验组名称', width: 150,
+              render: (_: unknown, r: any) => (
+                <Input size="small" value={bulkEditData[r._id]?.name ?? ''}
+                  onChange={(e) => setBulkCell(r._id, 'name', e.target.value)}
+                  status={r._deleted ? 'error' : undefined} disabled={r._deleted}
+                  placeholder={r._isNew ? '新实验组名称' : ''} />
+              ),
+            },
+            { title: '模型', width: 160,
+              render: (_: unknown, r: any) => (
+                <Input size="small" value={bulkEditData[r._id]?.model ?? ''}
+                  onChange={(e) => setBulkCell(r._id, 'model', e.target.value)}
+                  disabled={r._deleted} />
+              ),
+            },
+            { title: '评测集', width: 140,
+              render: (_: unknown, r: any) => (
+                <Input size="small" value={bulkEditData[r._id]?.eval_dataset ?? ''}
+                  onChange={(e) => setBulkCell(r._id, 'eval_dataset', e.target.value)}
+                  disabled={r._deleted} />
+              ),
+            },
+            ...bulkParamKeys.map((key, ki) => ({
+              title: (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Input
+                    size="small"
+                    value={key}
+                    onChange={(e) => updateBulkParamKey(ki, e.target.value)}
+                    placeholder="变量名"
+                    style={{ width: 80, fontWeight: 500 }}
+                  />
+                  <Button type="text" size="small" danger icon={<DeleteOutlined />}
+                    onClick={() => deleteBulkParamCol(ki)} />
+                </div>
+              ),
+              key: `edit_key_${ki}`,
+              width: 150,
+              render: (_: unknown, r: any) => (
+                <Input size="small" value={bulkEditData[r._id]?.[key] ?? bulkEditData[r._id]?.[key] ?? ''}
+                  onChange={(e) => setBulkCell(r._id, key, e.target.value)}
+                  disabled={r._deleted} placeholder={key ? '' : '...'} />
+              ),
+            })),
+            {
+              title: '操作', width: 60, align: 'center' as const, fixed: 'right' as const,
+              render: (_: unknown, r: any) => (
+                r._deleted ? (
+                  <Button type="link" size="small" onClick={() => setBulkEditDeleted((prev) => { const next = new Set(prev); next.delete(r._id); return next; })}>恢复</Button>
+                ) : (
+                  <Button type="link" size="small" danger onClick={() => deleteBulkRow(r._id)}>删除</Button>
+                )
+              ),
+            },
+          ] as ColumnsType<any>}
+        />
+        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+          <Button type="dashed" onClick={addBulkRow} icon={<PlusOutlined />} style={{ flex: 1 }}>
+            添加实验组
+          </Button>
+          <Button type="dashed" onClick={addBulkParamCol} icon={<PlusOutlined />} style={{ flex: 1 }}>
+            添加变量列
+          </Button>
+        </div>
+      </Modal>
+
       <Modal title="管理训练指标" open={metricsModalOpen} onCancel={() => setMetricsModalOpen(false)} footer={null} width={1000} destroyOnClose>
         <TrainingMetricsManager groups={groups} onRefresh={refreshExperiment} />
       </Modal>
@@ -451,19 +673,6 @@ const DashboardPage: React.FC = () => {
 
       <Modal title="一键导入实验数据" open={importTab} onCancel={() => setImportTab(false)} footer={null} width={800}>
         <BulkImport experimentId={experiment.id!} experimentType={experiment.type} onSuccess={refreshExperiment} />
-      </Modal>
-
-      <Modal title="管理测试用例" open={testCasesTab} onCancel={() => setTestCasesTab(false)} footer={null} width={900}>
-        <Tabs items={[
-          {
-            key: 'manual', label: '逐条编辑',
-            children: <TestCaseTable experimentId={experiment.id!} testCases={experiment.testCases || []} onRefresh={refreshExperiment} />,
-          },
-          {
-            key: 'json', label: 'JSON 批量上传',
-            children: <CsvUploader experimentId={experiment.id!} onSuccess={refreshExperiment} />,
-          },
-        ]} />
       </Modal>
 
     </div>

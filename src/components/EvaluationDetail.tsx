@@ -4,7 +4,7 @@ import { SearchOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOu
 import type { ColumnsType } from 'antd/es/table';
 import type { ExperimentGroup, TestCase, EvaluationResult } from '../types';
 import { fetchResults, updateResult, updateGroup } from '../api/endpoints';
-import { diagnoseError, autoAnnotate, clusterErrors } from '../api/endpoints';
+import { diagnoseError, clusterErrors } from '../api/endpoints';
 import ResultsUploader from './ResultsUploader';
 
 const { Title } = Typography;
@@ -115,27 +115,6 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
     setLlmLoading(false);
   };
 
-  const handleAutoAnnotate = async () => {
-    if (selectedRowKeys.length === 0) { message.warning('请先勾选要标注的用例'); return; }
-    const targets = getSelected();
-    setLlmLoading(true); setLlmModalTitle(`自动标注 (${Math.min(targets.length, 10)}条)`);
-    const sample = targets.slice(0, 10);
-    const parts: string[] = [];
-    for (const r of sample) {
-      try {
-        const scores = await autoAnnotate({ question: r.question || '', expected_answer: r.expected_answer || '', model_response: r.model_response || '' });
-        if (!scores.error) {
-          // 自动保存到 ai_scores
-          await updateResult(r.id, { ai_scores: scores }).catch(() => {});
-          setAllResults((prev) => prev.map((x) => (x.id === r.id ? { ...x, ai_scores: scores } : x)));
-        }
-        parts.push(`- ${r.question?.slice(0, 30)}... | correctness:${scores.correctness} completeness:${scores.completeness} conciseness:${scores.conciseness} format:${scores.format}`);
-      } catch { parts.push(`- 标注失败`); }
-    }
-    setLlmResult(parts.join('\n'));
-    setLlmLoading(false);
-  };
-
   const handleClusterErrors = async () => {
     const errors = results.filter((r) => !r.is_correct);
     if (errors.length === 0) { message.warning('没有错误用例'); return; }
@@ -165,7 +144,7 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   const reasonFilters = [...new Set(results.map((r) => r.reason || '').filter(Boolean))].slice(0, 50).map((v) => ({ text: v, value: v }));
 
   // 收集 JSON 导入带来的自定义字段（不在标准字段中的）
-  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'category_tag', 'trajectory', 'eval_dataset', 'experiment_id', 'name', 'model', 'parameters', 'created_at', 'key', 'sub_category', 'case_id']);
+  const STD_FIELDS = new Set(['id', 'groupId', 'group_id', 'test_case_id', 'question', 'expected_answer', 'model_response', 'is_correct', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'category_tag', 'trajectory', 'eval_dataset', 'experiment_id', 'name', 'model', 'parameters', 'created_at', 'key', 'sub_category', 'case_id']);
   const extraFields = [...new Set(results.flatMap((r) => Object.keys(r).filter((k) => !STD_FIELDS.has(k))))];
   const hasSubCategory = results.some((r) => r.sub_category);
   const subCatFilters = hasSubCategory ? [...new Set(results.map((r) => r.sub_category).filter(Boolean))].map((v) => ({ text: v, value: v })) : [];
@@ -247,22 +226,9 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
       render: (v: number) =>
         v ? <Tag icon={<CheckCircleOutlined />} color="success">正确</Tag> : <Tag icon={<CloseCircleOutlined />} color="error">错误</Tag>,
     },
-    { title: '原因', dataIndex: 'reason', key: 'reason', width: 130, ellipsis: true, filters: reasonFilters, onFilter: (v, r) => r.reason === v, filterSearch: true, sorter: (a, b) => (a.reason || '').localeCompare(b.reason || ''), render: (t: string) => t || '-' },
     { title: '耗时', dataIndex: 'runtime_ms', key: 'runtime', width: 80, sorter: (a, b) => (a.runtime_ms || 0) - (b.runtime_ms || 0), render: (v: number) => v ? `${v}ms` : '-' },
     { title: 'Token', dataIndex: 'token_count', key: 'token', width: 70, sorter: (a, b) => (a.token_count || 0) - (b.token_count || 0), render: (v: number) => v > 0 ? v.toLocaleString() : '-' },
-    {
-      title: 'AI评分', key: 'ai_scores', width: 130,
-      render: (_: unknown, record: EvaluationResult) => {
-        if (!record.ai_scores) return <span style={{ color: '#ccc' }}>—</span>;
-        return (
-          <span style={{ fontSize: 11 }}>
-            {Object.entries(record.ai_scores).map(([k, v]) => (
-              <Tag key={k} style={{ marginBottom: 2 }}>{k}: {typeof v === 'number' ? v.toFixed(2) : v}</Tag>
-            ))}
-          </span>
-        );
-      },
-    },
+    { title: '原因', dataIndex: 'reason', key: 'reason', width: 130, ellipsis: true, filters: reasonFilters, onFilter: (v, r) => r.reason === v, filterSearch: true, sorter: (a, b) => (a.reason || '').localeCompare(b.reason || ''), render: (t: string) => t || '-' },
     {
       title: '标注', key: 'annotation', width: 150,
       render: (_: unknown, record: EvaluationResult) =>
@@ -348,7 +314,6 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
             {selectedRowKeys.length > 0 && <Tag color="blue">已选 {selectedRowKeys.length} 条</Tag>}
             <Dropdown menu={{ items: [
               { key: 'diagnose', label: selectedRowKeys.length > 0 ? `AI 诊断错误 (${selectedRowKeys.length}已选)` : 'AI 诊断错误（请先勾选）', disabled: selectedRowKeys.length === 0, onClick: handleDiagnose },
-              { key: 'annotate', label: selectedRowKeys.length > 0 ? `AI 自动标注 (${selectedRowKeys.length}已选)` : 'AI 自动标注（请先勾选）', disabled: selectedRowKeys.length === 0, onClick: handleAutoAnnotate },
               { key: 'cluster', label: 'AI 错误聚类(全量)', onClick: handleClusterErrors },
             ] }}>
               <Button size="small" icon={<RobotOutlined />} loading={llmLoading}>AI 分析 <DownOutlined /></Button>

@@ -5,11 +5,9 @@ import zhCN from 'antd/locale/zh_CN';
 import { DataProvider } from './context/DataContext';
 import AppLayout from './components/AppLayout';
 import HomePage from './pages/HomePage';
-import ExperimentListPage from './pages/ExperimentListPage';
 import DashboardPage from './pages/DashboardPage';
 import DetailPage from './pages/DetailPage';
 import ComparePage from './pages/ComparePage';
-import CategoryPage from './pages/CategoryPage';
 
 const App: React.FC = () => {
   return (
@@ -27,8 +25,6 @@ const App: React.FC = () => {
           <Routes>
             <Route element={<AppLayout />}>
               <Route path="/" element={<HomePage />} />
-              <Route path="/categories" element={<CategoryPage />} />
-              <Route path="/category/:categoryId" element={<ExperimentListPage />} />
               <Route path="/experiment/:experimentId" element={<DashboardPage />} />
               <Route
                 path="/experiment/:experimentId/group/:groupId"

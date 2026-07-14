@@ -52,37 +52,33 @@ router.post('/experiments/:expId/test-cases/upload', upload.single('file'), (req
 });
 
 router.put('/test-cases/:id', (req, res) => {
-  for (const c of data.categories) {
-    for (const e of c.experiments) {
-      const tc = (e.test_cases || []).find((t) => t.id === req.params.id);
-      if (tc) {
-        const { question, expected_answer, category_tag } = req.body;
-        if (question !== undefined) tc.question = question;
-        if (expected_answer !== undefined) tc.expected_answer = expected_answer;
-        if (category_tag !== undefined) tc.category_tag = category_tag;
-        save();
-        return res.json(tc);
-      }
+  for (const e of data.experiments) {
+    const tc = (e.test_cases || []).find((t) => t.id === req.params.id);
+    if (tc) {
+      const { question, expected_answer, category_tag } = req.body;
+      if (question !== undefined) tc.question = question;
+      if (expected_answer !== undefined) tc.expected_answer = expected_answer;
+      if (category_tag !== undefined) tc.category_tag = category_tag;
+      save();
+      return res.json(tc);
     }
   }
   res.status(404).json({ error: '测试用例不存在' });
 });
 
 router.delete('/test-cases/:id', (req, res) => {
-  for (const c of data.categories) {
-    for (const e of c.experiments) {
-      const idx = (e.test_cases || []).findIndex((t) => t.id === req.params.id);
-      if (idx >= 0) {
-        e.test_cases.splice(idx, 1);
-        // 级联删除：清理所有实验组中引用该测试用例的评测结果
-        for (const g of (e.groups || [])) {
-          g.evaluation_results = (g.evaluation_results || []).filter(
-            (r) => r.test_case_id !== req.params.id,
-          );
-        }
-        save();
-        return res.json({ success: true });
+  for (const e of data.experiments) {
+    const idx = (e.test_cases || []).findIndex((t) => t.id === req.params.id);
+    if (idx >= 0) {
+      e.test_cases.splice(idx, 1);
+      // 级联删除：清理所有实验组中引用该测试用例的评测结果
+      for (const g of (e.groups || [])) {
+        g.evaluation_results = (g.evaluation_results || []).filter(
+          (r) => r.test_case_id !== req.params.id,
+        );
       }
+      save();
+      return res.json({ success: true });
     }
   }
   res.status(404).json({ error: '测试用例不存在' });

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Button, message, Table, Space, Input, Switch, Popconfirm, Tag, Tabs } from 'antd';
+import React, { useState, useMemo } from 'react';
+import { Button, message, Table, Space, Input, Popconfirm, Tag, Tabs, Select } from 'antd';
 import { InboxOutlined, PlusOutlined, DeleteOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import Upload from 'antd/es/upload';
@@ -13,74 +13,176 @@ interface Props {
   testCases: TestCase[];
   existingResults: EvaluationResult[];
   onRefresh: () => void;
-  isAgent?: boolean; // agent评测时显示轨迹列
+  isAgent?: boolean;
 }
 
-interface ManualEntry {
-  key: string;
-  test_case_id?: string;
-  question: string;
-  expected_answer: string;
-  model_response: string;
-  is_correct: boolean;
-  reason: string;
-  annotation: string;
-  think: string;
-  trajectory: string;
+// 标准字段（不是自定义列）
+const STD_KEYS = new Set([
+  'id', 'group_id', 'group_id', 'test_case_id', 'group_id',
+  'question', 'expected_answer', 'category_tag',
+  'model_response', 'is_correct', 'runtime_ms', 'token_count',
+  'reason', 'annotation', 'think', 'ai_scores', 'traj_diagnosis', 'trajectory',
+  'sub_category', 'custom_scores', 'case_id',
+]);
+
+interface EditRow {
+  _id: string;        // result id (empty for new)
+  _isNew: boolean;
+  _deleted: boolean;
+  [key: string]: any;
 }
 
-let entryCounter = 0;
+let rowCounter = 0;
 
 const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults, onRefresh, isAgent }) => {
   const [uploading, setUploading] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [entries, setEntries] = useState<ManualEntry[]>([]);
   const [activeTab, setActiveTab] = useState('manage');
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingText, setEditingText] = useState('');
+  const [editRows, setEditRows] = useState<EditRow[]>([]);
+  const [customCols, setCustomCols] = useState<string[]>([]);
+  const [initialized, setInitialized] = useState(false);
 
-  const hasResult = (tcId: string) => existingResults.some((r) => r.test_case_id === tcId);
-
-  const initManualEntries = () => {
-    const pending = testCases
-      .filter((tc) => !hasResult(tc.id))
-      .map((tc) => ({
-        key: `tc-${tc.id}`,
-        test_case_id: tc.id,
-        question: tc.question,
-        expected_answer: tc.expected_answer,
-        model_response: '',
-        is_correct: false,
-        reason: '',
-        trajectory: '',
-      }));
-    pending.push({
-      key: `new-${++entryCounter}`,
-      question: '',
-      expected_answer: '',
-      model_response: '',
-      is_correct: false,
-      trajectory: '',
+  // 初始化编辑数据
+  const initEditData = () => {
+    if (initialized) return;
+    // 收集所有自定义字段名
+    const extraKeys = new Set<string>();
+    existingResults.forEach((r) => {
+      Object.keys(r).forEach((k) => {
+        if (!STD_KEYS.has(k) && k !== 'key') extraKeys.add(k);
+      });
     });
-    return pending;
+    const cols = [...extraKeys];
+    setCustomCols(cols);
+
+    // 构建编辑行
+    const rows: EditRow[] = existingResults.map((r) => {
+      const row: EditRow = { _id: r.id, _isNew: false, _deleted: false };
+      // 标准字段
+      row.question = r.question || '';
+      row.expected_answer = r.expected_answer || '';
+      row.model_response = r.model_response || '';
+      row.is_correct = r.is_correct ? '正确' : '错误';
+      row.runtime_ms = String(r.runtime_ms ?? '');
+      row.token_count = String(r.token_count ?? '');
+      row.reason = r.reason || '';
+      row.annotation = r.annotation || '';
+      row.think = r.think || '';
+      row.trajectory = r.trajectory ? JSON.stringify(r.trajectory) : '';
+      // 自定义字段
+      cols.forEach((k) => { row[k] = r[k] !== undefined ? String(r[k]) : ''; });
+      return row;
+    });
+    setEditRows(rows);
+    setInitialized(true);
   };
 
-  const toggleAddForm = () => {
-    if (!showAddForm) setEntries(initManualEntries());
-    else setEntries([]);
-    setShowAddForm(!showAddForm);
-  };
+  // 打开 tab 时初始化
+  useMemo(() => { if (activeTab === 'manage') initEditData(); }, [activeTab, existingResults]);
 
-  const updateEntry = (key: string, field: keyof ManualEntry, value: string | boolean) => {
-    setEntries((prev) => prev.map((e) => (e.key === key ? { ...e, [field]: value } : e)));
+  const setCell = (rowIdx: number, key: string, value: string) => {
+    setEditRows((prev) => prev.map((r, i) => i === rowIdx ? { ...r, [key]: value } : r));
   };
 
   const addRow = () => {
-    setEntries((prev) => [...prev, { key: `new-${++entryCounter}`, question: '', expected_answer: '', model_response: '', is_correct: false, reason: '', annotation: '', think: '', trajectory: '' }]);
+    const newRow: EditRow = { _id: `__new_${++rowCounter}`, _isNew: true, _deleted: false, question: '', expected_answer: '', model_response: '', is_correct: '错误', score: '', runtime_ms: '', token_count: '', reason: '', annotation: '', think: '', trajectory: '' };
+    customCols.forEach((k) => { newRow[k] = ''; });
+    setEditRows((prev) => [...prev, newRow]);
   };
 
-  const removeRow = (key: string) => {
-    setEntries((prev) => prev.filter((e) => e.key !== key));
+  const deleteRow = (idx: number) => {
+    setEditRows((prev) => {
+      const row = prev[idx];
+      if (row._isNew) return prev.filter((_, i) => i !== idx);
+      return prev.map((r, i) => i === idx ? { ...r, _deleted: true } : r);
+    });
+  };
+
+  const restoreRow = (idx: number) => {
+    setEditRows((prev) => prev.map((r, i) => i === idx ? { ...r, _deleted: false } : r));
+  };
+
+  const addCustomCol = () => {
+    setCustomCols((prev) => [...prev, '']);
+    // 所有现有行添加空值
+    setEditRows((prev) => prev.map((r) => ({ ...r, '': '' })));
+  };
+
+  const updateCustomColName = (idx: number, newName: string) => {
+    const oldName = customCols[idx];
+    setCustomCols((prev) => prev.map((k, i) => i === idx ? newName : k));
+    // 迁移旧 key 的值到新 key
+    if (oldName && newName && oldName !== newName) {
+      setEditRows((prev) => prev.map((r) => {
+        const val = r[oldName] ?? '';
+        const updated = { ...r, [newName]: val };
+        delete updated[oldName];
+        return updated;
+      }));
+    }
+  };
+
+  const deleteCustomCol = (idx: number) => {
+    const oldName = customCols[idx];
+    setCustomCols((prev) => prev.filter((_, i) => i !== idx));
+    if (oldName) {
+      setEditRows((prev) => prev.map((r) => {
+        const updated = { ...r };
+        delete updated[oldName];
+        return updated;
+      }));
+    }
+  };
+
+  const handleSave = async () => {
+    for (const row of editRows) {
+      if (row._isNew) {
+        // 新建
+        if (!row.question?.trim() && !row.model_response?.trim()) continue;
+        const extra: Record<string, any> = {};
+        customCols.forEach((k) => { if (k.trim() && row[k] !== '' && row[k] !== undefined) extra[k.trim()] = row[k]; });
+        const isCorrect = row.is_correct === '正确';
+        let trajectory;
+        if (isAgent && row.trajectory?.trim()) {
+          try { trajectory = JSON.parse(row.trajectory); } catch { /* ignore */ }
+        }
+        await createResult(groupId, {
+          question: row.question?.trim() || undefined,
+          expected_answer: row.expected_answer?.trim() || undefined,
+          model_response: row.model_response || '',
+          is_correct: isCorrect,
+          runtime_ms: Number(row.runtime_ms) || 0,
+          token_count: Number(row.token_count) || 0,
+          reason: row.reason || undefined,
+          trajectory,
+          ...extra,
+        } as any);
+      } else if (!row._deleted) {
+        // 更新
+        const updates: Record<string, any> = {
+          model_response: row.model_response,
+          is_correct: row.is_correct === '正确',
+          runtime_ms: Number(row.runtime_ms) || 0,
+          token_count: Number(row.token_count) || 0,
+          reason: row.reason || undefined,
+          annotation: row.annotation || undefined,
+          think: row.think || undefined,
+        };
+        customCols.forEach((k) => { if (k.trim()) updates[k.trim()] = row[k] || undefined; });
+        if (isAgent && row.trajectory) {
+          try { updates.trajectory = JSON.parse(row.trajectory); } catch { /* keep old */ }
+        }
+        await updateResult(row._id, updates as any);
+      }
+    }
+    // 删除被标记的
+    for (const row of editRows) {
+      if (!row._isNew && row._deleted) {
+        await deleteResult(row._id);
+      }
+    }
+    message.success('已保存');
+    setInitialized(false);
+    onRefresh();
   };
 
   const handleUpload: UploadProps['customRequest'] = async ({ file }) => {
@@ -96,204 +198,116 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
     }
   };
 
-  const handleManualSubmit = async () => {
-    const valid = entries.filter((e) => e.model_response.trim() || e.question.trim());
-    if (valid.length === 0) { message.warning('请至少填写一条'); return; }
-    let count = 0;
-    for (const entry of valid) {
-      try {
-        // 解析 JSON 字段
-        let trajectory;
-        if (isAgent && entry.trajectory.trim()) {
-          try { trajectory = JSON.parse(entry.trajectory); } catch {
-            message.error(`轨迹JSON格式错误，请检查: ${entry.trajectory.slice(0, 50)}...`);
-            continue;
-          }
-        }
-        if (entry.test_case_id) {
-          await createResult(groupId, { test_case_id: entry.test_case_id, model_response: entry.model_response, is_correct: entry.is_correct, score: entry.is_correct ? 1 : 0, reason: entry.reason || undefined, trajectory });
-        } else if (entry.question.trim()) {
-          await createResult(groupId, { question: entry.question.trim(), expected_answer: entry.expected_answer.trim(), model_response: entry.model_response, is_correct: entry.is_correct, score: entry.is_correct ? 1 : 0, reason: entry.reason || undefined, trajectory });
-        } else continue;
-        count++;
-      } catch { /* skip */ }
-    }
-    if (count > 0) {
-      message.success(`成功录入 ${count} 条评测结果`);
-      setEntries([]);
-      setShowAddForm(false);
-      onRefresh();
-    }
-  };
+  const allColKeys = ['question', 'expected_answer', 'model_response', 'is_correct', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', ...(isAgent ? ['trajectory'] : []), ...customCols];
 
-  const handleDeleteResult = async (id: string) => {
-    try {
-      await deleteResult(id);
-      message.success('已删除');
-      onRefresh();
-    } catch (err: unknown) {
-      message.error(err instanceof Error ? err.message : '删除失败');
-    }
-  };
-
-  const startEdit = (record: EvaluationResult) => {
-    setEditingId(record.id);
-    setEditingText(record.model_response || '');
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditingText('');
-  };
-
-  const saveEdit = async (id: string) => {
-    try {
-      await updateResult(id, { model_response: editingText });
-      message.success('已保存');
-      setEditingId(null);
-      setEditingText('');
-      onRefresh();
-    } catch (err: unknown) {
-      message.error(err instanceof Error ? err.message : '保存失败');
-    }
-  };
-
-  const resultColumns = [
-    { title: '题目', dataIndex: 'question', key: 'question', width: 200, ellipsis: true },
-    { title: '标准答案', dataIndex: 'expected_answer', key: 'expected_answer', width: 160, ellipsis: true },
-    {
-      title: '模型回答', dataIndex: 'model_response', key: 'model_response', width: 280,
-      render: (t: string, record: EvaluationResult) =>
-        editingId === record.id ? (
-          <Input.TextArea
-            size="small"
-            rows={3}
-            value={editingText}
-            onChange={(e) => setEditingText(e.target.value)}
-            style={{ fontSize: 12 }}
-          />
-        ) : (
-          <div style={{ whiteSpace: 'pre-wrap', fontSize: 12, maxHeight: 100, overflow: 'auto' }}>{t || <span style={{ color: '#ccc' }}>无</span>}</div>
-        ),
-    },
-    {
-      title: '结果', dataIndex: 'is_correct', key: 'is_correct', width: 64,
-      render: (v: number) => v ? <Tag icon={<CheckCircleOutlined />} color="success">正确</Tag> : <Tag icon={<CloseCircleOutlined />} color="error">错误</Tag>,
-    },
-    {
-      title: '', key: 'action', width: 80,
-      render: (_: unknown, record: EvaluationResult) =>
-        editingId === record.id ? (
-          <Space size={0}>
-            <Button type="link" size="small" onClick={() => saveEdit(record.id)}>保存</Button>
-            <Button type="link" size="small" onClick={cancelEdit}>取消</Button>
-          </Space>
-        ) : (
-          <Space size={0}>
-            <Button type="link" size="small" onClick={() => startEdit(record)}>编辑</Button>
-            <Popconfirm
-              title="确认删除?"
-              onConfirm={() => handleDeleteResult(record.id)}
-              getPopupContainer={(trigger) => trigger.parentElement || document.body}
-            >
-              <Button type="link" size="small" danger icon={<DeleteOutlined />} />
-            </Popconfirm>
-          </Space>
-        ),
-    },
-  ];
-
-  const addColumns = [
-    {
-      title: '题目 / 标准答案', key: 'info', width: 250,
-      render: (_: unknown, record: ManualEntry) =>
-        record.test_case_id ? (
-          <div><div style={{ fontWeight: 500, marginBottom: 2, fontSize: 13 }}>{record.question}</div><div style={{ color: '#888', fontSize: 11 }}>标准: {record.expected_answer}</div></div>
-        ) : (
-          <Space direction="vertical" style={{ width: '100%' }}>
-            <Input size="small" placeholder="题目..." value={record.question} onChange={(e) => updateEntry(record.key, 'question', e.target.value)} />
-            <Input size="small" placeholder="标准答案..." value={record.expected_answer} onChange={(e) => updateEntry(record.key, 'expected_answer', e.target.value)} />
-          </Space>
-        ),
-    },
-    {
-      title: '模型回答', key: 'response', width: 280,
-      render: (_: unknown, record: ManualEntry) => (
-        <Input.TextArea size="small" rows={2} placeholder="模型回答..." value={record.model_response} onChange={(e) => updateEntry(record.key, 'model_response', e.target.value)} />
+  const editColumns = [
+    { title: '#', width: 36, align: 'center' as const, render: (_: any, __: any, idx: number) => idx + 1 },
+    { title: '题目', key: 'question', width: 140,
+      render: (_: any, r: any, idx: number) => (
+        <Input size="small" value={r.question} onChange={(e) => setCell(idx, 'question', e.target.value)} disabled={r._deleted} placeholder="题目" />
       ),
     },
-    {
-      title: '正确', key: 'correct', width: 56, align: 'center' as const,
-      render: (_: unknown, record: ManualEntry) => <Switch size="small" checked={record.is_correct} onChange={(v) => updateEntry(record.key, 'is_correct', v)} />,
+    { title: '标准答案', key: 'expected_answer', width: 130,
+      render: (_: any, r: any, idx: number) => (
+        <Input size="small" value={r.expected_answer} onChange={(e) => setCell(idx, 'expected_answer', e.target.value)} disabled={r._deleted} placeholder="标准答案" />
+      ),
     },
-    {
-      title: '原因', key: 'reason', width: 130,
-      render: (_: unknown, record: ManualEntry) => (
-        <Input size="small" placeholder="判断原因..." value={record.reason} onChange={(e) => updateEntry(record.key, 'reason', e.target.value)} />
+    { title: '模型回答', key: 'model_response', width: 220,
+      render: (_: any, r: any, idx: number) => (
+        <Input.TextArea size="small" rows={1} value={r.model_response} onChange={(e) => setCell(idx, 'model_response', e.target.value)} disabled={r._deleted} placeholder="模型回答" style={{ fontSize: 12 }} />
+      ),
+    },
+    // 自定义字段列（与详情页一致：在模型回答和结果之间）
+    ...customCols.map((colName, ci) => ({
+      title: (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Input size="small" value={colName} onChange={(e) => updateCustomColName(ci, e.target.value)} placeholder="字段名" style={{ width: 80, fontWeight: 500 }} />
+          <Popconfirm title="删除此列？所有行的该字段数据将被移除" onConfirm={() => deleteCustomCol(ci)}>
+            <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </div>
+      ),
+      key: `custom_${ci}`,
+      width: 160,
+      render: (_: any, r: any, idx: number) => (
+        <Input size="small" value={r[colName] || ''} onChange={(e) => setCell(idx, colName, e.target.value)} disabled={r._deleted} placeholder="..." />
+      ),
+    })),
+    { title: '结果', key: 'is_correct', width: 80,
+      render: (_: any, r: any, idx: number) => (
+        <Select size="small" value={r.is_correct} onChange={(v) => setCell(idx, 'is_correct', v)} disabled={r._deleted} style={{ width: '100%' }}
+          options={[{ label: '✅ 正确', value: '正确' }, { label: '❌ 错误', value: '错误' }]} />
+      ),
+    },
+    { title: '耗时(ms)', key: 'runtime_ms', width: 90,
+      render: (_: any, r: any, idx: number) => (
+        <Input size="small" value={r.runtime_ms} onChange={(e) => setCell(idx, 'runtime_ms', e.target.value)} disabled={r._deleted} placeholder="0" />
+      ),
+    },
+    { title: 'Token', key: 'token_count', width: 80,
+      render: (_: any, r: any, idx: number) => (
+        <Input size="small" value={r.token_count} onChange={(e) => setCell(idx, 'token_count', e.target.value)} disabled={r._deleted} placeholder="0" />
+      ),
+    },
+    { title: '原因', key: 'reason', width: 130,
+      render: (_: any, r: any, idx: number) => (
+        <Input size="small" value={r.reason} onChange={(e) => setCell(idx, 'reason', e.target.value)} disabled={r._deleted} placeholder="原因" />
+      ),
+    },
+    { title: '标注', key: 'annotation', width: 120,
+      render: (_: any, r: any, idx: number) => (
+        <Input size="small" value={r.annotation} onChange={(e) => setCell(idx, 'annotation', e.target.value)} disabled={r._deleted} placeholder="标注" />
+      ),
+    },
+    { title: 'Think', key: 'think', width: 120,
+      render: (_: any, r: any, idx: number) => (
+        <Input size="small" value={r.think} onChange={(e) => setCell(idx, 'think', e.target.value)} disabled={r._deleted} placeholder="Think" />
       ),
     },
     ...(isAgent ? [{
-      title: '轨迹(JSON)', key: 'trajectory', width: 180,
-      render: (_: unknown, record: ManualEntry) => (
-        <Input.TextArea size="small" rows={2} placeholder='[{"step":1,"thought":"..."}]'
-          value={record.trajectory} onChange={(e) => updateEntry(record.key, 'trajectory', e.target.value)} style={{ fontSize: 11 }} />
+      title: '轨迹(JSON)', key: 'trajectory', width: 160,
+      render: (_: any, r: any, idx: number) => (
+        <Input.TextArea size="small" rows={1} value={r.trajectory} onChange={(e) => setCell(idx, 'trajectory', e.target.value)} disabled={r._deleted} placeholder='[{"step":1}]' style={{ fontSize: 11 }} />
       ),
     }] : []),
     {
-      title: '', key: 'action', width: 40,
-      render: (_: unknown, record: ManualEntry) => !record.test_case_id ? <Button type="link" size="small" danger icon={<DeleteOutlined />} onClick={() => removeRow(record.key)} /> : null,
+      title: '操作', key: 'action', width: 60, align: 'center' as const, fixed: 'right' as const,
+      render: (_: any, r: any, idx: number) => (
+        r._deleted ? (
+          <Button type="link" size="small" onClick={() => restoreRow(idx)}>恢复</Button>
+        ) : (
+          <Button type="link" size="small" danger onClick={() => deleteRow(idx)}>删除</Button>
+        )
+      ),
     },
   ];
-
-  const pendingCount = testCases.filter((tc) => !hasResult(tc.id)).length;
 
   return (
     <Tabs
       activeKey={activeTab}
-      onChange={setActiveTab}
+      onChange={(key) => { setActiveTab(key); if (key !== 'manage') setInitialized(false); }}
+      destroyInactiveTabPane
       items={[
         {
           key: 'manage',
           label: `逐条管理 (${existingResults.length})`,
           children: (
             <div>
-              {/* 已有结果 */}
-              <div style={{ marginBottom: 8, fontWeight: 500 }}>已有评测结果</div>
-              {existingResults.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: 24, color: '#999', background: '#fafafa', borderRadius: 4, marginBottom: 12 }}>
-                  暂无评测结果
-                </div>
-              ) : (
-                <Table
-                  dataSource={existingResults}
-                  columns={resultColumns}
-                  rowKey="id"
-                  pagination={{ pageSize: 10, size: 'small' }}
-                  size="small"
-                  scroll={{ x: 800 }}
-                  style={{ marginBottom: 16 }}
-                />
-              )}
-
-              {/* 添加 */}
-              <div style={{ marginBottom: 8, fontWeight: 500 }}>
-                添加评测结果 {pendingCount > 0 && <Tag color="orange">{pendingCount} 个待录入</Tag>}
+              <Table
+                dataSource={editRows}
+                columns={editColumns}
+                rowClassName={(r: any) => r._deleted ? 'ant-table-row-hidden' : ''}
+                rowKey="_id"
+                pagination={{ pageSize: 20, size: 'small' }}
+                size="small"
+                scroll={{ x: 1200 + customCols.length * 130 }}
+                locale={{ emptyText: '暂无评测结果，点击下方按钮添加' }}
+              />
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <Button type="dashed" onClick={addRow} icon={<PlusOutlined />} style={{ flex: 1 }}>添加行</Button>
+                <Button type="dashed" onClick={addCustomCol} icon={<PlusOutlined />} style={{ flex: 1 }}>添加列</Button>
+                <Button type="primary" onClick={handleSave}>保存全部</Button>
               </div>
-              {!showAddForm ? (
-                <Button type="dashed" icon={<PlusOutlined />} onClick={toggleAddForm} block>
-                  添加评测结果
-                </Button>
-              ) : (
-                <div>
-                  <Table dataSource={entries} columns={addColumns} rowKey="key" pagination={false} size="small" scroll={{ x: 700 }} />
-                  <Space style={{ marginTop: 12 }}>
-                    <Button icon={<PlusOutlined />} onClick={addRow}>添加一行</Button>
-                    <Button type="primary" onClick={handleManualSubmit} disabled={entries.length === 0}>提交录入</Button>
-                    <Button onClick={toggleAddForm}>取消</Button>
-                  </Space>
-                  <div style={{ marginTop: 8, fontSize: 12, color: '#888' }}>自由添加的行提交时自动创建测试用例。</div>
-                </div>
-              )}
             </div>
           ),
         },

@@ -12,22 +12,17 @@ const AppLayout: React.FC = () => {
   const location = useLocation();
   const [llmSettingsOpen, setLlmSettingsOpen] = useState(false);
   const {
-    selectedCategory, selectedExperiment, selectedGroup,
+    selectedExperiment, selectedGroup,
     compareGroups, goHome,
-    selectCategory, selectExperiment,
+    selectExperiment,
   } = useData();
 
   const pathname = location.pathname;
   const isHome = pathname === '/';
-  const isCategories = pathname === '/categories';
-  const isCategory = pathname.startsWith('/category/') && !isCategories;
   const isExperiment = pathname.startsWith('/experiment/') && !pathname.includes('/group/') && !pathname.includes('/compare');
   const isDetail = pathname.includes('/group/');
   const isCompare = pathname.includes('/compare');
 
-  // 可点击的面包屑上级节点（不含当前页面）
-  // 当前页面作为最后一级黑色不可点击
-  const isDeeperThanCategory = isExperiment || isDetail || isCompare;
   const isDeeperThanExperiment = isDetail || isCompare;
 
   const breadcrumbItems = useMemo(() => {
@@ -37,13 +32,6 @@ const AppLayout: React.FC = () => {
         onClick: () => { goHome(); navigate('/'); },
       },
     ];
-    // 类别：只在比类别更深时才显示为可点击上级
-    if (selectedCategory && isDeeperThanCategory) {
-      items.push({
-        title: selectedCategory.name,
-        onClick: () => { selectCategory(selectedCategory.id); navigate(`/category/${selectedCategory.id}`); },
-      });
-    }
     // 实验：只在比实验更深时才显示为可点击上级
     if (selectedExperiment && isDeeperThanExperiment) {
       items.push({
@@ -52,28 +40,24 @@ const AppLayout: React.FC = () => {
       });
     }
     return items;
-  }, [selectedCategory, selectedExperiment, isDeeperThanCategory, isDeeperThanExperiment, goHome, navigate, selectCategory, selectExperiment]);
+  }, [selectedExperiment, isDeeperThanExperiment, goHome, navigate, selectExperiment]);
 
   // 面包屑最后一级（当前页面，不可点击，黑色加粗）
   const currentLabel = useMemo(() => {
     if (isCompare && compareGroups.length >= 2) return `对比 ${compareGroups.length} 组`;
     if (isDetail && selectedGroup) return selectedGroup.name;
     if (isExperiment && selectedExperiment) return selectedExperiment.name;
-    if (isCategory && selectedCategory) return selectedCategory.name;
-    if (isCategories) return '实验类别';
     if (isHome) return null;
     return null;
-  }, [isCompare, isDetail, isExperiment, isCategory, compareGroups, selectedGroup, selectedExperiment, selectedCategory]);
+  }, [isCompare, isDetail, isExperiment, compareGroups, selectedGroup, selectedExperiment]);
 
   // 返回按钮
   const backBtn = useMemo(() => {
     if (isCompare && selectedExperiment) return { label: '返回仪表盘', path: `/experiment/${selectedExperiment.id}` };
     if (isDetail && selectedExperiment) return { label: '返回仪表盘', path: `/experiment/${selectedExperiment.id}` };
     if (isExperiment) return { label: '返回首页', path: '/' };
-    if (isCategory) return { label: '返回首页', path: '/' };
-    if (isCategories) return { label: '返回首页', path: '/' };
     return null;
-  }, [isCompare, isDetail, isExperiment, isCategory, selectedExperiment, selectedCategory]);
+  }, [isCompare, isDetail, isExperiment, selectedExperiment]);
 
   const allBreadcrumbItems = [
     ...breadcrumbItems.map((item) => ({

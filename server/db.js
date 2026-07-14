@@ -7,7 +7,7 @@ const DB_PATH = path.join(__dirname, 'data.sqlite');
 const JSON_PATH = path.join(__dirname, 'data.json');
 
 // ========== 内存数据（路由层操作对象，与 SQLite 双向同步） ==========
-let data = { categories: [] };
+let data = { experiments: [] };
 
 // sql.js Database 实例（init 后赋值）
 let db;
@@ -23,12 +23,8 @@ const STD_RESULT_FIELDS = new Set([
 
 // ========== SQLite 表结构 ==========
 function createTables() {
-  db.run(`CREATE TABLE IF NOT EXISTS categories (
-    id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT DEFAULT '',
-    created_at TEXT NOT NULL
-  )`);
   db.run(`CREATE TABLE IF NOT EXISTS experiments (
-    id TEXT PRIMARY KEY, category_id TEXT NOT NULL,
+    id TEXT PRIMARY KEY,
     name TEXT NOT NULL, description TEXT DEFAULT '',
     type TEXT NOT NULL DEFAULT 'evaluation', date TEXT NOT NULL,
     owner TEXT DEFAULT '', ai_report TEXT, conclusion TEXT,
@@ -65,25 +61,18 @@ function createTables() {
 
 // ========== SQLite → 内存 ==========
 function readDataFromSQLite() {
-  const catRows = execAll('SELECT * FROM categories ORDER BY created_at');
-  const expRows = execAll('SELECT * FROM experiments');
+  const expRows = execAll('SELECT * FROM experiments ORDER BY created_at');
   const tcRows = execAll('SELECT * FROM test_cases');
   const grpRows = execAll('SELECT * FROM groups_t');
   const tmRows = execAll('SELECT * FROM training_metrics');
   const erRows = execAll('SELECT * FROM evaluation_results');
 
-  // 构建 categories → experiments → groups → results 嵌套结构
-  const categories = catRows.map((c) => ({
-    id: c.id, name: c.name, description: c.description, created_at: c.created_at,
-    experiments: [],
-  }));
-
-  const catMap = new Map(categories.map((c) => [c.id, c]));
+  // 直接构建 experiments → groups → results 嵌套结构（无 categories 层级）
   const expMap = new Map();
 
-  for (const e of expRows) {
+  const experiments = expRows.map((e) => {
     const exp = {
-      id: e.id, category_id: e.category_id, name: e.name,
+      id: e.id, name: e.name,
       description: e.description, type: e.type, date: e.date,
       owner: e.owner || '', created_at: e.created_at,
       ai_report: e.ai_report || undefined,
@@ -91,9 +80,8 @@ function readDataFromSQLite() {
       groups: [], test_cases: [],
     };
     expMap.set(exp.id, exp);
-    const cat = catMap.get(exp.category_id);
-    if (cat) cat.experiments.push(exp);
-  }
+    return exp;
+  });
 
   for (const tc of tcRows) {
     const exp = expMap.get(tc.experiment_id);
@@ -143,7 +131,7 @@ function readDataFromSQLite() {
     if (group) {
       const extra = tryParseJSON(er.extra_fields, {});
       group.evaluation_results.push({
-        ...extra, // 自定义字段
+        ...extra,
         id: er.id, group_id: er.group_id, test_case_id: er.test_case_id,
         model_response: er.model_response || '',
         is_correct: er.is_correct ?? 0,
@@ -162,7 +150,7 @@ function readDataFromSQLite() {
     }
   }
 
-  data.categories = categories;
+  data.experiments = experiments;
 }
 
 /** 执行 SELECT 并返回对象数组 */
@@ -189,69 +177,62 @@ function writeDataToSQLite() {
   db.run('DELETE FROM groups_t');
   db.run('DELETE FROM test_cases');
   db.run('DELETE FROM experiments');
-  db.run('DELETE FROM categories');
 
-  const insertCat = db.prepare('INSERT INTO categories VALUES (?,?,?,?)');
-  const insertExp = db.prepare('INSERT INTO experiments VALUES (?,?,?,?,?,?,?,?,?,?)');
+  const insertExp = db.prepare('INSERT INTO experiments VALUES (?,?,?,?,?,?,?,?,?)');
   const insertTC = db.prepare('INSERT INTO test_cases VALUES (?,?,?,?,?)');
   const insertGrp = db.prepare('INSERT INTO groups_t VALUES (?,?,?,?,?,?,?,?)');
   const insertTM = db.prepare('INSERT INTO training_metrics VALUES (?,?,?,?,?,?,?,?,?,?,?)');
   const insertER = db.prepare('INSERT INTO evaluation_results VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
 
-  for (const cat of data.categories) {
-    insertCat.run([cat.id, cat.name, cat.description || '', cat.created_at]);
-    for (const exp of (cat.experiments || [])) {
-      insertExp.run([
-        exp.id, exp.category_id, exp.name, exp.description || '',
-        exp.type, exp.date, exp.owner || '',
-        exp.ai_report || null, exp.conclusion || null,
-        exp.created_at,
+  for (const exp of data.experiments) {
+    insertExp.run([
+      exp.id, exp.name, exp.description || '',
+      exp.type, exp.date, exp.owner || '',
+      exp.ai_report || null, exp.conclusion || null,
+      exp.created_at,
+    ]);
+    for (const tc of (exp.test_cases || [])) {
+      insertTC.run([tc.id, tc.experiment_id, tc.question, tc.expected_answer || '', tc.category_tag || '']);
+    }
+    for (const g of (exp.groups || [])) {
+      insertGrp.run([
+        g.id, g.experiment_id, g.name, g.model || '', g.eval_dataset || '',
+        JSON.stringify(g.parameters || {}),
+        g.error_clusters ? JSON.stringify(g.error_clusters) : null,
+        g.created_at,
       ]);
-      for (const tc of (exp.test_cases || [])) {
-        insertTC.run([tc.id, tc.experiment_id, tc.question, tc.expected_answer || '', tc.category_tag || '']);
-      }
-      for (const g of (exp.groups || [])) {
-        insertGrp.run([
-          g.id, g.experiment_id, g.name, g.model || '', g.eval_dataset || '',
-          JSON.stringify(g.parameters || {}),
-          g.error_clusters ? JSON.stringify(g.error_clusters) : null,
-          g.created_at,
+      if (g.training_metrics) {
+        const m = g.training_metrics;
+        insertTM.run([
+          m.id, g.id,
+          m.accuracy ?? 0, m.precision ?? 0, m.recall ?? 0, m.f1_score ?? 0,
+          m.token_count ?? 0, m.runtime ?? 0,
+          JSON.stringify(m.loss_curve || []),
+          JSON.stringify(m.accuracy_curve || []),
+          JSON.stringify(m.custom_metrics || {}),
         ]);
-        if (g.training_metrics) {
-          const m = g.training_metrics;
-          insertTM.run([
-            m.id, g.id,
-            m.accuracy ?? 0, m.precision ?? 0, m.recall ?? 0, m.f1_score ?? 0,
-            m.token_count ?? 0, m.runtime ?? 0,
-            JSON.stringify(m.loss_curve || []),
-            JSON.stringify(m.accuracy_curve || []),
-            JSON.stringify(m.custom_metrics || {}),
-          ]);
+      }
+      for (const er of (g.evaluation_results || [])) {
+        const extra = {};
+        for (const key of Object.keys(er)) {
+          if (!STD_RESULT_FIELDS.has(key)) extra[key] = er[key];
         }
-        for (const er of (g.evaluation_results || [])) {
-          // 分离标准字段和自定义字段
-          const extra = {};
-          for (const key of Object.keys(er)) {
-            if (!STD_RESULT_FIELDS.has(key)) extra[key] = er[key];
-          }
-          insertER.run([
-            er.id, er.group_id, er.test_case_id,
-            er.model_response || '', er.is_correct ?? 0,
-            er.score ?? null, er.runtime_ms ?? 0, er.token_count ?? 0,
-            er.reason || null, er.annotation || null, er.think || null,
-            er.ai_scores ? JSON.stringify(er.ai_scores) : null,
-            er.traj_diagnosis || null,
-            er.trajectory ? JSON.stringify(er.trajectory) : null,
-            er.sub_category || null,
-            er.custom_scores ? JSON.stringify(er.custom_scores) : null,
-            JSON.stringify(extra),
-          ]);
-        }
+        insertER.run([
+          er.id, er.group_id, er.test_case_id,
+          er.model_response || '', er.is_correct ?? 0,
+          er.score ?? null, er.runtime_ms ?? 0, er.token_count ?? 0,
+          er.reason || null, er.annotation || null, er.think || null,
+          er.ai_scores ? JSON.stringify(er.ai_scores) : null,
+          er.traj_diagnosis || null,
+          er.trajectory ? JSON.stringify(er.trajectory) : null,
+          er.sub_category || null,
+          er.custom_scores ? JSON.stringify(er.custom_scores) : null,
+          JSON.stringify(extra),
+        ]);
       }
     }
   }
 
-  insertCat.free();
   insertExp.free();
   insertTC.free();
   insertGrp.free();
@@ -272,73 +253,49 @@ function save() {
 function seed() {
   console.log('🌱 插入 seed 数据...');
 
-  const cat1Id = uuidv4();
-  const cat2Id = uuidv4();
-  const cat3Id = uuidv4();
-
   const now = () => new Date().toISOString();
 
-  data.categories = [
+  data.experiments = [
     {
-      id: cat1Id, name: '大语言模型评测',
-      description: '围绕大语言模型在多个下游任务上的表现进行系统评测，涵盖不同模型架构、微调策略与推理配置的对比实验。',
-      created_at: now(),
-      experiments: [
-        {
-          id: uuidv4(), category_id: cat1Id, name: 'GPT 系列模型指令遵循能力对比',
-          description: '对比 GPT-3.5-Turbo、GPT-4-Turbo、GPT-4o 在 AlpacaEval 上的表现。',
-          type: 'evaluation', date: '2026-05-12', created_at: now(),
-          groups: [],
-          test_cases: [],
-        },
-        {
-          id: uuidv4(), category_id: cat1Id, name: 'LoRA 微调策略效果验证',
-          description: '在 LLaMA-3-8B 上对比 Full Fine-Tune、LoRA (r=8)、LoRA (r=64)。',
-          type: 'training', date: '2026-06-03', created_at: now(),
-          groups: [],
-          test_cases: [],
-        },
-      ],
+      id: uuidv4(), name: 'GPT 系列模型指令遵循能力对比',
+      description: '对比 GPT-3.5-Turbo、GPT-4-Turbo、GPT-4o 在 AlpacaEval 上的表现。',
+      type: 'evaluation', date: '2026-05-12', created_at: now(),
+      groups: [], test_cases: [],
     },
     {
-      id: cat2Id, name: '图像分类研究',
-      description: '在 ImageNet-1K 和 CIFAR-100 上对不同骨干网络进行消融实验。',
-      created_at: now(),
-      experiments: [
-        {
-          id: uuidv4(), category_id: cat2Id, name: 'ResNet 架构变体 ImageNet 分类对比',
-          description: '比较 ResNet-50、ResNet-101、ResNeXt-50。',
-          type: 'training', date: '2026-04-20', created_at: now(),
-          groups: [],
-          test_cases: [],
-        },
-        {
-          id: uuidv4(), category_id: cat2Id, name: '数据增强策略消融实验',
-          description: '对比 RandomCrop、MixUp、CutMix、RandAugment。',
-          type: 'training', date: '2026-06-15', created_at: now(),
-          groups: [],
-          test_cases: [],
-        },
-      ],
+      id: uuidv4(), name: 'LoRA 微调策略效果验证',
+      description: '在 LLaMA-3-8B 上对比 Full Fine-Tune、LoRA (r=8)、LoRA (r=64)。',
+      type: 'training', date: '2026-06-03', created_at: now(),
+      groups: [], test_cases: [],
     },
     {
-      id: cat3Id, name: '文本分类与 NER 基线',
-      description: '在多个中文 NLP 基准上评测主流预训练模型。',
-      created_at: now(),
-      experiments: [
-        {
-          id: uuidv4(), category_id: cat3Id, name: '中文 NER 模型效果对比',
-          description: '在 MSRA-NER 上对比 BERT-base、RoBERTa-large、ELECTRA-base。',
-          type: 'evaluation', date: '2026-03-08', created_at: now(),
-          groups: [],
-          test_cases: [],
-        },
-      ],
+      id: uuidv4(), name: 'ResNet 架构变体 ImageNet 分类对比',
+      description: '比较 ResNet-50、ResNet-101、ResNeXt-50。',
+      type: 'training', date: '2026-04-20', created_at: now(),
+      groups: [], test_cases: [],
+    },
+    {
+      id: uuidv4(), name: '数据增强策略消融实验',
+      description: '对比 RandomCrop、MixUp、CutMix、RandAugment。',
+      type: 'training', date: '2026-06-15', created_at: now(),
+      groups: [], test_cases: [],
+    },
+    {
+      id: uuidv4(), name: '中文 NER 模型效果对比',
+      description: '在 MSRA-NER 上对比 BERT-base、RoBERTa-large、ELECTRA-base。',
+      type: 'evaluation', date: '2026-03-08', created_at: now(),
+      groups: [], test_cases: [],
+    },
+    {
+      id: uuidv4(), name: 'WebAgent 网页导航评测',
+      description: '评测Agent在模拟网页环境中完成信息检索和操作任务的能力，记录每步执行轨迹。',
+      type: 'evaluation', date: '2026-06-20', created_at: now(),
+      groups: [], test_cases: [],
     },
   ];
 
-  // === GPT 实验 ===
-  const gptExp = data.categories[0].experiments[0];
+  // === GPT 实验（索引 0） ===
+  const gptExp = data.experiments[0];
   gptExp.test_cases = [
     { id: uuidv4(), experiment_id: gptExp.id, question: '将以下句子翻译成英文：今天天气真好。', expected_answer: 'The weather is really nice today.', category_tag: '翻译' },
     { id: uuidv4(), experiment_id: gptExp.id, question: '请用Python写一个快速排序算法。', expected_answer: 'def quicksort(arr):\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[0]\n    left = [x for x in arr[1:] if x <= pivot]\n    right = [x for x in arr[1:] if x > pivot]\n    return quicksort(left) + [pivot] + quicksort(right)', category_tag: '代码生成' },
@@ -385,8 +342,8 @@ function seed() {
 
   gptExp.groups = [grpGpt35, grpGpt4];
 
-  // === LoRA 实验 (training) ===
-  const loraExp = data.categories[0].experiments[1];
+  // === LoRA 实验 (training, 索引 1) ===
+  const loraExp = data.experiments[1];
   loraExp.groups = [
     { id: uuidv4(), experiment_id: loraExp.id, name: 'Full Fine-Tune', model: 'LLaMA-3-8B (Full FT)', parameters: { lr: '2e-5', batch_size: 32, epochs: 3, trainable_params: '8.03B' }, created_at: now(), training_metrics: { id: uuidv4(), accuracy: 0.851, precision: 0.848, recall: 0.855, f1_score: 0.851, token_count: 2400000, runtime: 14400, loss_curve: [], accuracy_curve: [] } },
     { id: uuidv4(), experiment_id: loraExp.id, name: 'LoRA (r=8)', model: 'LLaMA-3-8B + LoRA r=8', parameters: { lr: '5e-4', batch_size: 64, epochs: 5, trainable_params: '4.2M' }, created_at: now(), training_metrics: { id: uuidv4(), accuracy: 0.823, precision: 0.819, recall: 0.827, f1_score: 0.823, token_count: 2400000, runtime: 2800, loss_curve: [], accuracy_curve: [] } },
@@ -394,16 +351,16 @@ function seed() {
     { id: uuidv4(), experiment_id: loraExp.id, name: 'QLoRA (r=64, 4bit)', model: 'LLaMA-3-8B + QLoRA 4bit', parameters: { lr: '5e-4', batch_size: 64, epochs: 5, trainable_params: '33.6M' }, created_at: now(), training_metrics: { id: uuidv4(), accuracy: 0.819, precision: 0.814, recall: 0.823, f1_score: 0.818, token_count: 2400000, runtime: 3500, loss_curve: [], accuracy_curve: [] } },
   ];
 
-  // === ResNet (training) ===
-  const rnExp = data.categories[1].experiments[0];
+  // === ResNet (training, 索引 2) ===
+  const rnExp = data.experiments[2];
   rnExp.groups = [
     { id: uuidv4(), experiment_id: rnExp.id, name: 'ResNet-50', model: 'ResNet-50', parameters: { lr: 0.1, batch_size: 256, epochs: 90, optimizer: 'SGD' }, created_at: now(), training_metrics: { id: uuidv4(), accuracy: 0.761, precision: 0.758, recall: 0.764, f1_score: 0.761, token_count: 0, runtime: 32400, loss_curve: [], accuracy_curve: [] } },
     { id: uuidv4(), experiment_id: rnExp.id, name: 'ResNet-101', model: 'ResNet-101', parameters: { lr: 0.1, batch_size: 256, epochs: 90, optimizer: 'SGD' }, created_at: now(), training_metrics: { id: uuidv4(), accuracy: 0.774, precision: 0.771, recall: 0.777, f1_score: 0.774, token_count: 0, runtime: 46800, loss_curve: [], accuracy_curve: [] } },
     { id: uuidv4(), experiment_id: rnExp.id, name: 'ResNeXt-50', model: 'ResNeXt-50-32x4d', parameters: { lr: 0.1, batch_size: 256, epochs: 90, optimizer: 'SGD' }, created_at: now(), training_metrics: { id: uuidv4(), accuracy: 0.791, precision: 0.788, recall: 0.794, f1_score: 0.791, token_count: 0, runtime: 43200, loss_curve: [], accuracy_curve: [] } },
   ];
 
-  // === 数据增强 (training) ===
-  const augExp = data.categories[1].experiments[1];
+  // === 数据增强 (training, 索引 3) ===
+  const augExp = data.experiments[3];
   augExp.groups = [
     { id: uuidv4(), experiment_id: augExp.id, name: 'Baseline (RandomCrop)', model: 'ResNet-50 + RandomCrop', parameters: { augment: 'RandomCrop+Flip' }, created_at: now(), training_metrics: { id: uuidv4(), accuracy: 0.723, precision: 0.72, recall: 0.726, f1_score: 0.723, token_count: 0, runtime: 18000, loss_curve: [], accuracy_curve: [] } },
     { id: uuidv4(), experiment_id: augExp.id, name: 'MixUp (α=0.2)', model: 'ResNet-50 + MixUp', parameters: { augment: 'MixUp α=0.2' }, created_at: now(), training_metrics: { id: uuidv4(), accuracy: 0.758, precision: 0.755, recall: 0.762, f1_score: 0.758, token_count: 0, runtime: 19800, loss_curve: [], accuracy_curve: [] } },
@@ -411,8 +368,8 @@ function seed() {
     { id: uuidv4(), experiment_id: augExp.id, name: 'RandAugment', model: 'ResNet-50 + RandAugment', parameters: { augment: 'RandAugment N=2 M=14' }, created_at: now(), training_metrics: { id: uuidv4(), accuracy: 0.801, precision: 0.798, recall: 0.804, f1_score: 0.801, token_count: 0, runtime: 22500, loss_curve: [], accuracy_curve: [] } },
   ];
 
-  // === NER 实验 (evaluation) ===
-  const nerExp = data.categories[2].experiments[0];
+  // === NER 实验 (evaluation, 索引 4) ===
+  const nerExp = data.experiments[4];
   nerExp.test_cases = [
     { id: uuidv4(), experiment_id: nerExp.id, question: '张三在北京大学读书。', expected_answer: 'PER:张三 ORG:北京大学', category_tag: '人物+机构' },
     { id: uuidv4(), experiment_id: nerExp.id, question: '华为发布了Mate 60 Pro手机。', expected_answer: 'ORG:华为 PRO:Mate 60 Pro', category_tag: '机构+产品' },
@@ -447,22 +404,8 @@ function seed() {
 
   nerExp.groups = [grpBert, grpRoBerta];
 
-  // === Agent评测 ===
-  const cat4Id = uuidv4();
-  data.categories.push({
-    id: cat4Id, name: 'Agent评测',
-    description: '评测AI Agent在复杂任务上的执行能力。导入含轨迹数据的评测结果将自动切换为Agent风格展示。',
-    created_at: now(),
-    experiments: [],
-  });
-
-  const agentExp = {
-    id: uuidv4(), category_id: cat4Id, name: 'WebAgent 网页导航评测',
-    description: '评测Agent在模拟网页环境中完成信息检索和操作任务的能力，记录每步执行轨迹。',
-    type: 'evaluation', date: '2026-06-20', created_at: now(),
-    groups: [], test_cases: [],
-  };
-  data.categories[3].experiments.push(agentExp);
+  // === Agent评测 (索引 5, 已在 data.experiments 中预创建) ===
+  const agentExp = data.experiments[5];
 
   agentExp.test_cases = [
     { id: uuidv4(), experiment_id: agentExp.id, question: '在百度搜索"人工智能最新进展"，并总结前三条结果的标题', expected_answer: '搜索成功并返回三条相关结果', category_tag: '搜索' },
@@ -622,19 +565,29 @@ async function init() {
     // 已有 SQLite 数据库 → 直接加载
     db = new SQL.Database(fs.readFileSync(DB_PATH));
     readDataFromSQLite();
-    console.log(`📂 已加载 SQLite 数据库 (${data.categories.length} 个类别, ${countAll()})`);
+    console.log(`📂 已加载 SQLite 数据库 (${countAll()})`);
   } else if (fs.existsSync(JSON_PATH)) {
     // 旧 JSON 文件 → 迁移到 SQLite
     console.log('📦 检测到 data.json，正在迁移到 SQLite...');
     db = new SQL.Database();
     createTables();
     const old = JSON.parse(fs.readFileSync(JSON_PATH, 'utf-8'));
-    data.categories = old.categories || [];
+    // 兼容旧格式：categories[].experiments[] 或直接 experiments[]
+    if (old.categories) {
+      data.experiments = [];
+      for (const c of old.categories) {
+        for (const e of (c.experiments || [])) {
+          delete e.category_id;
+          data.experiments.push(e);
+        }
+      }
+    } else if (old.experiments) {
+      data.experiments = old.experiments;
+    }
     save();
-    // 迁移后保留 JSON 文件作为备份
     const backupPath = JSON_PATH.replace('.json', '.backup.json');
     fs.renameSync(JSON_PATH, backupPath);
-    console.log(`✅ 迁移完成 (${data.categories.length} 个类别)，旧文件备份为 data.backup.json`);
+    console.log(`✅ 迁移完成，旧文件备份为 data.backup.json`);
   } else {
     // 全新启动 → 建表 + seed
     db = new SQL.Database();
@@ -644,23 +597,19 @@ async function init() {
 }
 
 function countAll() {
-  let exps = 0, groups = 0, results = 0;
-  for (const c of data.categories) {
-    exps += (c.experiments || []).length;
-    for (const e of (c.experiments || [])) {
-      groups += (e.groups || []).length;
-      for (const g of (e.groups || [])) {
-        results += (g.evaluation_results || []).length;
-      }
+  let groups = 0, results = 0;
+  for (const e of data.experiments) {
+    groups += (e.groups || []).length;
+    for (const g of (e.groups || [])) {
+      results += (g.evaluation_results || []).length;
     }
   }
-  return `${exps} 个实验, ${groups} 个实验组, ${results} 条评测结果`;
+  return `${data.experiments.length} 个实验, ${groups} 个实验组, ${results} 条评测结果`;
 }
 
 // ========== 查询辅助函数（与旧接口完全兼容） ==========
-function findCat(id) { return data.categories.find((c) => c.id === id); }
-function findExp(id) { for (const c of data.categories) { const e = c.experiments.find((e) => e.id === id); if (e) return e; } return null; }
-function findGroup(id) { for (const c of data.categories) for (const e of c.experiments) for (const g of (e.groups || [])) { if (g.id === id) return g; } return null; }
-function findTC(id) { for (const c of data.categories) for (const e of c.experiments) for (const tc of (e.test_cases || [])) { if (tc.id === id) return tc; } return null; }
+function findExp(id) { return data.experiments.find((e) => e.id === id) || null; }
+function findGroup(id) { for (const e of data.experiments) for (const g of (e.groups || [])) { if (g.id === id) return g; } return null; }
+function findTC(id) { for (const e of data.experiments) for (const tc of (e.test_cases || [])) { if (tc.id === id) return tc; } return null; }
 
-module.exports = { data, save, findCat, findExp, findGroup, findTC, init };
+module.exports = { data, save, findExp, findGroup, findTC, init };

@@ -65,12 +65,10 @@ router.put('/groups/:id', (req, res) => {
 });
 
 router.delete('/groups/:id', (req, res) => {
-  for (const c of data.categories) {
-    for (const e of c.experiments) {
+  for (const e of data.experiments) {
       const idx = (e.groups || []).findIndex((g) => g.id === req.params.id);
       if (idx >= 0) { e.groups.splice(idx, 1); save(); return res.json({ success: true }); }
     }
-  }
   res.status(404).json({ error: '实验组不存在' });
 });
 

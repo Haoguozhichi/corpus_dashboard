@@ -101,8 +101,6 @@ export interface ExperimentGroup {
 // ====== 实验 ======
 export interface Experiment {
   id: string;
-  categoryId?: string;
-  category_id: string;
   name: string;
   description: string;
   type: ExperimentType;
@@ -114,26 +112,14 @@ export interface Experiment {
   testCases?: TestCase[];
 }
 
-// ====== 实验类别 ======
-export interface Category {
-  id: string;
-  name: string;
-  description: string;
-  experimentCount?: number;
-  experiments?: Experiment[];   // 前端嵌套使用
-  created_at?: string;
-}
-
 // ====== 导航 ======
 export interface NavigationState {
-  selectedCategoryId: string | null;
   selectedExperimentId: string | null;
   selectedGroupId: string | null;
   compareGroupIds: string[];
 }
 
 export type NavigationAction =
-  | { type: 'SELECT_CATEGORY'; categoryId: string }
   | { type: 'SELECT_EXPERIMENT'; experimentId: string }
   | { type: 'SELECT_GROUP'; groupId: string }
   | { type: 'SET_COMPARE_GROUPS'; groupIds: string[] }

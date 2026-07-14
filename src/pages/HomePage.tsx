@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Card, Col, Row, Typography, Table, Tag, Button, Input, Select, Space, DatePicker, Statistic, message } from 'antd';
+import { Card, Col, Row, Typography, Table, Tag, Button, Input, Select, Space, DatePicker, Statistic, message, Popconfirm } from 'antd';
 import {
-  SearchOutlined, ExperimentOutlined, FolderOpenOutlined,
-  UserOutlined, CalendarOutlined, TeamOutlined, ArrowRightOutlined, PlusOutlined,
+  SearchOutlined, ExperimentOutlined,
+  UserOutlined, CalendarOutlined, TeamOutlined, PlusOutlined,
+  EditOutlined, DeleteOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
-import { fetchExperiments, createExperiment } from '../api/endpoints';
+import { fetchExperiments, createExperiment, updateExperiment, deleteExperiment } from '../api/endpoints';
 import ExperimentFormModal from '../components/ExperimentFormModal';
 import type { Experiment } from '../types';
 import type { ColumnsType } from 'antd/es/table';
@@ -14,33 +15,19 @@ import type { ColumnsType } from 'antd/es/table';
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
 
-const typeOptions = [
-  { label: '训练实验', value: 'training' },
-  { label: '评测实验', value: 'evaluation' },
-  { label: 'Agent评测', value: 'agent_evaluation' },
-  { label: '其他', value: 'other' },
-];
-
-const typeLabel: Record<string, { color: string; text: string }> = {
-  training: { color: 'green', text: '训练' },
-  evaluation: { color: 'orange', text: '评测' },
-  agent_evaluation: { color: 'purple', text: 'Agent评测' },
-  other: { color: 'default', text: '其他' },
-};
-
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { categories, selectExperiment } = useData();
+  const { selectExperiment } = useData();
   const [experiments, setExperiments] = useState<Experiment[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 筛选状态
   const [searchName, setSearchName] = useState('');
   const [filterOwner, setFilterOwner] = useState('');
-  const [filterType, setFilterType] = useState<string | null>(null);
   const [filterDateRange, setFilterDateRange] = useState<[string, string] | null>(null);
 
   const [createOpen, setCreateOpen] = useState(false);
+  const [editing, setEditing] = useState<Experiment | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -50,10 +37,22 @@ const HomePage: React.FC = () => {
   };
   useEffect(() => { load(); }, []);
 
-  const handleCreateExperiment = async (values: { categoryId?: string; name: string; description: string; date: string; owner?: string }) => {
-    await createExperiment(values as { categoryId: string; name: string; description?: string; date: string; owner?: string });
-    message.success('实验已创建');
+  const handleCreateExperiment = async (values: { name: string; description: string; date: string; owner?: string }) => {
+    if (editing) {
+      await updateExperiment(editing.id, values);
+      message.success('实验已更新');
+      setEditing(null);
+    } else {
+      await createExperiment(values as { name: string; description?: string; date: string; owner?: string });
+      message.success('实验已创建');
+    }
     setCreateOpen(false);
+    load();
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteExperiment(id);
+    message.success('实验已删除');
     load();
   };
 
@@ -68,7 +67,6 @@ const HomePage: React.FC = () => {
     return experiments.filter((e) => {
       if (searchName && !e.name.toLowerCase().includes(searchName.toLowerCase())) return false;
       if (filterOwner && e.owner !== filterOwner) return false;
-      if (filterType && e.type !== filterType) return false;
       if (filterDateRange) {
         const [start, end] = filterDateRange;
         if (start && e.date < start) return false;
@@ -76,7 +74,7 @@ const HomePage: React.FC = () => {
       }
       return true;
     });
-  }, [experiments, searchName, filterOwner, filterType, filterDateRange]);
+  }, [experiments, searchName, filterOwner, filterDateRange]);
 
   const columns: ColumnsType<Experiment> = [
     {
@@ -87,23 +85,6 @@ const HomePage: React.FC = () => {
           {name}
         </a>
       ),
-    },
-    {
-      title: '类别', key: 'category', width: 140,
-      sorter: (a, b) => {
-        const ca = categories.find((c) => c.id === a.category_id)?.name || '';
-        const cb = categories.find((c) => c.id === b.category_id)?.name || '';
-        return ca.localeCompare(cb);
-      },
-      render: (_: unknown, r: Experiment) => {
-        const cat = categories.find((c) => c.id === r.category_id);
-        return <Tag color="blue">{cat?.name || '—'}</Tag>;
-      },
-    },
-    {
-      title: '类型', dataIndex: 'type', key: 'type', width: 110,
-      sorter: (a, b) => a.type.localeCompare(b.type),
-      render: (t: string) => <Tag color={typeLabel[t]?.color || 'default'}>{typeLabel[t]?.text || t}</Tag>,
     },
     {
       title: '负责人', dataIndex: 'owner', key: 'owner', width: 110, ellipsis: true,
@@ -120,6 +101,24 @@ const HomePage: React.FC = () => {
       sorter: (a, b) => (a.groupCount ?? 0) - (b.groupCount ?? 0),
       render: (v: number) => <Tag icon={<TeamOutlined />} color="green">{v ?? 0}</Tag>,
     },
+    {
+      title: '操作', key: 'actions', width: 80, align: 'center',
+      render: (_: unknown, record: Experiment) => (
+        <Space onClick={(e) => e.stopPropagation()}>
+          <Button
+            type="text" size="small" icon={<EditOutlined />}
+            onClick={() => { setEditing(record); setCreateOpen(true); }}
+          />
+          <Popconfirm
+            title="确定删除该实验？" description="实验下所有实验组和评测结果将被一并删除"
+            onConfirm={() => handleDelete(record.id)}
+            okText="删除" cancelText="取消" okButtonProps={{ danger: true }}
+          >
+            <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </Space>
+      ),
+    },
   ];
 
   return (
@@ -130,20 +129,14 @@ const HomePage: React.FC = () => {
           <Col flex="auto">
             <Title level={2} style={{ margin: 0, color: '#1677ff' }}>📊 语料实验室</Title>
             <Typography.Paragraph type="secondary" style={{ margin: '8px 0 0', fontSize: 15 }}>
-              实验数据展示平台 — 统一管理训练实验、评测实验和 Agent 评测结果
+              实验数据展示平台 — 统一管理评测实验和 Agent 评测结果
             </Typography.Paragraph>
           </Col>
           <Col>
-            <Space size={24}>
-              <Statistic title="实验类别" value={categories.length} prefix={<FolderOpenOutlined />} />
-              <Statistic title="实验总数" value={experiments.length} prefix={<ExperimentOutlined />} />
-            </Space>
+            <Statistic title="实验总数" value={experiments.length} prefix={<ExperimentOutlined />} />
           </Col>
           <Col>
-            <Space>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>创建实验</Button>
-              <Button icon={<ArrowRightOutlined />} onClick={() => navigate('/categories')}>实验类别管理</Button>
-            </Space>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>创建实验</Button>
           </Col>
         </Row>
       </Card>
@@ -166,14 +159,6 @@ const HomePage: React.FC = () => {
             allowClear
             options={ownerOptions}
             style={{ width: 160 }}
-          />
-          <Select
-            placeholder="实验类型"
-            value={filterType}
-            onChange={(v) => setFilterType(v || null)}
-            allowClear
-            options={typeOptions}
-            style={{ width: 150 }}
           />
           <RangePicker
             placeholder={['开始日期', '结束日期']}
@@ -202,9 +187,9 @@ const HomePage: React.FC = () => {
 
       <ExperimentFormModal
         open={createOpen}
-        categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+        editing={editing}
         onOk={handleCreateExperiment}
-        onCancel={() => setCreateOpen(false)}
+        onCancel={() => { setCreateOpen(false); setEditing(null); }}
       />
     </div>
   );

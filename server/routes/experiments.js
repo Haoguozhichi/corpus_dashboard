@@ -1,25 +1,17 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
-const { data, save, findCat, findExp } = require('../db');
+const { data, save, findExp } = require('../db');
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
-router.get('/', (req, res) => {
-  const { categoryId } = req.query;
-  let exps = [];
-  if (categoryId) {
-    const cat = findCat(categoryId);
-    if (cat) exps = cat.experiments || [];
-  } else {
-    for (const c of data.categories) exps.push(...(c.experiments || []));
-  }
+router.get('/', (_req, res) => {
   // 按日期从新到旧排序
-  exps.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const exps = [...data.experiments].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   const rows = exps.map((e) => ({
-    id: e.id, category_id: e.category_id, name: e.name, description: e.description,
+    id: e.id, name: e.name, description: e.description,
     type: e.type, date: e.date, owner: e.owner || '', created_at: e.created_at,
     groupCount: (e.groups || []).length,
   }));
@@ -72,14 +64,12 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { categoryId, name, description, date, owner } = req.body;
-  if (!categoryId || !name || !date) return res.status(400).json({ error: 'categoryId, name, date 为必填' });
-  const cat = findCat(categoryId);
-  if (!cat) return res.status(404).json({ error: '类别不存在' });
-  const exp = { id: uuidv4(), category_id: categoryId, name, description: description || '', type: 'evaluation', date, owner: owner || '', created_at: new Date().toISOString(), groups: [], test_cases: [] };
-  cat.experiments.push(exp);
+  const { name, description, date, owner } = req.body;
+  if (!name || !date) return res.status(400).json({ error: 'name, date 为必填' });
+  const exp = { id: uuidv4(), name, description: description || '', type: 'evaluation', date, owner: owner || '', created_at: new Date().toISOString(), groups: [], test_cases: [] };
+  data.experiments.push(exp);
   save();
-  res.status(201).json({ id: exp.id, category_id: exp.category_id, name: exp.name, description: exp.description, type: exp.type, date: exp.date, owner: exp.owner, created_at: exp.created_at, groupCount: 0 });
+  res.status(201).json({ id: exp.id, name: exp.name, description: exp.description, type: exp.type, date: exp.date, owner: exp.owner, created_at: exp.created_at, groupCount: 0 });
 });
 
 router.put('/:id', (req, res) => {
@@ -98,10 +88,8 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  for (const c of data.categories) {
-    const idx = c.experiments.findIndex((e) => e.id === req.params.id);
-    if (idx >= 0) { c.experiments.splice(idx, 1); save(); return res.json({ success: true }); }
-  }
+  const idx = data.experiments.findIndex((e) => e.id === req.params.id);
+  if (idx >= 0) { data.experiments.splice(idx, 1); save(); return res.json({ success: true }); }
   res.status(404).json({ error: '实验不存在' });
 });
 

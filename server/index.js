@@ -3,7 +3,6 @@ const cors = require('cors');
 const path = require('path');
 const { init } = require('./db');
 
-const categoriesRouter = require('./routes/categories');
 const experimentsRouter = require('./routes/experiments');
 const groupsRouter = require('./routes/groups');
 const metricsRouter = require('./routes/metrics');
@@ -19,7 +18,6 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
 // 路由
-app.use('/api/categories', categoriesRouter);
 app.use('/api/experiments', experimentsRouter);
 app.use('/api', groupsRouter);
 app.use('/api', metricsRouter);
