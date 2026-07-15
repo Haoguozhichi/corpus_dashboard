@@ -52,7 +52,7 @@ const GroupFormModal: React.FC<Props> = ({ open, editing, onOk, onCancel }) => {
       open={open}
       onOk={handleOk}
       onCancel={onCancel}
-      destroyOnClose
+      destroyOnHidden
       width={560}
     >
       <Form form={form} layout="vertical">

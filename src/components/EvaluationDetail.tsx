@@ -23,6 +23,7 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   const [uploadOpen, setUploadOpen] = useState(false);
   const [expandedCells, setExpandedCells] = useState<Set<string>>(new Set());
   const [filterText, setFilterText] = useState('');
+  const resetPage = () => setCurrentPage(1);
   const [allResults, setAllResults] = useState<EvaluationResult[]>([]);
   const [resultsLoading, setResultsLoading] = useState(false);
   const [thinkModal, setThinkModal] = useState<string | null>(null);
@@ -37,6 +38,12 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
     finally { setResultsLoading(false); }
   };
   useEffect(() => { loadResults(); }, [group.id]);
+
+  // 刷新：先重载结果，再通知父级
+  const handleRefresh = async () => {
+    await loadResults();
+    onRefresh();
+  };
 
   const results = allResults.length > 0 ? allResults : (group.results || []);
   const filtered = (() => {
@@ -90,6 +97,7 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   // 行选择
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
 
+  const [currentPage, setCurrentPage] = useState(1);
   const [llmLoading, setLlmLoading] = useState(false);
   const [llmResult, setLlmResult] = useState<string | null>(null);
   const [llmModalTitle, setLlmModalTitle] = useState('');
@@ -101,9 +109,9 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
     const targets = getSelected();
     const errors = targets.filter((r) => !r.is_correct);
     if (errors.length === 0) { message.warning('所选用例中没有错误的'); return; }
-    setLlmLoading(true); setLlmModalTitle(`错误诊断 (${Math.min(errors.length, 10)}条)`);
+    setLlmLoading(true); setLlmModalTitle(`错误诊断 (${errors.length}条)`);
     const parts: string[] = [];
-    for (let i = 0; i < Math.min(errors.length, 10); i++) {
+    for (let i = 0; i < errors.length; i++) {
       const r = errors[i];
       try {
         const res = await diagnoseError({ question: r.question || '', expected_answer: r.expected_answer || '', model_response: r.model_response || '' });
@@ -157,7 +165,7 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
   const columns: ColumnsType<EvaluationResult> = [
     {
       title: '#', key: 'index', width: 48, align: 'center',
-      render: (_: any, _r: any, i: number) => <span style={{ color: '#999', fontSize: 12 }}>{i + 1}</span>,
+      render: (_: any, _r: any, i: number) => <span style={{ color: '#999', fontSize: 12 }}>{(currentPage - 1) * 20 + i + 1}</span>,
     },
     {
       title: '题目', dataIndex: 'question', key: 'question', width: 200, ellipsis: true,
@@ -255,12 +263,9 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
     {
       title: 'Think', key: 'think', width: 60, align: 'center',
       render: (_: unknown, record: EvaluationResult) => (
-        <Button
-          type="link" size="small" icon={<BulbOutlined />}
-          onClick={() => setThinkModal(record.id)}
-          disabled={!record.think}
-          title={record.think ? '查看思考过程' : '无Think数据'}
-        />
+        <Button type="link" size="small" icon={<BulbOutlined />}
+          onClick={() => setThinkModal(record.id)} disabled={!record.think}
+          title={record.think ? '查看思考过程' : '无Think数据'} />
       ),
     },
   ];
@@ -319,7 +324,7 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
         extra={
           <span style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <Input size="small" placeholder="搜索..." prefix={<SearchOutlined />}
-              value={filterText} onChange={(e) => setFilterText(e.target.value)} allowClear style={{ width: 180 }} />
+              value={filterText} onChange={(e) => { setFilterText(e.target.value); setCurrentPage(1); }} allowClear style={{ width: 180 }} />
             <Tag>筛选 {displayCount}/{results.length} 条</Tag>
             {selectedRowKeys.length > 0 && <Tag color="blue">已选 {selectedRowKeys.length} 条</Tag>}
             <Dropdown menu={{ items: [
@@ -332,11 +337,32 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
           </span>
         }
       >
-        <Table columns={columns} dataSource={filtered} rowKey="id" pagination={{ pageSize: 20 }}
+        <Table columns={columns} dataSource={filtered.map((r, i) => ({ ...r, _idx: i }))} rowKey="id" pagination={{ pageSize: 20, current: currentPage, onChange: (p) => setCurrentPage(p) }}
           onChange={(_p, filters: any) => setColFilters(filters || {})}
           rowSelection={{
             selectedRowKeys,
-            onChange: (keys) => setSelectedRowKeys(keys as string[]),
+            onChange: (keys) => {
+              const allFilteredIds = filtered.map((r) => r.id);
+              const currentPageIds = allFilteredIds.slice((currentPage - 1) * 20, currentPage * 20);
+              const keysArr = keys as string[];
+              const wasAllSelected = selectedRowKeys.length >= allFilteredIds.length;
+              // 全选：当前页全选 → 扩展到所有筛选结果
+              if (currentPageIds.every((id) => keysArr.includes(id))) {
+                setSelectedRowKeys(allFilteredIds);
+              }
+              // 取消全选（点击表头复选框）：当前页大量取消
+              else if (wasAllSelected && currentPageIds.filter((id) => keysArr.includes(id)).length === 0) {
+                setSelectedRowKeys([]);
+              }
+              // 单独取消某行
+              else if (wasAllSelected) {
+                setSelectedRowKeys(keysArr);
+              }
+              // 普通选择
+              else {
+                setSelectedRowKeys(keysArr);
+              }
+            },
           }}
           size="small" bordered scroll={{ x: 1400 }}
           loading={resultsLoading}
@@ -362,9 +388,9 @@ const EvaluationDetail: React.FC<Props> = ({ group, experimentName, experimentId
       </Modal>
 
       <Modal title={`管理评测结果 — ${group.name}`} open={uploadOpen} onCancel={() => setUploadOpen(false)}
-        footer={null} width={900} destroyOnClose
+        footer={null} width={900} destroyOnHidden
       >
-        <ResultsUploader groupId={group.id} testCases={testCases} existingResults={results} onRefresh={onRefresh} />
+        <ResultsUploader groupId={group.id} testCases={testCases} existingResults={results} onRefresh={handleRefresh} onClose={() => setUploadOpen(false)} />
       </Modal>
     </div>
   );

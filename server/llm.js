@@ -38,6 +38,7 @@ async function callLLM(messages, options = {}) {
       messages,
       temperature,
       max_tokens,
+      stream: false,
     }),
   });
   if (!res.ok) {

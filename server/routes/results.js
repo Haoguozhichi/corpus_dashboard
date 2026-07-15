@@ -34,7 +34,7 @@ router.post('/groups/:groupId/results', (req, res) => {
   const group = findGroup(req.params.groupId);
   if (!group) return res.status(404).json({ error: '实验组不存在' });
 
-  let { test_case_id, question, expected_answer, model_response, is_correct, score, runtime_ms, token_count, reason, annotation, think, trajectory } = req.body;
+  const { test_case_id, question, expected_answer, model_response, is_correct, score, runtime_ms, token_count, reason, annotation, think, trajectory, ...customFields } = req.body;
 
   // 找到所属实验
   let exp = null;
@@ -62,6 +62,7 @@ router.post('/groups/:groupId/results', (req, res) => {
   if (!test_case_id) return res.status(400).json({ error: 'test_case_id 或 question 必填' });
 
   const result = {
+    ...customFields,
     id: uuidv4(), group_id: group.id, test_case_id,
     model_response: model_response || '', is_correct: is_correct ? 1 : 0,
     score: score ?? (is_correct ? 1 : 0), runtime_ms: runtime_ms || 0, token_count: token_count || 0,
@@ -129,10 +130,10 @@ router.put('/results/:id', (req, res) => {
   for (const e of data.experiments) for (const g of (e.groups || [])) {
     const er = (g.evaluation_results || []).find((r) => r.id === req.params.id);
     if (er) {
-      const { model_response, is_correct, score, runtime_ms, token_count, reason, annotation, think, ai_scores, traj_diagnosis, trajectory } = req.body;
+      const STD_UPDATE_KEYS = new Set(['model_response', 'is_correct', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'traj_diagnosis', 'trajectory']);
+      const { model_response, is_correct, runtime_ms, token_count, reason, annotation, think, ai_scores, traj_diagnosis, trajectory } = req.body;
       if (model_response !== undefined) er.model_response = model_response;
       if (is_correct !== undefined) er.is_correct = is_correct ? 1 : 0;
-      if (score !== undefined) er.score = score;
       if (runtime_ms !== undefined) er.runtime_ms = runtime_ms;
       if (token_count !== undefined) er.token_count = token_count;
       if (reason !== undefined) er.reason = reason;
@@ -141,6 +142,13 @@ router.put('/results/:id', (req, res) => {
       if (ai_scores !== undefined) er.ai_scores = ai_scores;
       if (traj_diagnosis !== undefined) er.traj_diagnosis = traj_diagnosis;
       if (trajectory !== undefined) er.trajectory = trajectory;
+      // 处理自定义字段
+      for (const [key, value] of Object.entries(req.body)) {
+        if (!STD_UPDATE_KEYS.has(key)) {
+          if (value === null) { delete er[key]; }
+          else if (value !== undefined) { er[key] = value; }
+        }
+      }
       save();
 
       const tc = e.test_cases?.find((t) => t.id === er.test_case_id);

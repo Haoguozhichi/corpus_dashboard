@@ -112,6 +112,7 @@ const DashboardPage: React.FC = () => {
   const [bulkEditDeleted, setBulkEditDeleted] = useState<Set<string>>(new Set());
   const [newRowCounter, setNewRowCounter] = useState(0);
   const [bulkParamKeys, setBulkParamKeys] = useState<string[]>([]);
+  const [newBulkParamCols, setNewBulkParamCols] = useState<Set<string>>(new Set());
 
   // ====== 条件返回（所有 hooks 必须在之前） ======
   // 只在首次加载时显示 spinner，刷新时保持已有内容
@@ -177,6 +178,7 @@ const DashboardPage: React.FC = () => {
     setBulkEditDeleted(new Set());
     setNewRowCounter(0);
     setBulkParamKeys([...allKeys]);
+    setNewBulkParamCols(new Set());
     setBulkEditOpen(true);
   };
 
@@ -201,30 +203,55 @@ const DashboardPage: React.FC = () => {
 
   const addBulkParamCol = () => {
     setBulkParamKeys((prev) => [...prev, '']);
+    // 为所有现有行初始化空值
+    setBulkEditData((prev) => {
+      const next = { ...prev };
+      for (const id of Object.keys(next)) {
+        next[id] = { ...next[id], '': '' };
+      }
+      return next;
+    });
   };
 
   const updateBulkParamKey = (idx: number, newKey: string) => {
+    const oldKey = bulkParamKeys[idx];
     setBulkParamKeys((prev) => prev.map((k, i) => i === idx ? newKey : k));
+    if (newKey.trim()) {
+      setNewBulkParamCols((prev) => { const next = new Set(prev); next.add(newKey.trim()); return next; });
+      // 迁移旧 key 的数据到新 key
+      if (oldKey !== newKey) {
+        setBulkEditData((prev) => {
+          const next = { ...prev };
+          for (const id of Object.keys(next)) {
+            const row = { ...next[id] };
+            row[newKey] = row[oldKey] ?? '';
+            delete row[oldKey];
+            next[id] = row;
+          }
+          return next;
+        });
+      }
+    }
   };
 
   const deleteBulkParamCol = (idx: number) => {
     const oldKey = bulkParamKeys[idx];
     setBulkParamKeys((prev) => prev.filter((_, i) => i !== idx));
-    // 删除所有行中该 key 的数据
-    if (oldKey) {
-      setBulkEditData((prev) => {
-        const next = { ...prev };
-        for (const id of Object.keys(next)) {
-          const row = { ...next[id] };
-          delete row[oldKey];
-          next[id] = row;
-        }
-        return next;
-      });
-    }
+    setBulkEditData((prev) => {
+      const next = { ...prev };
+      for (const id of Object.keys(next)) {
+        const row = { ...next[id] };
+        delete row[oldKey];
+        next[id] = row;
+      }
+      return next;
+    });
   };
 
   const handleBulkEditSave = async () => {
+    // 检查是否有未命名的列
+    const unnamed = bulkParamKeys.some((k) => !k.trim());
+    if (unnamed) { message.warning('请先为所有变量列填写列名，或删除不需要的列'); return; }
     // 删除被标记的
     for (const id of bulkEditDeleted) {
       await deleteGroup(id);
@@ -241,7 +268,8 @@ const DashboardPage: React.FC = () => {
       for (const pk of bulkParamKeys) {
         if (!pk.trim()) continue;
         const v = vals[pk];
-        if (v === '' || v === undefined) continue;
+        const isNew = newBulkParamCols.has(pk.trim());
+        if (!isNew && (v === '' || v === undefined)) continue;
         parameters[pk.trim()] = isNaN(Number(v)) ? v : Number(v);
       }
       await updateGroup(g.id, { name, model, eval_dataset, parameters });
@@ -258,7 +286,6 @@ const DashboardPage: React.FC = () => {
       for (const pk of bulkParamKeys) {
         if (!pk.trim()) continue;
         const v = vals[pk];
-        if (v === '' || v === undefined) continue;
         parameters[pk.trim()] = isNaN(Number(v)) ? v : Number(v);
       }
       await createGroup(experiment.id!, { name, model, eval_dataset, parameters });
@@ -579,7 +606,7 @@ const DashboardPage: React.FC = () => {
         onOk={handleBulkEditSave}
         onCancel={() => setBulkEditOpen(false)}
         width={Math.max(900, 260 + (Object.keys(bulkEditData[groups[0]?.id] || {}).length) * 150)}
-        destroyOnClose
+        destroyOnHidden
         okText="保存全部"
       >
         <Table
@@ -663,7 +690,7 @@ const DashboardPage: React.FC = () => {
         </div>
       </Modal>
 
-      <Modal title="管理训练指标" open={metricsModalOpen} onCancel={() => setMetricsModalOpen(false)} footer={null} width={1000} destroyOnClose>
+      <Modal title="管理训练指标" open={metricsModalOpen} onCancel={() => setMetricsModalOpen(false)} footer={null} width={1000} destroyOnHidden>
         <TrainingMetricsManager groups={groups} onRefresh={refreshExperiment} />
       </Modal>
 

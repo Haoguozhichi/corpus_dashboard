@@ -37,6 +37,7 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
   const [uploadOpen, setUploadOpen] = useState(false);
   const [expandedCells, setExpandedCells] = useState<Set<string>>(new Set());
   const [filterText, setFilterText] = useState('');
+  const resetPage = () => setCurrentPage(1);
   const [allResults, setAllResults] = useState<EvaluationResult[]>([]);
   const [resultsLoading, setResultsLoading] = useState(false);
   const [trajModal, setTrajModal] = useState<EvaluationResult | null>(null);
@@ -51,6 +52,12 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
     finally { setResultsLoading(false); }
   };
   useEffect(() => { loadResults(); }, [group.id]);
+
+  // 刷新：先重载结果，再通知父级
+  const handleRefresh = async () => {
+    await loadResults();
+    onRefresh();
+  };
 
   const results = allResults.length > 0 ? allResults : (group.results || []);
   const filtered = filterText.trim()
@@ -126,6 +133,7 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
   };
 
   // LLM 通用分析
+  const [currentPage, setCurrentPage] = useState(1);
   const [llmLoading, setLlmLoading] = useState(false);
   const [llmResult, setLlmResult] = useState<string | null>(null);
   const [llmModalTitle, setLlmModalTitle] = useState('');
@@ -137,9 +145,9 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
     const targets = getSelected();
     const errors = targets.filter((r) => !r.is_correct);
     if (errors.length === 0) { message.warning('所选用例中没有错误的'); return; }
-    setLlmLoading(true); setLlmModalTitle(`错误诊断 (${Math.min(errors.length, 10)}条)`);
+    setLlmLoading(true); setLlmModalTitle(`错误诊断 (${errors.length}条)`);
     const parts: string[] = [];
-    for (let i = 0; i < Math.min(errors.length, 10); i++) {
+    for (let i = 0; i < errors.length; i++) {
       const r = errors[i];
       try {
         const res = await diagnoseError({ question: r.question || '', expected_answer: r.expected_answer || '', model_response: r.model_response || '' });
@@ -187,7 +195,7 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
   const columns: ColumnsType<EvaluationResult> = [
     {
       title: '#', key: 'index', width: 44, align: 'center',
-      render: (_: any, _r: any, i: number) => <span style={{ color: '#999', fontSize: 12 }}>{i + 1}</span>,
+      render: (_: any, _r: any, i: number) => <span style={{ color: '#999', fontSize: 12 }}>{(currentPage - 1) * 20 + i + 1}</span>,
     },
     {
       title: '题目', dataIndex: 'question', key: 'question', width: 200, ellipsis: true,
@@ -345,7 +353,7 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
       <Card title="📋 Agent 评测结果" style={{ borderRadius: 8 }}
         extra={
           <span style={{ display: 'flex', gap: 8 }}>
-            <Input size="small" placeholder="筛选..." prefix={<SearchOutlined />} value={filterText} onChange={(e) => setFilterText(e.target.value)} allowClear style={{ width: 180 }} />
+            <Input size="small" placeholder="筛选..." prefix={<SearchOutlined />} value={filterText} onChange={(e) => { setFilterText(e.target.value); setCurrentPage(1); }} allowClear style={{ width: 180 }} />
             <Tag>筛选 {displayCount}/{results.length} 条</Tag>
             {selectedRowKeys.length > 0 && <Tag color="blue">已选 {selectedRowKeys.length} 条</Tag>}
             <Dropdown menu={{ items: [
@@ -358,8 +366,25 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
           </span>
         }
       >
-        <Table columns={columns} dataSource={filtered} rowKey="id" pagination={{ pageSize: 20 }}
-          rowSelection={{ selectedRowKeys, onChange: (keys) => setSelectedRowKeys(keys as string[]) }}
+        <Table columns={columns} dataSource={filtered.map((r, i) => ({ ...r, _idx: i }))} rowKey="id" pagination={{ pageSize: 20, current: currentPage, onChange: (p) => setCurrentPage(p) }}
+          rowSelection={{
+            selectedRowKeys,
+            onChange: (keys) => {
+              const allFilteredIds = filtered.map((r) => r.id);
+              const currentPageIds = allFilteredIds.slice((currentPage - 1) * 20, currentPage * 20);
+              const keysArr = keys as string[];
+              const wasAllSelected = selectedRowKeys.length >= allFilteredIds.length;
+              if (currentPageIds.every((id) => keysArr.includes(id))) {
+                setSelectedRowKeys(allFilteredIds);
+              } else if (wasAllSelected && currentPageIds.filter((id) => keysArr.includes(id)).length === 0) {
+                setSelectedRowKeys([]);
+              } else if (wasAllSelected) {
+                setSelectedRowKeys(keysArr);
+              } else {
+                setSelectedRowKeys(keysArr);
+              }
+            },
+          }}
           onChange={(_p, filters: any) => setColFilters(filters || {})}
           size="small" bordered scroll={{ x: 1100 }} loading={resultsLoading}
           rowClassName={(record) => (record.is_correct ? '' : 'param-diff-row')} />
@@ -395,9 +420,9 @@ const AgentEvaluationDetail: React.FC<Props> = ({ group, experimentName, experim
       </Modal>
 
       <Modal title={`管理评测结果 — ${group.name}`} open={uploadOpen} onCancel={() => setUploadOpen(false)}
-        footer={null} width={900} destroyOnClose
+        footer={null} width={900} destroyOnHidden
       >
-        <ResultsUploader groupId={group.id} testCases={testCases} existingResults={results} onRefresh={onRefresh} isAgent />
+        <ResultsUploader groupId={group.id} testCases={testCases} existingResults={results} onRefresh={handleRefresh} onClose={() => setUploadOpen(false)} isAgent />
       </Modal>
     </div>
   );

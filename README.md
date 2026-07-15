@@ -52,7 +52,7 @@ corpus_dashboard/
 │   │   ├── AgentEvaluationDetail.tsx # Agent评测详情
 │   │   ├── TrajectoryViewer.tsx  # 轨迹时间线
 │   │   ├── CustomScoresChart.tsx # 多维评分图
-│   │   ├── ResultsUploader.tsx   # 评测结果管理（可编辑表格+JSON上传）
+│   │   ├── ResultsUploader.tsx   # 评测结果管理（可编辑表格）
 │   │   ├── GroupFormModal.tsx     # 实验组表单
 │   │   ├── ExperimentFormModal.tsx # 实验表单
 │   │   ├── BulkImport.tsx        # 一键导入组件

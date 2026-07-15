@@ -34,7 +34,7 @@ const ExperimentFormModal: React.FC<Props> = ({ open, editing, onOk, onCancel })
   };
 
   return (
-    <Modal title={editing ? '编辑实验' : '创建实验'} open={open} onOk={handleOk} onCancel={onCancel} destroyOnClose width={560}>
+    <Modal title={editing ? '编辑实验' : '创建实验'} open={open} onOk={handleOk} onCancel={onCancel} destroyOnHidden width={560}>
       <Form form={form} layout="vertical">
         <Form.Item name="name" label="实验名称" rules={[{ required: true }]}>
           <Input placeholder="例如：GPT系列模型指令遵循能力对比" />

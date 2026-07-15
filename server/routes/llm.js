@@ -27,6 +27,7 @@ router.post('/test-connection', async (req, res) => {
         model,
         messages: [{ role: 'user', content: 'Hello' }],
         max_tokens: 10,
+        stream: false,
       }),
     });
 
@@ -52,10 +53,10 @@ router.put('/config', (req, res) => {
 router.post('/diagnose-error', async (req, res) => {
   try {
     const { question, expected_answer, model_response } = req.body;
-    if (!question || !expected_answer || !model_response) {
-      return res.status(400).json({ error: '缺少必填字段' });
+    if (!question || !model_response) {
+      return res.status(400).json({ error: 'question 和 model_response 为必填' });
     }
-    const result = await llm.diagnoseError(question, expected_answer, model_response);
+    const result = await llm.diagnoseError(question, expected_answer || '', model_response);
     res.json({ result });
   } catch (err) {
     res.status(500).json({ error: err.message });
