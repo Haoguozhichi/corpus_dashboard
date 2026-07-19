@@ -29,13 +29,19 @@ const HomePage: React.FC = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<Experiment | null>(null);
 
-  const load = async () => {
+  const load = async (search?: string) => {
     setLoading(true);
-    try { setExperiments(await fetchExperiments()); }
-    catch { /* */ }
+    try { setExperiments(await fetchExperiments(search || undefined)); }
+    catch { console.error('加载实验列表失败'); }
     finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
+
+  // 全局搜索防抖
+  useEffect(() => {
+    const timer = setTimeout(() => { load(searchName || undefined); }, 300);
+    return () => clearTimeout(timer);
+  }, [searchName]);
 
   const handleCreateExperiment = async (values: { name: string; description: string; date: string; owner?: string }) => {
     if (editing) {
@@ -62,10 +68,9 @@ const HomePage: React.FC = () => {
     [experiments],
   );
 
-  // 筛选
+  // 筛选（全局搜索在服务端、负责人和日期在本地）
   const filtered = useMemo(() => {
     return experiments.filter((e) => {
-      if (searchName && !e.name.toLowerCase().includes(searchName.toLowerCase())) return false;
       if (filterOwner && e.owner !== filterOwner) return false;
       if (filterDateRange) {
         const [start, end] = filterDateRange;
@@ -74,7 +79,7 @@ const HomePage: React.FC = () => {
       }
       return true;
     });
-  }, [experiments, searchName, filterOwner, filterDateRange]);
+  }, [experiments, filterOwner, filterDateRange]);
 
   const columns: ColumnsType<Experiment> = [
     {
@@ -145,7 +150,7 @@ const HomePage: React.FC = () => {
       <Card size="small" style={{ marginBottom: 16, borderRadius: 8 }}>
         <Space wrap>
           <Input
-            placeholder="搜索实验名称..."
+            placeholder="全局搜索（名称/内容/模型...）"
             prefix={<SearchOutlined />}
             value={searchName}
             onChange={(e) => setSearchName(e.target.value)}

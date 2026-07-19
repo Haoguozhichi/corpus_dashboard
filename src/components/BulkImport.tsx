@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Upload, message, Alert, Descriptions, Typography } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
+import { Upload, message, Alert, Descriptions, Typography, Progress } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import { importExperimentJson } from '../api/endpoints';
@@ -76,6 +76,18 @@ const agentSample = `[
 const BulkImport: React.FC<Props> = ({ experimentId, experimentType, onSuccess }) => {
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState<{ groupsCreated: number; resultsCreated: number } | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval>>();
+
+  useEffect(() => {
+    if (uploading) {
+      setElapsed(0);
+      timerRef.current = setInterval(() => setElapsed((p) => p + 1), 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [uploading]);
 
   const handleUpload = async (file: File) => {
     setUploading(true); setResult(null);
@@ -108,7 +120,12 @@ const BulkImport: React.FC<Props> = ({ experimentId, experimentType, onSuccess }
         <p className="ant-upload-hint">一个 JSON 文件包含所有实验组、变量和数据</p>
       </Dragger>
 
-      {uploading && <div style={{ textAlign: 'center', margin: '16px 0', color: '#1677ff' }}>导入中...</div>}
+      {uploading && (
+        <div style={{ textAlign: 'center', margin: '16px 0' }}>
+          <Progress percent={Math.min(elapsed * 10, 95)} status="active" strokeColor="#1677ff" />
+          <div style={{ color: '#1677ff' }}>导入中... 已耗时 {elapsed} 秒{elapsed > 10 ? '（大文件处理中，请耐心等待）' : ''}</div>
+        </div>
+      )}
 
       {result && (
         <Alert type="success" showIcon message="导入成功"

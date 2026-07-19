@@ -118,13 +118,13 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
     if (unnamed) { message.warning('请先为所有列填写列名，或删除不需要的列'); return; }
 
     const deletes: string[] = [...deletedIds];
-    const updates: any[] = [];
-    const creates: any[] = [];
+    const updates: Record<string, unknown>[] = [];
+    const creates: Record<string, unknown>[] = [];
 
     // 收集更新
     for (const id of editOrder) {
       const row = editData[id]; if (!row || row._isNew || deletedIds.has(id)) continue;
-      const up: Record<string, any> = { id };
+      const up: Record<string, unknown> = { id };
       if (row.model_response !== undefined) up.model_response = row.model_response;
       up.is_correct = row.is_correct === '正确';
       up.runtime_ms = Number(row.runtime_ms) || 0;
@@ -146,7 +146,7 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
     for (const id of editOrder) {
       const row = editData[id]; if (!row || !row._isNew) continue;
       if (!row.question?.trim() && !row.model_response?.trim()) continue;
-      const data: Record<string, any> = {
+      const data: Record<string, unknown> = {
         question: row.question?.trim() || undefined,
         expected_answer: row.expected_answer?.trim() || undefined,
         model_response: row.model_response || '',

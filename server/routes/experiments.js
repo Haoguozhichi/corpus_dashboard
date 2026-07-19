@@ -6,10 +6,27 @@ const { data, save, findExp } = require('../db');
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
-router.get('/', (_req, res) => {
-  // 按日期从新到旧排序
-  const exps = [...data.experiments].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+router.get('/', (req, res) => {
+  const { search } = req.query;
+  let exps = [...data.experiments];
 
+  // 全局搜索：匹配名称、描述、负责人、实验组名、评测结果内容
+  if (search && typeof search === 'string') {
+    const q = search.toLowerCase();
+    exps = exps.filter((e) => {
+      if (e.name.toLowerCase().includes(q) || (e.description || '').toLowerCase().includes(q) || (e.owner || '').toLowerCase().includes(q)) return true;
+      for (const g of (e.groups || [])) {
+        if (g.name.toLowerCase().includes(q) || (g.model || '').toLowerCase().includes(q)) return true;
+        for (const r of (g.evaluation_results || [])) {
+          if ((r.question || '').toLowerCase().includes(q) || (r.model_response || '').toLowerCase().includes(q) || (r.reason || '').toLowerCase().includes(q)) return true;
+          if (r.question && r.question.length > 200) return false; // 长文本仅匹配前200字，且不在循环内二次匹配
+        }
+      }
+      return false;
+    });
+  }
+
+  exps.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   const rows = exps.map((e) => ({
     id: e.id, name: e.name, description: e.description,
     type: e.type, date: e.date, owner: e.owner || '', created_at: e.created_at,

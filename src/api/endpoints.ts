@@ -2,7 +2,10 @@ import { get, post, put, del, uploadFile } from './client';
 import type { Experiment, ExperimentGroup, TrainingMetrics, TestCase, EvaluationSummary, EvaluationResult } from '../types';
 
 // ====== 实验 ======
-export const fetchExperiments = () => get<Experiment[]>('/experiments');
+export const fetchExperiments = (search?: string) => {
+  const query = search ? `?search=${encodeURIComponent(search)}` : '';
+  return get<Experiment[]>(`/experiments${query}`);
+};
 export const fetchExperimentDetail = (id: string) => get<Experiment>(`/experiments/${id}`);
 export const createExperiment = (data: { name: string; description?: string; date: string; owner?: string }) =>
   post<Experiment>('/experiments', data);
@@ -37,7 +40,7 @@ export const deleteTestCase = (id: string) => del<{ success: boolean }>(`/test-c
 
 // ====== 评测结果 ======
 export const fetchResults = (groupId: string) => get<EvaluationSummary>(`/groups/${groupId}/results`);
-export const batchResults = (groupId: string, data: { deletes?: string[]; updates?: { id: string; [key: string]: any }[]; creates?: any[] }) =>
+export const batchResults = (groupId: string, data: { deletes?: string[]; updates?: Record<string, unknown>[]; creates?: Record<string, unknown>[] }) =>
   post<{ deleted: number; updated: number; created: number }>(`/groups/${groupId}/results/batch`, data);
 export const createResult = (groupId: string, data: { test_case_id?: string; question?: string; expected_answer?: string; model_response?: string; is_correct?: boolean; score?: number; runtime_ms?: number; token_count?: number; reason?: string; trajectory?: unknown; custom_scores?: Record<string, number> }) =>
   post<EvaluationResult>(`/groups/${groupId}/results`, data);
