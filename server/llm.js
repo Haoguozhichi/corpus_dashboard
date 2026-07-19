@@ -9,16 +9,52 @@ let config = {
   apiUrl: 'http://localhost:8000/v1/chat/completions',
   modelName: 'gpt-4o',
   apiKey: '',
+  prompts: {
+    diagnoseError: `你是一个严谨的AI评测专家。请分析以下评测用例中模型回答错误的原因。
+
+【题目】
+{question}
+
+【标准答案】
+{expectedAnswer}
+
+【模型回答】
+{modelResponse}
+
+请按以下格式回答（简洁，不超过200字）：
+1. 错误类型：（如：事实错误 / 逻辑错误 / 格式不符 / 遗漏关键信息）
+2. 具体问题：
+3. 可能根因：`,
+    clusterErrors: `你是一个AI评测分析专家。以下是一个模型在评测中的全部 {count} 条错误用例。请仔细阅读每一条，根据错误的本质原因进行自然聚类（聚类数量不作限制，完全由数据决定）。
+
+【错误用例】
+{casesText}
+
+请严格按JSON格式输出，归类每条错误（caseIndices为错误用例的序号）：
+{
+  "clusters": [
+    { "name": "错误类型名称", "description": "详细说明", "count": 0, "caseIndices": [1, 3] }
+  ],
+  "summary": "整体评价和改进方向（100字以内）"
+}`,
+  },
 };
 
 // 加载配置
 if (fs.existsSync(CONFIG_PATH)) {
-  try { config = { ...config, ...JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8')) }; } catch {}
+  try {
+    const saved = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'));
+    config = { ...config, ...saved, prompts: { ...config.prompts, ...(saved.prompts || {}) } };
+  } catch {}
 }
 
 function getConfig() { return { ...config }; }
 
 function saveConfig(newConfig) {
+  if (newConfig.prompts) {
+    config.prompts = { ...config.prompts, ...newConfig.prompts };
+    delete newConfig.prompts;
+  }
   config = { ...config, ...newConfig };
   fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), 'utf-8');
   return config;
@@ -51,21 +87,10 @@ async function callLLM(messages, options = {}) {
 
 // ====== 1. 错误诊断 ======
 async function diagnoseError(question, expectedAnswer, modelResponse) {
-  const prompt = `你是一个严谨的AI评测专家。请分析以下评测用例中模型回答错误的原因。
-
-【题目】
-${question}
-
-【标准答案】
-${expectedAnswer}
-
-【模型回答】
-${modelResponse}
-
-请按以下格式回答（简洁，不超过200字）：
-1. 错误类型：（如：事实错误 / 逻辑错误 / 格式不符 / 遗漏关键信息）
-2. 具体问题：
-3. 可能根因：`;
+  const prompt = (config.prompts?.diagnoseError || '')
+    .replace(/\{question\}/g, question)
+    .replace(/\{expectedAnswer\}/g, expectedAnswer)
+    .replace(/\{modelResponse\}/g, modelResponse);
 
   return callLLM([{ role: 'user', content: prompt }], { temperature: 0.1, max_tokens: 500 });
 }
@@ -111,18 +136,9 @@ async function clusterErrors(errorCases) {
   ).join('\n');
 
   const count = errorCases.length;
-  const prompt = `你是一个AI评测分析专家。以下是一个模型在评测中的全部 ${count} 条错误用例。请仔细阅读每一条，根据错误的本质原因进行自然聚类（聚类数量不作限制，完全由数据决定）。
-
-【错误用例】
-${casesText}
-
-请严格按JSON格式输出，归类每条错误（caseIndices为错误用例的序号）：
-{
-  "clusters": [
-    { "name": "错误类型名称", "description": "详细说明", "count": 0, "caseIndices": [1, 3] }
-  ],
-  "summary": "整体评价和改进方向（100字以内）"
-}`;
+  const prompt = (config.prompts?.clusterErrors || '')
+    .replace(/\{count\}/g, count)
+    .replace(/\{casesText\}/g, casesText);
 
   const text = await callLLM([{ role: 'user', content: prompt }], { temperature: 0.3, max_tokens: 4000 });
   try {

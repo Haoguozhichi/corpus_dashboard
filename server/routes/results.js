@@ -1,7 +1,7 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
-const { data, save, findGroup, findExp } = require('../db');
+const { data, save, saveNow, findGroup, findExp } = require('../db');
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -165,6 +165,77 @@ router.delete('/results/:id', (req, res) => {
     if (idx >= 0) { g.evaluation_results.splice(idx, 1); save(); return res.json({ success: true }); }
   }
   res.status(404).json({ error: '评测结果不存在' });
+});
+
+// POST 批量操作评测结果（单次 save，解决大量结果时慢的问题）
+router.post('/groups/:groupId/results/batch', (req, res) => {
+  const group = findGroup(req.params.groupId);
+  if (!group) return res.status(404).json({ error: '实验组不存在' });
+
+  let exp = null;
+  for (const e of data.experiments) {
+    if ((e.groups || []).some((g) => g.id === group.id)) { exp = e; break; }
+  }
+  if (!exp) return res.status(404).json({ error: '实验不存在' });
+
+  const { deletes = [], updates = [], creates = [] } = req.body;
+  const STD_UPDATE_KEYS = new Set(['model_response', 'is_correct', 'runtime_ms', 'token_count', 'reason', 'annotation', 'think', 'ai_scores', 'traj_diagnosis', 'trajectory']);
+  let deleted = 0, updated = 0, created = 0;
+
+  // 删除
+  for (const id of deletes) {
+    const idx = (group.evaluation_results || []).findIndex((r) => r.id === id);
+    if (idx >= 0) { group.evaluation_results.splice(idx, 1); deleted++; }
+  }
+
+  // 更新
+  for (const { id, ...fields } of updates) {
+    const er = (group.evaluation_results || []).find((r) => r.id === id);
+    if (!er) continue;
+    for (const [key, value] of Object.entries(fields)) {
+      if (STD_UPDATE_KEYS.has(key)) {
+        if (key === 'is_correct') er[key] = value ? 1 : 0;
+        else if (value !== undefined) er[key] = value;
+      } else {
+        if (value === null) { delete er[key]; }
+        else if (value !== undefined) { er[key] = value; }
+      }
+    }
+    updated++;
+  }
+
+  // 创建
+  for (const fields of creates) {
+    const { test_case_id, question, expected_answer, model_response, is_correct, runtime_ms, token_count, reason, annotation, think, trajectory, ...customFields } = fields;
+    let tcId = test_case_id;
+    if (!tcId && question) {
+      const existing = (exp.test_cases || []).find(
+        (tc) => tc.question === question && tc.expected_answer === (expected_answer || ''),
+      );
+      if (existing) { tcId = existing.id; }
+      else {
+        const newTc = { id: uuidv4(), experiment_id: exp.id, question, expected_answer: expected_answer || '' };
+        exp.test_cases = exp.test_cases || [];
+        exp.test_cases.push(newTc);
+        tcId = newTc.id;
+      }
+    }
+    if (!tcId) continue;
+    const result = {
+      ...customFields,
+      id: uuidv4(), group_id: group.id, test_case_id: tcId,
+      model_response: model_response || '', is_correct: is_correct ? 1 : 0,
+      runtime_ms: runtime_ms || 0, token_count: token_count || 0,
+      reason: reason || undefined, annotation: annotation || undefined,
+      think: think || undefined, trajectory: trajectory || undefined,
+    };
+    group.evaluation_results = group.evaluation_results || [];
+    group.evaluation_results.push(result);
+    created++;
+  }
+
+  if (deleted > 0 || updated > 0 || created > 0) saveNow();
+  res.json({ deleted, updated, created });
 });
 
 module.exports = router;

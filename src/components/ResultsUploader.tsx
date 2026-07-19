@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, message, Table, Input, Popconfirm, Select } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import { createResult, deleteResult, updateResult } from '../api/endpoints';
+import { batchResults } from '../api/endpoints';
 import type { TestCase, EvaluationResult } from '../types';
 
 interface Props {
@@ -116,33 +116,33 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
     // 检查是否有未命名的列
     const unnamed = customCols.some((k) => !k.trim());
     if (unnamed) { message.warning('请先为所有列填写列名，或删除不需要的列'); return; }
-    // 删除被标记的
-    for (const id of deletedIds) await deleteResult(id).catch(() => {});
-    // 更新已有行
+
+    const deletes: string[] = [...deletedIds];
+    const updates: any[] = [];
+    const creates: any[] = [];
+
+    // 收集更新
     for (const id of editOrder) {
       const row = editData[id]; if (!row || row._isNew || deletedIds.has(id)) continue;
-      const updates: Record<string, any> = {};
-      // 标准字段
-      if (row.model_response !== undefined) updates.model_response = row.model_response;
-      updates.is_correct = row.is_correct === '正确';
-      updates.runtime_ms = Number(row.runtime_ms) || 0;
-      updates.token_count = Number(row.token_count) || 0;
-      if (row.reason) updates.reason = row.reason;
-      if (row.annotation) updates.annotation = row.annotation;
-      if (!isAgent && row.think) updates.think = row.think;
-      if (isAgent && row.trajectory) { try { updates.trajectory = JSON.parse(row.trajectory); } catch { /* keep old */ } }
-      // 自定义字段：新增列总是发送，已有列跳过空值（空名列跳过）
+      const up: Record<string, any> = { id };
+      if (row.model_response !== undefined) up.model_response = row.model_response;
+      up.is_correct = row.is_correct === '正确';
+      up.runtime_ms = Number(row.runtime_ms) || 0;
+      up.token_count = Number(row.token_count) || 0;
+      if (row.reason) up.reason = row.reason;
+      if (row.annotation) up.annotation = row.annotation;
+      if (!isAgent && row.think) up.think = row.think;
+      if (isAgent && row.trajectory) { try { up.trajectory = JSON.parse(row.trajectory); } catch { /* keep old */ } }
       customCols.forEach((k) => {
-        const key = k.trim();
-        if (!key) return;
-        if (newCols.has(key)) { updates[key] = row[k] ?? ''; }
-        else if (row[k] !== undefined && row[k] !== '') { updates[key] = row[k]; }
+        const key = k.trim(); if (!key) return;
+        if (newCols.has(key)) { up[key] = row[k] ?? ''; }
+        else if (row[k] !== undefined && row[k] !== '') { up[key] = row[k]; }
       });
-      // 标记删除的列
-      deletedCols.forEach((k) => { updates[k] = null; });
-      await updateResult(id, updates as any).catch(() => {});
+      deletedCols.forEach((k) => { up[k] = null; });
+      updates.push(up);
     }
-    // 创建新行
+
+    // 收集新建
     for (const id of editOrder) {
       const row = editData[id]; if (!row || !row._isNew) continue;
       if (!row.question?.trim() && !row.model_response?.trim()) continue;
@@ -159,7 +159,11 @@ const ResultsUploader: React.FC<Props> = ({ groupId, testCases, existingResults,
       };
       if (isAgent && row.trajectory?.trim()) { try { data.trajectory = JSON.parse(row.trajectory); } catch { /* ignore */ } }
       customCols.forEach((k) => { const key = k.trim(); if (key) data[key] = row[k] ?? ''; });
-      await createResult(groupId, data as any).catch(() => {});
+      creates.push(data);
+    }
+
+    if (deletes.length > 0 || updates.length > 0 || creates.length > 0) {
+      await batchResults(groupId, { deletes, updates, creates });
     }
     message.success('已保存');
     try { await onRefresh(); } catch { /* ignore */ }

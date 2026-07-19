@@ -52,7 +52,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!nav.selectedExperimentId) { setExperimentDetail(null); return; }
     setExperimentLoading(true);
     try { setExperimentDetail(await fetchExperimentDetail(nav.selectedExperimentId)); }
-    catch { /* */ }
+    catch (e) { console.error('Failed to load experiment:', e); }
     finally { setExperimentLoading(false); }
   }, [nav.selectedExperimentId]);
 

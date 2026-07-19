@@ -3,5 +3,6 @@ dist/
 server/data.json
 server/data.sqlite
 server/data.backup.json
+server/backups/
 *.log
 .DS_Store

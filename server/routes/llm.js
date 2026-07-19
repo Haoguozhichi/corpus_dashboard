@@ -6,7 +6,22 @@ const router = express.Router();
 // ====== 配置 ======
 router.get('/config', (_req, res) => {
   const cfg = llm.getConfig();
-  res.json({ apiUrl: cfg.apiUrl, modelName: cfg.modelName, apiKey: cfg.apiKey ? '***' : '' });
+  res.json({ apiUrl: cfg.apiUrl, modelName: cfg.modelName, apiKey: cfg.apiKey ? '***' : '', prompts: cfg.prompts || {} });
+});
+
+// ====== Prompts 编辑 ======
+router.get('/prompts', (_req, res) => {
+  const cfg = llm.getConfig();
+  res.json(cfg.prompts || {});
+});
+
+router.put('/prompts', (req, res) => {
+  const { diagnoseError, clusterErrors } = req.body;
+  const prompts = {};
+  if (diagnoseError !== undefined) prompts.diagnoseError = diagnoseError;
+  if (clusterErrors !== undefined) prompts.clusterErrors = clusterErrors;
+  llm.saveConfig({ prompts });
+  res.json(llm.getConfig().prompts || {});
 });
 
 // 测试连接（通过后端代理，避免CORS）

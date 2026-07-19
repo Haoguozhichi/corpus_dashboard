@@ -5,6 +5,20 @@ const { v4: uuidv4 } = require('uuid');
 
 const DB_PATH = path.join(__dirname, 'data.sqlite');
 const JSON_PATH = path.join(__dirname, 'data.json');
+const BACKUP_DIR = path.join(__dirname, 'backups');
+
+// 自动备份（保留最近5个）
+function backup() {
+  if (!fs.existsSync(DB_PATH)) return;
+  try {
+    if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+    fs.copyFileSync(DB_PATH, path.join(BACKUP_DIR, `data-${ts}.sqlite`));
+    // 保留最近5个
+    const files = fs.readdirSync(BACKUP_DIR).filter((f) => f.startsWith('data-') && f.endsWith('.sqlite')).sort().reverse();
+    for (const f of files.slice(5)) fs.unlinkSync(path.join(BACKUP_DIR, f));
+  } catch { /* backup is best-effort */ }
+}
 
 // ========== 内存数据（路由层操作对象，与 SQLite 双向同步） ==========
 let data = { experiments: [] };
@@ -238,13 +252,34 @@ function writeDataToSQLite() {
   insertER.free();
 }
 
-// ========== 持久化到磁盘（原子写入） ==========
+// ========== 持久化到磁盘（原子写入 + debounce） ==========
+let saveTimer = null;
+let savePending = false;
+
 function save() {
+  if (saveTimer) { savePending = true; return; } // 已有定时器，标记待保存
+  writeDataToSQLite();
+  saveTimer = setTimeout(() => {
+    if (savePending) { writeDataToSQLite(); savePending = false; }
+    const buffer = db.export();
+    const tmpPath = DB_PATH + '.tmp';
+    fs.writeFileSync(tmpPath, Buffer.from(buffer));
+    fs.renameSync(tmpPath, DB_PATH);
+    saveTimer = null;
+  }, 50); // 50ms 内合并写入
+}
+
+// 立即写入（用于关键操作后）
+let lastBackup = 0;
+function saveNow() {
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; savePending = false; }
   writeDataToSQLite();
   const buffer = db.export();
   const tmpPath = DB_PATH + '.tmp';
   fs.writeFileSync(tmpPath, Buffer.from(buffer));
   fs.renameSync(tmpPath, DB_PATH);
+  // 每小时自动备份一次
+  if (Date.now() - lastBackup > 3600000) { backup(); lastBackup = Date.now(); }
 }
 
 // ========== 初始化（异步：需加载 sql.js WASM） ==========
@@ -303,4 +338,4 @@ function findExp(id) { return data.experiments.find((e) => e.id === id) || null;
 function findGroup(id) { for (const e of data.experiments) for (const g of (e.groups || [])) { if (g.id === id) return g; } return null; }
 function findTC(id) { for (const e of data.experiments) for (const tc of (e.test_cases || [])) { if (tc.id === id) return tc; } return null; }
 
-module.exports = { data, save, findExp, findGroup, findTC, init };
+module.exports = { data, save, saveNow, findExp, findGroup, findTC, init };

@@ -110,6 +110,19 @@ router.post('/:expId/import', upload.single('file'), (req, res) => {
   exp.groups = exp.groups || [];
   exp.test_cases = exp.test_cases || [];
   let groupsCreated = 0, resultsCreated = 0;
+  let validationErrors = [];
+
+  // 校验
+  for (const gData of groupsData) {
+    if (!gData.group_name) validationErrors.push('缺少 group_name');
+    const results = gData.results;
+    if (!results) continue;
+    const items = Array.isArray(results) ? results : Object.values(results).flat();
+    if (items.length === 0) validationErrors.push(`"${gData.group_name}" 无评测结果`);
+  }
+  if (validationErrors.length > 0) {
+    return res.status(400).json({ error: '数据校验失败', details: validationErrors.slice(0, 10) });
+  }
 
   // 训练类型
   if (exp.type === 'training') {
