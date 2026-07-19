@@ -17,6 +17,15 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
+// 操作日志
+app.use((req, _res, next) => {
+  if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
+    const ts = new Date().toISOString();
+    console.log(`[${ts}] ${req.method} ${req.path}`);
+  }
+  next();
+});
+
 // 路由
 app.use('/api/experiments', experimentsRouter);
 app.use('/api', groupsRouter);

@@ -60,29 +60,27 @@ function saveConfig(newConfig) {
   return config;
 }
 
-// 通用 LLM 调用
+// 通用 LLM 调用（带重试）
 async function callLLM(messages, options = {}) {
-  const { temperature = 0.3, max_tokens = 2000 } = options;
-  const res = await fetch(config.apiUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(config.apiKey ? { 'Authorization': `Bearer ${config.apiKey}` } : {}),
-    },
-    body: JSON.stringify({
-      model: config.modelName,
-      messages,
-      temperature,
-      max_tokens,
-      stream: false,
-    }),
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`LLM API error (${res.status}): ${err}`);
+  const { temperature = 0.3, max_tokens = 2000, retries = 2 } = options;
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 1000 * attempt));
+    try {
+      const res = await fetch(config.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(config.apiKey ? { 'Authorization': `Bearer ${config.apiKey}` } : {}),
+        },
+        body: JSON.stringify({ model: config.modelName, messages, temperature, max_tokens, stream: false }),
+      });
+      if (!res.ok) { const err = await res.text(); throw new Error(`LLM API error (${res.status}): ${err}`); }
+      const data = await res.json();
+      return data.choices[0].message.content;
+    } catch (e) { lastErr = e; }
   }
-  const data = await res.json();
-  return data.choices[0].message.content;
+  throw lastErr;
 }
 
 // ====== 1. 错误诊断 ======

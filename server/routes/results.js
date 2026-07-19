@@ -10,23 +10,31 @@ router.get('/groups/:groupId/results', (req, res) => {
   const group = findGroup(req.params.groupId);
   if (!group) return res.status(404).json({ error: '实验组不存在' });
 
-  // 找到所属实验
   let exp = null;
   for (const e of data.experiments) {
     if ((e.groups || []).some((g) => g.id === group.id)) { exp = e; break; }
   }
 
-  const results = (group.evaluation_results || []).map((er) => {
+  const allResults = (group.evaluation_results || []).map((er) => {
     const tc = exp?.test_cases?.find((t) => t.id === er.test_case_id);
     return { ...er, question: tc?.question || '', expected_answer: tc?.expected_answer || '', category_tag: tc?.category_tag || '' };
   });
 
-  const correctCount = results.filter((r) => r.is_correct).length;
+  const { page, pageSize } = req.query;
+  const p = parseInt(page) || 1;
+  const ps = parseInt(pageSize) || 0;
+
+  const correctCount = allResults.filter((r) => r.is_correct).length;
+  const summary = {
+    total: allResults.length, correctCount,
+    accuracy: allResults.length > 0 ? correctCount / allResults.length : 0,
+    avgRuntime: allResults.length > 0 ? allResults.reduce((s, r) => s + (r.runtime_ms || 0), 0) / allResults.length : 0,
+    totalTokens: allResults.reduce((s, r) => s + (r.token_count || 0), 0),
+  };
+
   res.json({
-    results, total: results.length, correctCount,
-    accuracy: results.length > 0 ? correctCount / results.length : 0,
-    avgRuntime: results.length > 0 ? results.reduce((s, r) => s + (r.runtime_ms || 0), 0) / results.length : 0,
-    totalTokens: results.reduce((s, r) => s + (r.token_count || 0), 0),
+    results: ps > 0 ? allResults.slice((p - 1) * ps, p * ps) : allResults,
+    ...summary, page: p, pageSize: ps || allResults.length,
   });
 });
 

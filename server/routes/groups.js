@@ -72,4 +72,19 @@ router.delete('/groups/:id', (req, res) => {
   res.status(404).json({ error: '实验组不存在' });
 });
 
+// 批量删除实验组
+router.post('/groups/batch-delete', (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: 'ids 不能为空' });
+  let deleted = 0;
+  for (const e of data.experiments) {
+    e.groups = (e.groups || []).filter((g) => {
+      if (ids.includes(g.id)) { deleted++; return false; }
+      return true;
+    });
+  }
+  if (deleted > 0) save();
+  res.json({ deleted });
+});
+
 module.exports = router;
