@@ -48,14 +48,14 @@ corpus_dashboard/
 │   ├── context/DataContext.tsx   # 全局状态管理
 │   ├── components/
 │   │   ├── AppLayout.tsx         # 布局 + 面包屑导航
-│   │   ├── EvaluationDetail.tsx  # 评测实验组详情
-│   │   ├── AgentEvaluationDetail.tsx # Agent评测详情
-│   │   ├── TrajectoryViewer.tsx  # 轨迹时间线
-│   │   ├── CustomScoresChart.tsx # 多维评分图
+│   │   ├── EvaluationDetail.tsx  # 评测详情（含Think列/弹窗）
+│   │   ├── AgentEvaluationDetail.tsx # Agent评测详情（轨迹时间线）
+│   │   ├── TrajectoryViewer.tsx  # 轨迹步骤展示
 │   │   ├── ResultsUploader.tsx   # 评测结果管理（可编辑表格）
+│   │   ├── LlmSettingsModal.tsx   # LLM配置+Prompt编辑
 │   │   ├── GroupFormModal.tsx     # 实验组表单
 │   │   ├── ExperimentFormModal.tsx # 实验表单
-│   │   ├── BulkImport.tsx        # 一键导入组件
+│   │   ├── BulkImport.tsx        # 一键导入+导出
 │   └── pages/
 │       ├── HomePage.tsx          # 首页 - 全实验列表+筛选+创建
 │       ├── DashboardPage.tsx     # 仪表盘 - 实验组对比表+管理
